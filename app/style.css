@@ -24,10 +24,9 @@
       background-color: var(--bg-primary);
       color: var(--text-main);
       display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      height: 100dvh;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh; /* Adapts properly on mobile screens */
       overflow: hidden;
   }
   
@@ -40,6 +39,7 @@
       width: 90%;
       max-width: 400px;
       text-align: center;
+      margin: auto; /* Centers the auth box nicely within our fixed flex body */
   }
   
   .auth-box h2 {
@@ -97,11 +97,10 @@
   /* --- ADVANCED DASHBOARD SIDEBAR LAYOUT --- */
   .dashboard-wrapper {
       display: flex;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
       background-color: var(--bg-primary);
-      position: relative;
   }
   
   .sidebar-panel {
@@ -243,7 +242,6 @@
       flex-direction: column;
       width: 100%;
       height: 100%;
-      position: relative;
   }
   
   .chat-header {
@@ -265,7 +263,6 @@
   .message-pane {
       flex: 1;
       padding: 1.5rem;
-      padding-bottom: 80px; /* FIX: Adds a spacing cushion so the last message isn't blocked by the fixed input bar */
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -332,14 +329,9 @@
   .input-bar {
       background-color: var(--bg-secondary);
       padding: 0.8rem 1rem;
+      flex-shrink: 0;
       border-top: 1px solid var(--bg-tertiary);
-      
-      /* FIX: Force absolute pinning to bottom of viewport screen */
-      position: fixed;
-      bottom: 0;
-      right: 0;
-      width: calc(100% - 320px); /* Account for desktop sidebar width */
-      z-index: 999; /* Force rendering above hidden frames or free-hosting badge overlays */
+      width: 100%;
   }
   
   #chat-form {
@@ -473,12 +465,6 @@
   
       .chat-wrapper.active-mobile {
           transform: translateX(0);
-      }
-  
-      /* FIX: Sidebar closes on mobile, so make input bar span across the full width */
-      .input-bar {
-          width: 100% !important;
-          left: 0 !important;
       }
   
       .message-row {

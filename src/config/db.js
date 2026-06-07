@@ -1,17 +1,14 @@
 const { Pool } = require('pg');
 const dotenv = require('dotenv');
 
-// Ensuring env variables are loaded if this file is initialized early
 dotenv.config();
 
 const pool = new Pool({
-    // Fallback parsing: if DATABASE_URL fails to extract the password cleanly, 
-    // we explicitly supply the configuration parameters.
     connectionString: process.env.DATABASE_URL,
     user: 'postgres',
     host: 'localhost',
     database: 'realtime_chat',
-    password: String('vikas'), // Strictly forces your password to be a string
+    password: String('vikas'),
     port: 5432,
 });
 
@@ -27,19 +24,20 @@ const initDB = async () => {
             );
         `);
 
-        // Messages Table
+        // Relational Messages Table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS messages (
                 id SERIAL PRIMARY KEY,
-                username VARCHAR(50) NOT NULL,
+                sender_id INT REFERENCES users(id) ON DELETE CASCADE,
+                receiver_id INT REFERENCES users(id) ON DELETE CASCADE,
                 text TEXT NOT NULL,
                 timestamp TIMESTAMPTZ DEFAULT NOW(),
-                isRead BOOLEAN DEFAULT FALSE
+                isread BOOLEAN DEFAULT FALSE
             );
         `);
-        console.log('Connected smoothly to PostgreSQL & Tables verified.');
+        console.log('PostgreSQL Relational Schema Verified Successfully.');
     } catch (err) {
-        console.error('Database initialization failed:', err);
+        console.error('Database migration/initialization failed:', err);
         process.exit(1); 
     }
 };

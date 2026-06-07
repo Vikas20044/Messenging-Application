@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        
+        <aside class="sidebar-panel" id="sidebar-panel">
+            <header class="sidebar-header">
+                <h2 id="user-display-tag">@username</h2>
+                <button id="exit-chat-btn" class="action-btn danger">Logout</button>
+            </header>
+            
+            <div class="search-box-container">
+                <input type="text" id="user-search-input" placeholder="Search users..." autocomplete="off">
+                <div id="search-results-dropdown" class="search-dropdown hidden"></div>
+            </div>
+
+            <div class="active-chats-list">
+                <h3>Recent Chats</h3>
+                <div id="active-threads-target"></div>
+            </div>
+        </aside>
+
+        <main id="chat-viewport" class="chat-wrapper">
+            <div id="empty-view-notice" class="center-notice">
+                <h3>Welcome to Private Hub</h3>
+                <p>Search for a registered user or select an existing conversation to start chatting.</p>
+            </div>
+
+            <div id="active-chat-subsystem" class="hidden-layout hidden">
+                <header class="chat-header">
+                    <button id="back-to-sidebar" class="action-btn secondary mobile-only">← Back</button>
+                    <div class="channel-info">
+                        <h2 id="chat-window-title">Select a User</h2>
+                    </div>
+                </header>
+
+                <div id="message-history" class="message-pane"></div>
+
+                <div class="input-bar">
+                    <form id="chat-form">
+                        <input type="text" id="msg-input" placeholder="Type a private message..." required autocomplete="off">
+                        <button type="submit">Send</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let currentUserId = null;
+        let currentUsername = '';
+        let targetUserId = null;
+
+        const sidebarPanel = document.getElementById('sidebar-panel');
+        const chatViewport = document.getElementById('chat-viewport');
+        const backToSidebar = document.getElementById('back-to-sidebar');
+        
+        const userSearchInput = document.getElementById('user-search-input');
+        const searchResultsDropdown = document.getElementById('search-results-dropdown');
+        const activeThreadsTarget = document.getElementById('active-threads-target');
+        const chatWindowTitle = document.getElementById('chat-window-title');
+        const messageHistory = document.getElementById('message-history');
+        const chatForm = document.getElementById('chat-form');
+        const msgInput = document.getElementById('msg-input');
+
+        async function initializeIdentity() {
+            const res = await fetch('/api/session-user');
+            if(!res.ok) { window.location.href = '/login'; return; }
+            const data = await res.json();
+            currentUserId = data.id;
+            currentUsername = data.username;
+            document.getElementById('user-display-tag').innerText = `@${currentUsername}`;
+            loadActiveThreads();
+        }
+
+        async function loadActiveThreads() {
+            const res = await fetch('/api/chats/active');
+            if(!res.ok) return;
+            const threads = await res.json();
+            activeThreadsTarget.innerHTML = '';
+            
+            if(threads.length === 0) {
+                activeThreadsTarget.innerHTML = '<p class="empty-text">No recent conversations</p>';
+                return;
+            }
+
+            threads.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'thread-item';
+                item.innerText = `@${user.username}`;
+                item.onclick = () => selectActiveTargetUser(user.id, user.username);
+                activeThreadsTarget.appendChild(item);
+            });
+        }
+
+        userSearchInput.addEventListener('input', async (e) => {
+            const query = e.target.value.trim();
+            if(query.length < 1) { searchResultsDropdown.classList.add('hidden'); return; }
+
+            const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
+            if(!res.ok) return;
+            const matches = await res.json();
+
+            searchResultsDropdown.innerHTML = '';
+            if(matches.length === 0) {
+                searchResultsDropdown.innerHTML = '<div class="dropdown-item muted">No users found</div>';
+            } else {
+                matches.forEach(u => {
+                    const block = document.createElement('div');
+                    block.className = 'dropdown-item';
+                    block.innerText = `@${u.username}`;
+                    block.onclick = () => {
+                        selectActiveTargetUser(u.id, u.username);
+                        searchResultsDropdown.classList.add('hidden');
+                        userSearchInput.value = '';
+                    };
+                    searchResultsDropdown.appendChild(block);
+                });
+            }
+            searchResultsDropdown.classList.remove('hidden');
+        });
+
+        function selectActiveTargetUser(id, name) {
+            targetUserId = id;
+            chatWindowTitle.innerText = `Direct Chat with @${name}`;
+            document.getElementById('empty-view-notice').classList.add('hidden');
+            document.getElementById('active-chat-subsystem').classList.remove('hidden');
+            
+            // Mobile screen optimization
+            if (window.innerWidth <= 768) {
+                sidebarPanel.classList.add('hidden-mobile');
+                chatViewport.classList.add('active-mobile');
+            }
+
+            socket.emit('joinRoom', { currentUserId, targetUserId });
+        }
+
+        backToSidebar.addEventListener('click', () => {
+            sidebarPanel.classList.remove('hidden-mobile');
+            chatViewport.classList.remove('active-mobile');
+        });
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = msgInput.value.trim();
+            if(text && targetUserId) {
+                socket.emit('privateMessage', { sender_id: currentUserId, receiver_id: targetUserId, text });
+                msgInput.value = '';
+            }
+        });
+
+        socket.on('chatHistory', (history) => {
+            messageHistory.innerHTML = '';
+            history.forEach(appendMessage);
+            scrollToBottom();
+        });
+
+        socket.on('message', (msg) => {
+            appendMessage(msg);
+            scrollToBottom();
+            loadActiveThreads();
+        });
+
+        function appendMessage(msg) {
+            const isOutgoing = msg.sender_id === currentUserId;
+            const row = document.createElement('div');
+            row.className = `message-row ${isOutgoing ? 'outgoing' : 'incoming'}`;
+            const timeString = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            row.innerHTML = `
+                <div class="message-bubble">${msg.text}</div>
+                <div class="message-meta">
+                    <span>${timeString}</span>
+                    ${isOutgoing ? `<span id="ticks-${msg._id}" class="ticks ${msg.isRead ? 'read' : ''}">✓✓</span>` : ''}
+                </div>
+            `;
+            messageHistory.appendChild(row);
+
+            if (!isOutgoing && !msg.isRead) {
+                socket.emit('markAsRead', msg._id);
+            }
+        }
+
+        socket.on('messageReadUpdate', (messageId) => {
+            const ticks = document.getElementById(`ticks-${messageId}`);
+            if (ticks) ticks.classList.add('read');
+        });
+
+        document.getElementById('exit-chat-btn').addEventListener('click', async () => {
+            await fetch('/api/logout');
+            window.location.href = '/login';
+        });
+
+        function scrollToBottom() { messageHistory.scrollTop = messageHistory.scrollHeight; }
+        initializeIdentity();
+    </script>
+</body>
+</html>

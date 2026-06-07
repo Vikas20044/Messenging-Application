@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Time Messaging App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="chat-container" class="chat-wrapper">
+        <header class="chat-header">
+            <div class="channel-info">
+                <h2># group chat</h2>
+                <p id="user-display-tag">Fetching identity...</p>
+            </div>
+            <div class="header-actions">
+                <button id="new-chat-btn" class="action-btn secondary">New Chat</button>
+                <button id="exit-chat-btn" class="action-btn danger">Exit Chat</button>
+            </div>
+        </header>
+
+        <div id="message-history" class="message-pane"></div>
+
+        <div class="input-bar">
+            <form id="chat-form">
+                <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off">
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let currentUsername = '';
+
+        const chatForm = document.getElementById('chat-form');
+        const msgInput = document.getElementById('msg-input');
+        const messageHistory = document.getElementById('message-history');
+        const userDisplayTag = document.getElementById('user-display-tag');
+        const exitChatBtn = document.getElementById('exit-chat-btn');
+        const newChatBtn = document.getElementById('new-chat-btn');
+
+        // Fetch active session identity on load
+        async function checkSession() {
+            const res = await fetch('/api/session-user');
+            if (!res.ok) {
+                window.location.href = '/login';
+                return;
+            }
+            const data = await res.json();
+            currentUsername = data.username;
+            userDisplayTag.innerText = `Logged in as: @${currentUsername}`;
+        }
+        checkSession();
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = msgInput.value.trim();
+            if (text && currentUsername) {
+                socket.emit('chatMessage', { username: currentUsername, text: text });
+                msgInput.value = '';
+            }
+        });
+
+        exitChatBtn.addEventListener('click', async () => {
+            await fetch('/api/logout');
+            window.location.href = '/login';
+        });
+
+        newChatBtn.addEventListener('click', () => {
+            if (confirm("Are you sure you want to clear this entire chat history for everyone?")) {
+                socket.emit('clearChat');
+            }
+        });
+
+        socket.on('chatHistory', (history) => {
+            messageHistory.innerHTML = '';
+            history.forEach(msg => appendMessage(msg));
+            scrollToBottom();
+        });
+
+        socket.on('message', (msg) => {
+            appendMessage(msg);
+            scrollToBottom();
+        });
+
+        socket.on('messageReadUpdate', (messageId) => {
+            const ticks = document.getElementById(`ticks-${messageId}`);
+            if (ticks) ticks.classList.add('read');
+        });
+
+        socket.on('chatCleared', () => {
+            messageHistory.innerHTML = '';
+        });
+
+        function appendMessage(msg) {
+            const isOutgoing = msg.username === currentUsername;
+            const row = document.createElement('div');
+            row.className = `message-row ${isOutgoing ? 'outgoing' : 'incoming'}`;
+            
+            const timeString = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            row.innerHTML = `
+                <div class="message-bubble">
+                    ${!isOutgoing ? `<div class="sender-title">${msg.username}</div>` : ''}
+                    <div class="message-text">${msg.text}</div>
+                </div>
+                <div class="message-meta">
+                    <span>${timeString}</span>
+                    ${isOutgoing ? `<span id="ticks-${msg._id}" class="ticks ${msg.isRead ? 'read' : ''}">✓✓</span>` : ''}
+                </div>
+            `;
+            messageHistory.appendChild(row);
+
+            if (!isOutgoing && !msg.isRead) {
+                socket.emit('markAsRead', msg._id);
+            }
+        }
+
+        function scrollToBottom() {
+            messageHistory.scrollTop = messageHistory.scrollHeight;
+        }
+    </script>
+</body>
+</html>

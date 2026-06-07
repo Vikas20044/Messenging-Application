@@ -3,9 +3,10 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 const dotenv = require('dotenv');
-const bcrypt = require('bcryptjs');
 const session = require('express-session');
-const { Pool } = require('pg');
+
+const { pool, initDB } = require('./src/config/db');
+const authRoutes = require('./src/routes/auth');
 
 dotenv.config();
 
@@ -17,7 +18,6 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
     secret: 'echochat_ultra_secure_key_2026',
@@ -26,150 +26,65 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-// PostgreSQL Pool Connection
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-});
+// Serve style.css globally out of the /app directory
+app.use(express.static(path.join(__dirname, 'app'), { index: false }));
 
-// Initialize database tables
-const initDB = async () => {
-    try {
-        // Users Table
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                username VARCHAR(50) UNIQUE NOT NULL,
-                email VARCHAR(100) UNIQUE NOT NULL,
-                password VARCHAR(255) NOT NULL
-            );
-        `);
-
-        // Messages Table
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS messages (
-                id SERIAL PRIMARY KEY,
-                username VARCHAR(50) NOT NULL,
-                text TEXT NOT NULL,
-                timestamp TIMESTAMPTZ DEFAULT NOW(),
-                isRead BOOLEAN DEFAULT FALSE
-            );
-        `);
-        console.log('Connected smoothly to PostgreSQL & Tables verified.');
-    } catch (err) {
-        console.error('Database initialization failed:', err);
-    }
-};
 initDB();
 
-// Helper to map PostgreSQL syntax field '_id' safely for the frontend 
+// Bind Authentication API Routes
+app.use('/api', authRoutes);
+
+// --- STATIC PAGE ROUTING LAYER ---
+
+app.get('/', (req, res) => {
+    res.redirect('/login');
+});
+
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'login.html'));
+});
+
+app.get('/signup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'signup.html'));
+});
+
+app.get('/forgot-password', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'forgot.html'));
+});
+
+// Protected Route: Only access if active session username is established
+app.get('/chat', (req, res) => {
+    if (!req.session || !req.session.username) {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'app', 'chat.html'));
+});
+
+// Endpoint to expose session to client-side JS safely
+app.get('/api/session-user', (req, res) => {
+    if (req.session && req.session.username) {
+        res.json({ username: req.session.username });
+    } else {
+        res.status(401).json({ error: 'Unauthorized' });
+    }
+});
+
+// --- REALTIME WEB_SOCKET LAYER ---
 const formatMessage = (msg) => {
     if (!msg) return null;
     return {
-        _id: msg.id, // Maps Postgres serial 'id' to '_id' so index.html doesn't break
+        _id: msg.id,
         username: msg.username,
         text: msg.text,
         timestamp: msg.timestamp,
-        isRead: msg.isread // PostgreSQL sets columns to lowercase by default
+        isRead: msg.isread
     };
 };
 
-// --- AUTH ROUTES ---
-
-app.post('/api/signup', async (req, res) => {
-    try {
-        const { username, email, password } = req.body;
-        const normalizedUsername = username.trim();
-        const normalizedEmail = email.toLowerCase().trim();
-
-        // Check if user exists
-        const userCheck = await pool.query(
-            'SELECT id FROM users WHERE username = $1 OR email = $2',
-            [normalizedUsername, normalizedEmail]
-        );
-        if (userCheck.rows.length > 0) {
-            return res.status(400).send('Username or Email already registered.');
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Insert new user
-        await pool.query(
-            'INSERT INTO users (username, email, password) VALUES ($1, $2, $3)',
-            [normalizedUsername, normalizedEmail, hashedPassword]
-        );
-        
-        res.status(201).send('Signup successful');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error creating account');
-    }
-});
-
-app.post('/api/login', async (req, res) => {
-    try {
-        const { username, email, password } = req.body;
-        
-        const result = await pool.query(
-            'SELECT * FROM users WHERE username = $1 AND email = $2',
-            [username.trim(), email.toLowerCase().trim()]
-        );
-        
-        if (result.rows.length === 0) {
-            return res.status(400).send('Matching User & Email combination not found');
-        }
-
-        const user = result.rows[0];
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).send('Incorrect password');
-
-        req.session.username = user.username;
-        res.json({ success: true, username: user.username });
-    } catch (err) {
-        res.status(500).send('Server login error');
-    }
-});
-
-app.post('/api/forgot-password', async (req, res) => {
-    try {
-        const { username, email, newPassword } = req.body;
-        const normalizedUsername = username.trim();
-        const normalizedEmail = email.toLowerCase().trim();
-
-        const result = await pool.query(
-            'SELECT id FROM users WHERE username = $1 AND email = $2',
-            [normalizedUsername, normalizedEmail]
-        );
-        if (result.rows.length === 0) {
-            return res.status(400).send('Matching User & Email combination not found');
-        }
-
-        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-        await pool.query(
-            'UPDATE users SET password = $1 WHERE id = $2',
-            [hashedNewPassword, result.rows[0].id]
-        );
-
-        res.send('Password reset successfully');
-    } catch (err) {
-        res.status(500).send('Reset server error');
-    }
-});
-
-app.get('/api/logout', (req, res) => {
-    req.session.destroy();
-    res.send('Logged out');
-});
-
-// --- SOCKET.IO REALTIME EVENTS ---
-
 io.on('connection', async (socket) => {
     try {
-        // Fetch last 100 messages sorted by timestamp oldest first
-        const result = await pool.query(
-            'SELECT * FROM messages ORDER BY timestamp ASC LIMIT 100'
-        );
-        const history = result.rows.map(formatMessage);
-        socket.emit('chatHistory', history);
+        const result = await pool.query('SELECT * FROM messages ORDER BY timestamp ASC LIMIT 100');
+        socket.emit('chatHistory', result.rows.map(formatMessage));
     } catch (err) {
         console.error('Error fetching chat history:', err);
     }
@@ -180,22 +95,18 @@ io.on('connection', async (socket) => {
                 'INSERT INTO messages (username, text) VALUES ($1, $2) RETURNING *',
                 [data.username, data.text]
             );
-            const savedMessage = formatMessage(result.rows[0]);
-            io.emit('message', savedMessage);
+            io.emit('message', formatMessage(result.rows[0]));
         } catch (err) {
-            console.error('Message dropped: Failed to write to PostgreSQL', err);
+            console.error('Message serialization dropped:', err);
         }
     });
 
     socket.on('markAsRead', async (messageId) => {
         try {
-            await pool.query(
-                'UPDATE messages SET isRead = TRUE WHERE id = $1',
-                [messageId]
-            );
+            await pool.query('UPDATE messages SET isRead = TRUE WHERE id = $1', [messageId]);
             io.emit('messageReadUpdate', messageId);
         } catch (err) {
-            console.error('Failed to update read status', err);
+            console.error('Failed to patch read state:', err);
         }
     });
 
@@ -204,7 +115,7 @@ io.on('connection', async (socket) => {
             await pool.query('TRUNCATE TABLE messages RESTART IDENTITY');
             io.emit('chatCleared');
         } catch (err) {
-            console.error('Failed to purge database messages:', err);
+            console.error('Purge error:', err);
         }
     });
 });

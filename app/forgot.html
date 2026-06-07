@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="forgot-container" class="auth-box">
+        <h2>Reset Password</h2>
+        <form id="forgot-form">
+            <input type="text" id="forgot-username" placeholder="Enter your username" required autocomplete="off">
+            <input type="email" id="forgot-email" placeholder="Enter your email address" required autocomplete="off">
+            <input type="password" id="forgot-new-password" placeholder="Enter new secure password" required>
+            <button type="submit">Update Password</button>
+        </form>
+        <p class="toggle-text">Remembered password? <a href="/login">Back to Login</a></p>
+    </div>
+
+    <script>
+        document.getElementById('forgot-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('forgot-username').value.trim();
+            const email = document.getElementById('forgot-email').value.trim();
+            const newPassword = document.getElementById('forgot-new-password').value;
+
+            const res = await fetch('/api/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, newPassword })
+            });
+
+            if (res.ok) {
+                alert('Password reset successful. Please log in with your new credentials.');
+                window.location.href = '/login';
+            } else {
+                alert(await res.text());
+            }
+        });
+    </script>
+</body>
+</html>

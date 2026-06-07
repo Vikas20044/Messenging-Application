@@ -233,8 +233,8 @@
       height: 100%;
       background-color: var(--bg-primary);
       position: relative;
-      display: flex;          /* FIX: Turn wrapper into a structural flexbox container */
-      flex-direction: column; /* FIX: Keep vertical flow alignment */
+      display: flex;
+      flex-direction: column;
   }
   
   /* Enforces rigid layout boundaries so elements do not break layout sizing scales */
@@ -243,10 +243,7 @@
       flex-direction: column;
       width: 100%;
       height: 100%;
-      max-height: 100%;       /* FIX: Strict ceiling barrier to stop bottom overflow */
-      position: relative;     /* FIX: Change to relative layout logic so it renders contextually */
-      top: 0;
-      left: 0;
+      position: relative;
   }
   
   .chat-header {
@@ -268,6 +265,7 @@
   .message-pane {
       flex: 1;
       padding: 1.5rem;
+      padding-bottom: 80px; /* FIX: Adds a spacing cushion so the last message isn't blocked by the fixed input bar */
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -334,9 +332,14 @@
   .input-bar {
       background-color: var(--bg-secondary);
       padding: 0.8rem 1rem;
-      flex-shrink: 0;
       border-top: 1px solid var(--bg-tertiary);
-      width: 100%;
+      
+      /* FIX: Force absolute pinning to bottom of viewport screen */
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: calc(100% - 320px); /* Account for desktop sidebar width */
+      z-index: 999; /* Force rendering above hidden frames or free-hosting badge overlays */
   }
   
   #chat-form {
@@ -470,6 +473,12 @@
   
       .chat-wrapper.active-mobile {
           transform: translateX(0);
+      }
+  
+      /* FIX: Sidebar closes on mobile, so make input bar span across the full width */
+      .input-bar {
+          width: 100% !important;
+          left: 0 !important;
       }
   
       .message-row {

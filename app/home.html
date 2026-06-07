@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Real Time Messenging App</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -31,8 +31,8 @@
 
         <main id="chat-viewport" class="chat-wrapper">
             <div id="empty-view-notice" class="center-notice">
-                <h3>Welcome to Real Time Messengin Application - VIKAS KR</h3>
-                <p>Search for a user and select an existing conversation to start chatting.</p>
+                <h3>Welcome to Real Time Messenging App - VIKAS KR</h3>
+                <p>Search for a registered user or select an existing conversation to start chatting.</p>
                 <button id="open-menu-empty" class="action-btn secondary mobile-only" style="margin-top: 1rem;">Open Menu</button>
             </div>
 
@@ -47,8 +47,17 @@
                 <div id="message-history" class="message-pane"></div>
 
                 <div class="input-bar">
-                    <form id="chat-form">
-                        <input type="text" id="msg-input" placeholder="Type a private message..." required autocomplete="off">
+                    <input type="text" name="username" style="display:none;" aria-hidden="true">
+                    <input type="password" name="password" style="display:none;" aria-hidden="true">
+                    
+                    <form id="chat-form" action="#" onsubmit="return false;">
+                        <input type="text" id="msg-input" 
+                               placeholder="Type a private message..." 
+                               required 
+                               autocomplete="off" 
+                               autocorrect="off" 
+                               autocapitalize="off" 
+                               spellcheck="false">
                         <button type="submit">Send</button>
                     </form>
                 </div>
@@ -76,8 +85,8 @@
         const messageHistory = document.getElementById('message-history');
         const chatForm = document.getElementById('chat-form');
         const msgInput = document.getElementById('msg-input');
+        const chatViewport = document.getElementById('chat-viewport');
 
-        // FIX: Ultra-Fast Drawer Mechanics Functions
         function openMobileSidebar() {
             sidebarPanel.classList.add('open-mobile');
             sidebarShadow.classList.add('active');
@@ -88,11 +97,28 @@
             sidebarShadow.classList.remove('active');
         }
 
-        // Attach action handlers
         backToSidebar.addEventListener('click', openMobileSidebar);
         openMenuEmpty.addEventListener('click', openMobileSidebar);
         closeSidebarMobile.addEventListener('click', closeMobileSidebar);
         sidebarShadow.addEventListener('click', closeMobileSidebar);
+
+        // FIX: Hardware-level keyboard adjustment using Visual Viewport API
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const viewportHeight = window.visualViewport.height;
+                // Force the layout container to match the exact open space above the keyboard
+                document.body.style.height = `${viewportHeight}px`;
+                chatViewport.style.height = `${viewportHeight}px`;
+                
+                // Instantly align older texts without layout stuttering
+                scrollToBottom();
+            });
+        }
+
+        // Snap to bottom when input is tapped
+        msgInput.addEventListener('focus', () => {
+            setTimeout(scrollToBottom, 150);
+        });
 
         async function initializeIdentity() {
             const res = await fetch('/api/session-user');
@@ -157,8 +183,8 @@
             document.getElementById('empty-view-notice').classList.add('hidden');
             document.getElementById('active-chat-subsystem').classList.remove('hidden');
             
-            // Auto close drawer when user chooses a thread selection target
             closeMobileSidebar();
+            setTimeout(scrollToBottom, 50);
 
             socket.emit('joinRoom', { currentUserId, targetUserId });
         }
@@ -169,6 +195,7 @@
             if(text && targetUserId) {
                 socket.emit('privateMessage', { sender_id: currentUserId, receiver_id: targetUserId, text });
                 msgInput.value = '';
+                msgInput.focus(); // Keeps keyboard open cleanly after sending
             }
         });
 
@@ -216,6 +243,29 @@
 
         function scrollToBottom() { messageHistory.scrollTop = messageHistory.scrollHeight; }
         initializeIdentity();
+
+        // --- SMOOTH SIDEBAR TOUCH SWIPE GESTURES ---
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipeGesture();
+        }, { passive: true });
+
+        function handleSwipeGesture() {
+            const swipeDistance = touchEndX - touchStartX;
+            if (swipeDistance > 70 && touchStartX < 50) {
+                openMobileSidebar();
+            }
+            if (swipeDistance < -70 && sidebarPanel.classList.contains('open-mobile')) {
+                closeMobileSidebar();
+            }
+        }
     </script>
 </body>
 </html>

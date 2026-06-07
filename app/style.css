@@ -25,11 +25,10 @@ body {
     color: var(--text-main);
     display: flex;
     width: 100vw;
-    /* FIX: Force body to strictly adhere to the dynamic viewport when keyboard shifts */
     height: 100vh;
     height: 100dvh; 
     overflow: hidden;
-    position: fixed; /* Prevents mobile safari/chrome bouncing mechanics */
+    position: fixed; 
 }
 
 /* --- AUTHENTICATION BOX STYLING --- */
@@ -232,7 +231,6 @@ body {
 /* --- RIGHT VIEWPORT: DYNAMIC MESSAGING WINDOW --- */
 .chat-wrapper {
     flex: 1;
-    /* FIX: Force wrapper to scale inside dynamic heights */
     height: 100%;
     max-height: 100%;
     background-color: var(--bg-primary);
@@ -271,10 +269,11 @@ body {
     flex: 1;
     padding: 1.5rem;
     overflow-y: auto;
-    /* FIX: Smooth iOS kinetic scrolling engine */
     -webkit-overflow-scrolling: touch; 
     display: flex;
     flex-direction: column;
+    /* FIX: Pin older chats to the bottom container line dynamically */
+    justify-content: flex-start; 
     gap: 1rem;
     background-color: var(--bg-primary);
 }
@@ -341,7 +340,6 @@ body {
     flex-shrink: 0;
     border-top: 1px solid var(--bg-tertiary);
     width: 100%;
-    /* FIX: Clear absolute position, keeping it locked to the bottom of the flex column safely */
     position: relative; 
 }
 
@@ -362,7 +360,7 @@ body {
     outline: none;
     color: var(--text-main);
     padding: 0.6rem;
-    font-size: 16px; /* FIX: Prevents iOS Safari from forcefully zooming layout on text inputs */
+    font-size: 16px; 
     min-width: 0;
 }
 

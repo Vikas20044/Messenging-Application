@@ -3,13 +3,13 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+// Initialize the Connection Pool directly using the Neon connection string
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    user: 'postgres',
-    host: 'localhost',
-    database: 'realtime_chat',
-    password: String('vikas'),
-    port: 5432,
+    // Neon forces SSL encryption over public endpoints; this parameter secures the link
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 const initDB = async () => {
@@ -35,9 +35,9 @@ const initDB = async () => {
                 isread BOOLEAN DEFAULT FALSE
             );
         `);
-        console.log('PostgreSQL Relational Schema Verified Successfully.');
+        console.log('Successfully connected to Neon Cloud Database & Tables Verified!');
     } catch (err) {
-        console.error('Database migration/initialization failed:', err);
+        console.error('Neon Database initialization failed:', err);
         process.exit(1); 
     }
 };

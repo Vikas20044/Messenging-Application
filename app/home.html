@@ -7,11 +7,14 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="sidebar-shadow" class="sidebar-overlay"></div>
+
     <div class="dashboard-wrapper">
         
         <aside class="sidebar-panel" id="sidebar-panel">
             <header class="sidebar-header">
                 <h2 id="user-display-tag">@username</h2>
+                <button id="close-sidebar-mobile" class="action-btn secondary mobile-only">&times;</button>
                 <button id="exit-chat-btn" class="action-btn danger">Logout</button>
             </header>
             
@@ -30,11 +33,12 @@
             <div id="empty-view-notice" class="center-notice">
                 <h3>Welcome to Private Hub</h3>
                 <p>Search for a registered user or select an existing conversation to start chatting.</p>
+                <button id="open-menu-empty" class="action-btn secondary mobile-only" style="margin-top: 1rem;">Open Menu</button>
             </div>
 
             <div id="active-chat-subsystem" class="hidden-layout hidden">
                 <header class="chat-header">
-                    <button id="back-to-sidebar" class="action-btn secondary mobile-only">← Back</button>
+                    <button id="back-to-sidebar" class="action-btn secondary mobile-only">&#9776; Menu</button>
                     <div class="channel-info">
                         <h2 id="chat-window-title">Select a User</h2>
                     </div>
@@ -60,7 +64,9 @@
         let targetUserId = null;
 
         const sidebarPanel = document.getElementById('sidebar-panel');
-        const chatViewport = document.getElementById('chat-viewport');
+        const sidebarShadow = document.getElementById('sidebar-shadow');
+        const closeSidebarMobile = document.getElementById('close-sidebar-mobile');
+        const openMenuEmpty = document.getElementById('open-menu-empty');
         const backToSidebar = document.getElementById('back-to-sidebar');
         
         const userSearchInput = document.getElementById('user-search-input');
@@ -70,6 +76,23 @@
         const messageHistory = document.getElementById('message-history');
         const chatForm = document.getElementById('chat-form');
         const msgInput = document.getElementById('msg-input');
+
+        // FIX: Ultra-Fast Drawer Mechanics Functions
+        function openMobileSidebar() {
+            sidebarPanel.classList.add('open-mobile');
+            sidebarShadow.classList.add('active');
+        }
+
+        function closeMobileSidebar() {
+            sidebarPanel.classList.remove('open-mobile');
+            sidebarShadow.classList.remove('active');
+        }
+
+        // Attach action handlers
+        backToSidebar.addEventListener('click', openMobileSidebar);
+        openMenuEmpty.addEventListener('click', openMobileSidebar);
+        closeSidebarMobile.addEventListener('click', closeMobileSidebar);
+        sidebarShadow.addEventListener('click', closeMobileSidebar);
 
         async function initializeIdentity() {
             const res = await fetch('/api/session-user');
@@ -134,19 +157,11 @@
             document.getElementById('empty-view-notice').classList.add('hidden');
             document.getElementById('active-chat-subsystem').classList.remove('hidden');
             
-            // Mobile screen optimization
-            if (window.innerWidth <= 768) {
-                sidebarPanel.classList.add('hidden-mobile');
-                chatViewport.classList.add('active-mobile');
-            }
+            // Auto close drawer when user chooses a thread selection target
+            closeMobileSidebar();
 
             socket.emit('joinRoom', { currentUserId, targetUserId });
         }
-
-        backToSidebar.addEventListener('click', () => {
-            sidebarPanel.classList.remove('hidden-mobile');
-            chatViewport.classList.remove('active-mobile');
-        });
 
         chatForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -179,7 +194,7 @@
                 <div class="message-bubble">${msg.text}</div>
                 <div class="message-meta">
                     <span>${timeString}</span>
-                    ${isOutgoing ? `<span id="ticks-${msg._id}" class="ticks ${msg.isRead ? 'read' : ''}">✓✓</span>` : ''}
+                    ${isOutgoing ? `<span id="ticks-${msg._id}" class="ticks ${msg.isRead ? 'read' : ''}">&check;&check;</span>` : ''}
                 </div>
             `;
             messageHistory.appendChild(row);

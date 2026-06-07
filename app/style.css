@@ -233,6 +233,8 @@
       height: 100%;
       background-color: var(--bg-primary);
       position: relative;
+      display: flex;          /* FIX: Turn wrapper into a structural flexbox container */
+      flex-direction: column; /* FIX: Keep vertical flow alignment */
   }
   
   /* Enforces rigid layout boundaries so elements do not break layout sizing scales */
@@ -241,7 +243,8 @@
       flex-direction: column;
       width: 100%;
       height: 100%;
-      position: absolute;
+      max-height: 100%;       /* FIX: Strict ceiling barrier to stop bottom overflow */
+      position: relative;     /* FIX: Change to relative layout logic so it renders contextually */
       top: 0;
       left: 0;
   }

@@ -75,7 +75,7 @@
         </main>
     </div>
 
-    <!-- PERSONAL PROFILE MODAL -->
+    <!-- OWN PERSONAL PROFILE EDIT MODAL LAYOUT OVERLAY -->
     <div id="profile-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -187,10 +187,6 @@
         const publicUsernameDisplay = document.getElementById('public-username-display');
         const publicFullnameDisplay = document.getElementById('public-fullname-display');
         const publicBioDisplay = document.getElementById('public-bio-display');
-
-        document.addEventListener('click', () => {
-            document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
-        });
 
         function openMobileSidebar() {
             sidebarPanel.classList.add('open-mobile');
@@ -394,56 +390,12 @@
             }
         });
 
-        // --- INLINE TRANSLATION ENGINE LOGIC SYSTEM ---
-        async function translateMessageText(messageId, rawText, langCode, langName) {
-            const displayTextBox = document.getElementById(`text-span-${messageId}`);
-            if (!displayTextBox) return;
-
-            const originalContent = displayTextBox.innerHTML;
-            try {
-                if (langCode === 'en') {
-                    displayTextBox.innerText = "Restoring to original English...";
-                } else {
-                    displayTextBox.innerText = `Translating to ${langName}...`;
-                }
-                
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${langCode}&dt=t&q=${encodeURIComponent(rawText)}`);
-                if (!res.ok) throw new Error();
-                
-                const responseData = await res.json();
-                let translatedOutput = "";
-                if(responseData && responseData[0]) {
-                    responseData[0].forEach(item => { if(item[0]) translatedOutput += item[0]; });
-                }
-
-                if (langCode === 'en') {
-                    displayTextBox.innerHTML = translatedOutput;
-                } else {
-                    displayTextBox.innerHTML = `${translatedOutput} <span class="translated-label">(Translated to ${langName})</span>`;
-                }
-            } catch (err) {
-                displayTextBox.innerHTML = originalContent;
-                alert("Translation endpoint network timeout.");
-            }
-        }
-
-        function toggleDropdown(e, dropdownId) {
-            e.stopPropagation();
-            const targetMenu = document.getElementById(dropdownId);
-            const isHidden = targetMenu.classList.contains('hidden');
-            
-            document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
-            
-            if (isHidden) {
-                targetMenu.classList.remove('hidden');
-            }
-        }
-
         function appendMessage(msg) {
             const isOutgoing = msg.sender_id === currentUserId;
             const row = document.createElement('div');
             row.className = `message-row ${isOutgoing ? 'outgoing' : 'incoming'}`;
             
+            // Extracted date and time attributes safely to render descriptive chat lines
             const msgDate = new Date(msg.timestamp);
             const dateString = msgDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
             const timeString = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -463,23 +415,7 @@
                         <a href="${msg.file_url}" target="_blank">📄 Open Document: ${msg.text}</a>
                     </div>`;
             } else {
-                const safeText = msg.text.replace(/"/g, '&quot;').replace(/'/g, "\\'");
-                inlineRenderBody = `
-                    <div class="text-content-wrapper" style="position: relative; display: flex; align-items: flex-start; gap: 8px;">
-                        <span id="text-span-${msg._id}">${msg.text}</span>
-                        <div class="msg-menu-container" style="position: relative; margin-left: auto;">
-                            <span class="three-dots-icon" onclick="toggleDropdown(event, 'drop-${msg._id}')">⋮</span>
-                            <div id="drop-${msg._id}" class="msg-dropdown hidden">
-                                <div onclick="translateMessageText('${msg._id}', '${safeText}', 'kn', 'Kannada')">Kannada</div>
-                                <div onclick="translateMessageText('${msg._id}', '${safeText}', 'ta', 'Tamil')">Tamil</div>
-                                <div onclick="translateMessageText('${msg._id}', '${safeText}', 'te', 'Telugu')">Telugu</div>
-                                <div onclick="translateMessageText('${msg._id}', '${safeText}', 'ml', 'Malayalam')">Malayalam</div>
-                                <div onclick="translateMessageText('${msg._id}', '${safeText}', 'bn', 'Bengali')">Bengali</div>
-                                <hr style="border: 0; border-top: 1px solid var(--bg-tertiary); margin: 4px 0;">
-                                <div onclick="translateMessageText('${msg._id}', '${safeText}', 'en', 'English')" style="color: var(--tick-read); font-weight: bold;">Translate back</div>
-                            </div>
-                        </div>
-                    </div>`;
+                inlineRenderBody = `<div class="message-text-span">${msg.text}</div>`;
             }
 
             if (!isOutgoing) {
@@ -512,7 +448,7 @@
         }
 
         socket.on('messageReadUpdate', (messageId) => {
-            const ticks = document.getElementById('ticks-' + messageId);
+            const ticks = document.getElementById(`ticks-${messageId}`);
             if (ticks) ticks.classList.add('read');
         });
 

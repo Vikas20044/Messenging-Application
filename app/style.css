@@ -277,7 +277,7 @@ body {
     background-color: var(--bg-primary);
 }
 
-/* MESSAGE ROWS CONFIGURATION */
+/* MESSAGE ROWS CONFIGURATION (REVISED FOR AVATAR SUPPORT) */
 .message-row {
     display: flex;
     max-width: 75%;
@@ -501,48 +501,6 @@ body {
 }
 .chat-rendered-pdf-card a:hover {
     text-decoration: underline;
-}
-
-/* --- THREE DOTS DROPDOWN AND AI LABEL WORKSPACE STYLES --- */
-.three-dots-icon {
-    cursor: pointer;
-    color: var(--text-muted);
-    padding: 0 4px;
-    font-size: 1.1rem;
-    user-select: none;
-    display: inline-block;
-}
-.three-dots-icon:hover {
-    color: var(--text-main);
-}
-.msg-dropdown {
-    position: absolute;
-    right: 0;
-    top: 20px;
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--bg-tertiary);
-    border-radius: 6px;
-    z-index: 50;
-    width: 150px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    overflow: hidden;
-}
-.msg-dropdown div {
-    padding: 8px 12px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    color: var(--text-main);
-    text-align: left;
-}
-.msg-dropdown div:hover {
-    background-color: var(--accent);
-}
-.translated-label {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--tick-read);
-    font-style: italic;
-    margin-top: 4px;
 }
 
 /* --- DYNAMIC PROFILE SETTINGS MODAL STYLES --- */

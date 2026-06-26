@@ -41,7 +41,6 @@
         const exitChatBtn = document.getElementById('exit-chat-btn');
         const newChatBtn = document.getElementById('new-chat-btn');
 
-        // Fetch active session identity on load
         async function checkSession() {
             const res = await fetch('/api/session-user');
             if (!res.ok) {
@@ -99,7 +98,11 @@
             const row = document.createElement('div');
             row.className = `message-row ${isOutgoing ? 'outgoing' : 'incoming'}`;
             
-            const timeString = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            // Extracted date and time attributes safely to render descriptive chat lines
+            const msgDate = new Date(msg.timestamp);
+            const dateString = msgDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            const timeString = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const fullDateTimeString = `${dateString}, ${timeString}`;
 
             row.innerHTML = `
                 <div class="message-bubble">
@@ -107,7 +110,7 @@
                     <div class="message-text">${msg.text}</div>
                 </div>
                 <div class="message-meta">
-                    <span>${timeString}</span>
+                    <span>${fullDateTimeString}</span>
                     ${isOutgoing ? `<span id="ticks-${msg._id}" class="ticks ${msg.isRead ? 'read' : ''}">✓✓</span>` : ''}
                 </div>
             `;

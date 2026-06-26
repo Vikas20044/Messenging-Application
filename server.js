@@ -166,6 +166,7 @@ app.put('/api/profile/update-info', checkAuthSession, async (req, res) => {
             'UPDATE users SET full_name = $1, bio = $2 WHERE id = $3',
             [full_name, bio, req.session.userId]
         );
+        // Live notify all clients about the change
         io.emit('profileUpdated', { userId: req.session.userId, full_name, bio });
         res.json({ success: true, message: 'Profile metadata synchronized.' });
     } catch (err) {
@@ -185,6 +186,7 @@ app.post('/api/profile/upload-avatar', checkAuthSession, uploadProfile.single('a
             'UPDATE users SET profile_pic_url = $1 WHERE id = $2',
             [targetPublicPath, req.session.userId]
         );
+        // Live broadcast new avatar to everyone online
         io.emit('profileUpdated', { userId: req.session.userId, profile_pic_url: targetPublicPath });
         res.json({ success: true, profile_pic_url: targetPublicPath });
     } catch (err) {
@@ -215,6 +217,7 @@ app.put('/api/profile/update-credentials', checkAuthSession, async (req, res) =>
         }
 
         req.session.username = username;
+        // Live broadcast username update across active sidebars
         io.emit('profileUpdated', { userId: req.session.userId, username: username });
         res.json({ success: true, message: 'System access criteria updated successfully.' });
     } catch (err) {
@@ -296,6 +299,7 @@ io.on('connection', (socket) => {
         socket.join(roomName);
 
         try {
+            // Updated query to pull the profile picture path linked directly with each past message row item
             const result = await pool.query(`
                 SELECT m.id as _id, m.text, m.timestamp, m.isread as "isRead", 
                        u.username as username, m.sender_id, m.message_type, m.file_url,

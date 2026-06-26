@@ -4,6 +4,8 @@ const { Server } = require('socket.io');
 const path = require('path');
 const dotenv = require('dotenv');
 const session = require('express-session');
+const fs = require('fs');
+const multer = require('multer');
 
 // Import modular database configurations and authentication routes
 const { pool, initDB } = require('./src/config/db');
@@ -27,8 +29,20 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-// Serve static assets out of the /app directory (disabling default index fallback)
+// Ensure local file storage paths exist for profile photos and chat media attachments
+const uploadDir = path.join(__dirname, 'app', 'uploads');
+const chatUploadDir = path.join(__dirname, 'app', 'uploads', 'chat');
+
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+if (!fs.existsSync(chatUploadDir)){
+    fs.mkdirSync(chatUploadDir, { recursive: true });
+}
+
+// Serve static assets out of the /app directory
 app.use(express.static(path.join(__dirname, 'app'), { index: false }));
+app.use('/uploads', express.static(path.join(__dirname, 'app', 'uploads')));
 
 // Initialize PostgreSQL Tables
 initDB();
@@ -36,9 +50,184 @@ initDB();
 // Bind Modular API endpoints
 app.use('/api', authRoutes);
 
+// --- MULTER LAYER 1: CONFIGURATION FOR PROFILE PHOTO UPLOADS ---
+const profileStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const uploadProfile = multer({
+    storage: profileStorage,
+    limits: { fileSize: 2 * 1024 * 1024 }, // Max 2MB file size limit
+    fileFilter: (req, file, cb) => {
+        const filetypes = /jpeg|jpg|png|webp/;
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = filetypes.test(file.mimetype);
+        if (mimetype && extname) return cb(null, true);
+        cb(new Error('Only system images (jpeg, jpg, png, webp) are permitted.'));
+    }
+});
+
+// --- MULTER LAYER 2: CONFIGURATION FOR CHAT MEDIA ATTACHMENTS ---
+const chatMediaStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, chatUploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'media-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const uploadChatMedia = multer({
+    storage: chatMediaStorage,
+    limits: { fileSize: 15 * 1024 * 1024 }, // Allowed maximum size: 15MB
+    fileFilter: (req, file, cb) => {
+        const filetypes = /jpeg|jpg|png|webp|mp3|wav|ogg|mp4|webm|pdf/;
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = filetypes.test(file.mimetype);
+        if (mimetype && extname) return cb(null, true);
+        cb(new Error('Unsupported file extension for safe transmission inside conversations.'));
+    }
+});
+
+// Middleware helper to secure incoming express profile mutations
+function checkAuthSession(req, res, next) {
+    if (req.session && req.session.userId) {
+        return next();
+    }
+    res.status(401).json({ error: 'Unauthorized structural access request.' });
+}
+
+// --- CORE CHAT ATTACHMENTS UPLOAD ROUTE ---
+app.post('/api/chat/upload', checkAuthSession, uploadChatMedia.single('chatFile'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No data file asset detected for delivery.' });
+    }
+    
+    let resolvedType = 'text';
+    const mime = req.file.mimetype;
+    
+    if (mime.startsWith('image/')) resolvedType = 'image';
+    else if (mime.startsWith('audio/')) resolvedType = 'audio';
+    else if (mime.startsWith('video/')) resolvedType = 'video';
+    else if (mime === 'application/pdf') resolvedType = 'pdf';
+
+    res.json({
+        success: true,
+        file_url: `/uploads/chat/${req.file.filename}`,
+        message_type: resolvedType
+    });
+});
+
+// --- CORE PROFILE MANAGEMENT ENDPOINTS ---
+
+// Fetch logged in profile details
+app.get('/api/profile/me', checkAuthSession, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT username, full_name, bio, profile_pic_url FROM users WHERE id = $1', 
+            [req.session.userId]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database context retrieval error.' });
+    }
+});
+
+// Fetch ANOTHER user's public profile information
+app.get('/api/profile/user/:id', checkAuthSession, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT username, full_name, bio, profile_pic_url FROM users WHERE id = $1', 
+            [req.params.id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User records missing.' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to extract profile metadata.' });
+    }
+});
+
+// Update Text Details (Full Name and Biography)
+app.put('/api/profile/update-info', checkAuthSession, async (req, res) => {
+    const { full_name, bio } = req.body;
+    try {
+        await pool.query(
+            'UPDATE users SET full_name = $1, bio = $2 WHERE id = $3',
+            [full_name, bio, req.session.userId]
+        );
+        // Live notify all clients about the change
+        io.emit('profileUpdated', { userId: req.session.userId, full_name, bio });
+        res.json({ success: true, message: 'Profile metadata synchronized.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to update user database profile information.' });
+    }
+});
+
+// Upload and replace avatar picture
+app.post('/api/profile/upload-avatar', checkAuthSession, uploadProfile.single('avatar'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'Please select an image file asset.' });
+    }
+    const targetPublicPath = `/uploads/${req.file.filename}`;
+    try {
+        await pool.query(
+            'UPDATE users SET profile_pic_url = $1 WHERE id = $2',
+            [targetPublicPath, req.session.userId]
+        );
+        // Live broadcast new avatar to everyone online
+        io.emit('profileUpdated', { userId: req.session.userId, profile_pic_url: targetPublicPath });
+        res.json({ success: true, profile_pic_url: targetPublicPath });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to write custom image destination file path properties.' });
+    }
+});
+
+// Modify System Access Credentials (Username/Password)
+app.put('/api/profile/update-credentials', checkAuthSession, async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const collisionCheck = await pool.query(
+            'SELECT id FROM users WHERE username = $1 AND id != $2', 
+            [username, req.session.userId]
+        );
+        if (collisionCheck.rows.length > 0) {
+            return res.status(400).json({ error: 'The selected username is already assigned to an account.' });
+        }
+
+        if (password && password.trim() !== "") {
+            await pool.query(
+                'UPDATE users SET username = $1, password = $2 WHERE id = $3',
+                [username, password, req.session.userId]
+            );
+        } else {
+            await pool.query('UPDATE users SET username = $1 WHERE id = $2', [username, req.session.userId]);
+        }
+
+        req.session.username = username;
+        // Live broadcast username update across active sidebars
+        io.emit('profileUpdated', { userId: req.session.userId, username: username });
+        res.json({ success: true, message: 'System access criteria updated successfully.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Security structural adjustment sequence crash.' });
+    }
+});
+
 // --- STATIC PAGE ROUTING LAYER ---
 
-// Serves the security router gateway index.html from the root folder
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -55,7 +244,6 @@ app.get('/forgot-password', (req, res) => {
     res.sendFile(path.join(__dirname, 'app', 'forgot.html'));
 });
 
-// Protected Route: Only accessible if an active session exists
 app.get('/chat', (req, res) => {
     if (!req.session || !req.session.username) {
         return res.redirect('/login');
@@ -63,7 +251,6 @@ app.get('/chat', (req, res) => {
     res.sendFile(path.join(__dirname, 'app', 'home.html'));
 });
 
-// Endpoint to expose session attributes safely to client-side JS
 app.get('/api/session-user', (req, res) => {
     if (req.session && req.session.username) {
         res.json({ id: req.session.userId, username: req.session.username });
@@ -72,26 +259,51 @@ app.get('/api/session-user', (req, res) => {
     }
 });
 
+// --- SYSTEM API ROUTING STUBS ---
+app.get('/api/chats/active', checkAuthSession, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT DISTINCT u.id, u.username, COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url 
+            FROM users u
+            JOIN messages m ON (u.id = m.sender_id OR u.id = m.receiver_id)
+            WHERE (m.sender_id = $1 OR m.receiver_id = $1) AND u.id != $1
+        `, [req.session.userId]);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json([]);
+    }
+});
+
+app.get('/api/users/search', checkAuthSession, async (req, res) => {
+    const query = req.query.q || '';
+    try {
+        const result = await pool.query(
+            "SELECT id, username, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE username ILIKE $1 AND id != $2 LIMIT 10",
+            [`%${query}%`, req.session.userId]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json([]);
+    }
+});
+
 // --- ADVANCED SECURE WEB_SOCKET LAYER ---
 io.on('connection', (socket) => {
 
-    // Triggers when a user selects a contact from their sidebar or search results
     socket.on('joinRoom', async ({ currentUserId, targetUserId }) => {
-        // Generate a deterministic unique room identifier using sorted primary keys
         const roomName = `chat_${Math.min(currentUserId, targetUserId)}_${Math.max(currentUserId, targetUserId)}`;
         
-        // Leave any previous private chat rooms to optimize message boundaries
         socket.rooms.forEach(room => { 
             if (room !== socket.id) socket.leave(room); 
         });
         socket.join(roomName);
 
         try {
-            // Fetch the chat history explicitly exchanged between these two users
-            // Uses exact lowercase columns matching our Postgres table definitions
+            // Updated query to pull the profile picture path linked directly with each past message row item
             const result = await pool.query(`
                 SELECT m.id as _id, m.text, m.timestamp, m.isread as "isRead", 
-                       u.username as username, m.sender_id
+                       u.username as username, m.sender_id, m.message_type, m.file_url,
+                       COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url
                 FROM messages m
                 JOIN users u ON m.sender_id = u.id
                 WHERE (m.sender_id = $1 AND m.receiver_id = $2) 
@@ -105,33 +317,32 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Triggers when a message is dispatched within a private stream
-    socket.on('privateMessage', async ({ sender_id, receiver_id, text }) => {
+    socket.on('privateMessage', async ({ sender_id, receiver_id, text, message_type, file_url }) => {
         const roomName = `chat_${Math.min(sender_id, receiver_id)}_${Math.max(sender_id, receiver_id)}`;
+        const type = message_type || 'text';
+        const url = file_url || null;
         try {
-            // Uses exact lowercase columns matching our Postgres table definitions
             const result = await pool.query(`
-                INSERT INTO messages (sender_id, receiver_id, text) 
-                VALUES ($1, $2, $3) 
-                RETURNING id as _id, text, timestamp, isread as "isRead"
-            `, [sender_id, receiver_id, text]);
+                INSERT INTO messages (sender_id, receiver_id, text, message_type, file_url) 
+                VALUES ($1, $2, $3, $4, $5) 
+                RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url
+            `, [sender_id, receiver_id, text, type, url]);
 
-            const userResult = await pool.query('SELECT username FROM users WHERE id = $1', [sender_id]);
+            const userResult = await pool.query("SELECT username, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", [sender_id]);
 
             const payload = {
                 ...result.rows[0],
                 sender_id,
-                username: userResult.rows[0].username
+                username: userResult.rows[0].username,
+                profile_pic_url: userResult.rows[0].profile_pic_url
             };
 
-            // Stream exclusively to the isolated room signature
             io.to(roomName).emit('message', payload);
         } catch (err) {
             console.error('Failed to execute private message database insert sequence:', err);
         }
     });
 
-    // Handles read-receipt double-tick state management
     socket.on('markAsRead', async (messageId) => {
         try {
             await pool.query('UPDATE messages SET isread = TRUE WHERE id = $1', [messageId]);

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Real Time Messenging App</title>
+    <title>Real Time Messaging App</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,9 +13,15 @@
         
         <aside class="sidebar-panel" id="sidebar-panel">
             <header class="sidebar-header">
-                <h2 id="user-display-tag">@username</h2>
-                <button id="close-sidebar-mobile" class="action-btn secondary mobile-only">&times;</button>
-                <button id="exit-chat-btn" class="action-btn danger">Logout</button>
+                <div style="display: flex; align-items: center; gap: 0.6rem; max-width: 170px; overflow: hidden;">
+                    <img id="sidebar-user-avatar" src="/uploads/default-avatar.png" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary); flex-shrink: 0;">
+                    <h2 id="user-display-tag" style="font-size: 0.95rem; margin: 0;">@username</h2>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.3rem;">
+                    <button id="open-profile-btn" class="action-btn secondary" style="padding: 0.4rem 0.5rem; font-size: 0.9rem;" title="Settings">⚙️</button>
+                    <button id="close-sidebar-mobile" class="action-btn secondary mobile-only">&times;</button>
+                    <button id="exit-chat-btn" class="action-btn danger" style="padding: 0.4rem 0.6rem;">Exit</button>
+                </div>
             </header>
             
             <div class="search-box-container">
@@ -31,7 +37,7 @@
 
         <main id="chat-viewport" class="chat-wrapper">
             <div id="empty-view-notice" class="center-notice">
-                <h3>Welcome to Real Time Messenging App - VIKAS KR</h3>
+                <h3>Welcome to Real Time Messaging App - VIKAS KR</h3>
                 <p>Search for a registered user or select an existing conversation to start chatting.</p>
                 <button id="open-menu-empty" class="action-btn secondary mobile-only" style="margin-top: 1rem;">Open Menu</button>
             </div>
@@ -39,7 +45,8 @@
             <div id="active-chat-subsystem" class="hidden-layout hidden">
                 <header class="chat-header">
                     <button id="back-to-sidebar" class="action-btn secondary mobile-only">&#9776; Menu</button>
-                    <div class="channel-info">
+                    <div class="channel-info" id="chat-header-user-trigger" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" title="Click to view public bio details">
+                        <img id="chat-window-avatar" src="/uploads/default-avatar.png" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary);">
                         <h2 id="chat-window-title">Select a User</h2>
                     </div>
                 </header>
@@ -51,6 +58,9 @@
                     <input type="password" name="password" style="display:none;" aria-hidden="true">
                     
                     <form id="chat-form" action="#" onsubmit="return false;">
+                        <button type="button" id="chat-attach-trigger" class="action-btn secondary" style="padding: 0.6rem 0.8rem; font-size: 1.1rem; border-radius: 6px;" title="Attach File">📎</button>
+                        <input type="file" id="chat-media-input" accept="image/*,audio/*,video/*,application/pdf" style="display: none;">
+                        
                         <input type="text" id="msg-input" 
                                placeholder="Type a private message..." 
                                required 
@@ -63,6 +73,71 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- OWN PERSONAL PROFILE EDIT MODAL LAYOUT OVERLAY -->
+    <div id="profile-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <header class="modal-header">
+                <h3>Edit Profile & Settings</h3>
+                <button id="close-profile-btn" class="close-modal-x">&times;</button>
+            </header>
+            <div class="modal-body">
+                <div class="profile-avatar-section">
+                    <img id="modal-avatar-preview" src="/uploads/default-avatar.png" alt="Preview">
+                    <form id="avatar-form" style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="file" id="avatar-file-input" accept="image/*" style="display: none;">
+                        <button type="button" class="action-btn secondary" onclick="document.getElementById('avatar-file-input').click()">Choose Image</button>
+                        <button type="submit" class="action-btn primary">Upload</button>
+                    </form>
+                </div>
+                <hr style="border: 0; border-top: 1px solid var(--bg-tertiary); margin: 1.2rem 0;">
+                <form id="profile-info-form">
+                    <div class="form-group">
+                        <label>Display Name</label>
+                        <input type="text" id="profile-name-input" placeholder="Enter full name...">
+                    </div>
+                    <div class="form-group">
+                        <label>Bio</label>
+                        <textarea id="profile-bio-input" rows="3" placeholder="Write something about yourself..."></textarea>
+                    </div>
+                    <button type="submit" class="action-btn primary" style="width: 100%; padding: 0.7rem; margin-top: 0.3rem;">Save Profile Info</button>
+                </form>
+                <hr style="border: 0; border-top: 1px solid var(--bg-tertiary); margin: 1.2rem 0;">
+                <form id="profile-security-form">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="profile-username-input" required placeholder="Change username...">
+                    </div>
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" id="profile-password-input" placeholder="Leave blank to keep current password">
+                    </div>
+                    <button type="submit" class="action-btn danger" style="width: 100%; padding: 0.7rem; margin-top: 0.3rem;">Update Credentials</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- PUBLIC VIEW ONLY MODAL -->
+    <div id="public-view-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <header class="modal-header">
+                <h3 id="public-modal-header-title">User Profile</h3>
+                <button id="close-public-modal-btn" class="close-modal-x">&times;</button>
+            </header>
+            <div class="modal-body" style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                <img id="public-avatar-display" src="/uploads/default-avatar.png" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); background: var(--bg-primary);">
+                <div>
+                    <h2 id="public-username-display" style="font-size: 1.3rem; color: var(--text-main); margin-bottom: 0.2rem;">@username</h2>
+                    <p id="public-fullname-display" style="font-size: 1rem; color: var(--text-muted); font-weight: 500;"></p>
+                </div>
+                <div style="background: var(--bg-primary); border: 1px solid var(--bg-tertiary); width: 100%; padding: 1rem; border-radius: 6px; text-align: left;">
+                    <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 0.4rem;">Biography</span>
+                    <p id="public-bio-display" style="font-size: 0.95rem; color: var(--text-main); word-break: break-word; white-space: pre-line; line-height: 1.4;">No bio written yet.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -82,10 +157,36 @@
         const searchResultsDropdown = document.getElementById('search-results-dropdown');
         const activeThreadsTarget = document.getElementById('active-threads-target');
         const chatWindowTitle = document.getElementById('chat-window-title');
+        const chatWindowAvatar = document.getElementById('chat-window-avatar');
         const messageHistory = document.getElementById('message-history');
         const chatForm = document.getElementById('chat-form');
         const msgInput = document.getElementById('msg-input');
         const chatViewport = document.getElementById('chat-viewport');
+
+        const chatAttachTrigger = document.getElementById('chat-attach-trigger');
+        const chatMediaInput = document.getElementById('chat-media-input');
+
+        const profileModal = document.getElementById('profile-modal');
+        const openProfileBtn = document.getElementById('open-profile-btn');
+        const closeProfileBtn = document.getElementById('close-profile-btn');
+        const avatarForm = document.getElementById('avatar-form');
+        const avatarFileInput = document.getElementById('avatar-file-input');
+        const modalAvatarPreview = document.getElementById('modal-avatar-preview');
+        const sidebarUserAvatar = document.getElementById('sidebar-user-avatar');
+        const profileInfoForm = document.getElementById('profile-info-form');
+        const profileNameInput = document.getElementById('profile-name-input');
+        const profileBioInput = document.getElementById('profile-bio-input');
+        const profileSecurityForm = document.getElementById('profile-security-form');
+        const profileUsernameInput = document.getElementById('profile-username-input');
+        const profilePasswordInput = document.getElementById('profile-password-input');
+
+        const chatHeaderUserTrigger = document.getElementById('chat-header-user-trigger');
+        const publicViewModal = document.getElementById('public-view-modal');
+        const closePublicModalBtn = document.getElementById('close-public-modal-btn');
+        const publicAvatarDisplay = document.getElementById('public-avatar-display');
+        const publicUsernameDisplay = document.getElementById('public-username-display');
+        const publicFullnameDisplay = document.getElementById('public-fullname-display');
+        const publicBioDisplay = document.getElementById('public-bio-display');
 
         function openMobileSidebar() {
             sidebarPanel.classList.add('open-mobile');
@@ -102,20 +203,15 @@
         closeSidebarMobile.addEventListener('click', closeMobileSidebar);
         sidebarShadow.addEventListener('click', closeMobileSidebar);
 
-        // FIX: Hardware-level keyboard adjustment using Visual Viewport API
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', () => {
                 const viewportHeight = window.visualViewport.height;
-                // Force the layout container to match the exact open space above the keyboard
                 document.body.style.height = `${viewportHeight}px`;
                 chatViewport.style.height = `${viewportHeight}px`;
-                
-                // Instantly align older texts without layout stuttering
                 scrollToBottom();
             });
         }
 
-        // Snap to bottom when input is tapped
         msgInput.addEventListener('focus', () => {
             setTimeout(scrollToBottom, 150);
         });
@@ -128,6 +224,19 @@
             currentUsername = data.username;
             document.getElementById('user-display-tag').innerText = `@${currentUsername}`;
             loadActiveThreads();
+            loadProfileHeaderMetadata();
+        }
+
+        async function loadProfileHeaderMetadata() {
+            try {
+                const res = await fetch('/api/profile/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.profile_pic_url) {
+                        sidebarUserAvatar.src = data.profile_pic_url;
+                    }
+                }
+            } catch(e) { console.error(e); }
         }
 
         async function loadActiveThreads() {
@@ -144,8 +253,16 @@
             threads.forEach(user => {
                 const item = document.createElement('div');
                 item.className = 'thread-item';
-                item.innerText = `@${user.username}`;
-                item.onclick = () => selectActiveTargetUser(user.id, user.username);
+                item.id = `thread-user-${user.id}`;
+                item.style.display = 'flex';
+                item.style.alignItems = 'center';
+                item.style.gap = '10px';
+                
+                item.innerHTML = `
+                    <img id="thread-avatar-${user.id}" src="${user.profile_pic_url}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary); flex-shrink: 0;">
+                    <span id="thread-name-${user.id}" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@${user.username}</span>
+                `;
+                item.onclick = () => selectActiveTargetUser(user.id, user.username, user.profile_pic_url);
                 activeThreadsTarget.appendChild(item);
             });
         }
@@ -165,9 +282,16 @@
                 matches.forEach(u => {
                     const block = document.createElement('div');
                     block.className = 'dropdown-item';
-                    block.innerText = `@${u.username}`;
+                    block.style.display = 'flex';
+                    block.style.alignItems = 'center';
+                    block.style.gap = '10px';
+                    
+                    block.innerHTML = `
+                        <img src="${u.profile_pic_url}" style="width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: var(--bg-secondary); flex-shrink: 0;">
+                        <span>@${u.username}</span>
+                    `;
                     block.onclick = () => {
-                        selectActiveTargetUser(u.id, u.username);
+                        selectActiveTargetUser(u.id, u.username, u.profile_pic_url);
                         searchResultsDropdown.classList.add('hidden');
                         userSearchInput.value = '';
                     };
@@ -177,9 +301,11 @@
             searchResultsDropdown.classList.remove('hidden');
         });
 
-        function selectActiveTargetUser(id, name) {
+        function selectActiveTargetUser(id, name, picUrl) {
             targetUserId = id;
             chatWindowTitle.innerText = `Direct Chat with @${name}`;
+            chatWindowAvatar.src = picUrl || '/uploads/default-avatar.png';
+            
             document.getElementById('empty-view-notice').classList.add('hidden');
             document.getElementById('active-chat-subsystem').classList.remove('hidden');
             
@@ -193,9 +319,45 @@
             e.preventDefault();
             const text = msgInput.value.trim();
             if(text && targetUserId) {
-                socket.emit('privateMessage', { sender_id: currentUserId, receiver_id: targetUserId, text });
+                socket.emit('privateMessage', { sender_id: currentUserId, receiver_id: targetUserId, text, message_type: 'text', file_url: null });
                 msgInput.value = '';
-                msgInput.focus(); // Keeps keyboard open cleanly after sending
+                msgInput.focus();
+            }
+        });
+
+        chatAttachTrigger.addEventListener('click', () => chatMediaInput.click());
+
+        chatMediaInput.addEventListener('change', async () => {
+            const file = chatMediaInput.files[0];
+            if (!file || !targetUserId) return;
+
+            const formData = new FormData();
+            formData.append('chatFile', file);
+
+            try {
+                chatAttachTrigger.innerText = '⏳';
+                const response = await fetch('/api/chat/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                chatAttachTrigger.innerText = '📎';
+
+                if (response.ok && data.success) {
+                    socket.emit('privateMessage', {
+                        sender_id: currentUserId,
+                        receiver_id: targetUserId,
+                        text: file.name,
+                        message_type: data.message_type,
+                        file_url: data.file_url
+                    });
+                    chatMediaInput.value = '';
+                } else {
+                    alert(data.error || 'Attachment upload validation error.');
+                }
+            } catch(e) {
+                chatAttachTrigger.innerText = '📎';
+                alert('Network communication upload sequence failure.');
             }
         });
 
@@ -211,19 +373,73 @@
             loadActiveThreads();
         });
 
+        socket.on('profileUpdated', (data) => {
+            const targetNameEl = document.getElementById(`thread-name-${data.userId}`);
+            const targetAvatarEl = document.getElementById(`thread-avatar-${data.userId}`);
+            
+            if (data.username && targetNameEl) {
+                targetNameEl.innerText = `@${data.username}`;
+            }
+            if (data.profile_pic_url && targetAvatarEl) {
+                targetAvatarEl.src = data.profile_pic_url;
+            }
+
+            if (targetUserId === data.userId) {
+                if (data.username) chatWindowTitle.innerText = `Direct Chat with @${data.username}`;
+                if (data.profile_pic_url) chatWindowAvatar.src = data.profile_pic_url;
+            }
+        });
+
         function appendMessage(msg) {
             const isOutgoing = msg.sender_id === currentUserId;
             const row = document.createElement('div');
             row.className = `message-row ${isOutgoing ? 'outgoing' : 'incoming'}`;
-            const timeString = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Extracted date and time attributes safely to render descriptive chat lines
+            const msgDate = new Date(msg.timestamp);
+            const dateString = msgDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            const timeString = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const fullDateTimeString = `${dateString}, ${timeString}`;
 
-            row.innerHTML = `
-                <div class="message-bubble">${msg.text}</div>
-                <div class="message-meta">
-                    <span>${timeString}</span>
-                    ${isOutgoing ? `<span id="ticks-${msg._id}" class="ticks ${msg.isRead ? 'read' : ''}">&check;&check;</span>` : ''}
-                </div>
-            `;
+            let inlineRenderBody = '';
+            
+            if (msg.message_type === 'image') {
+                inlineRenderBody = `<img src="${msg.file_url}" class="chat-rendered-image" onclick="window.open(this.src)" title="Open image in tab">`;
+            } else if (msg.message_type === 'audio') {
+                inlineRenderBody = `<audio controls src="${msg.file_url}" class="chat-rendered-audio"></audio>`;
+            } else if (msg.message_type === 'video') {
+                inlineRenderBody = `<video controls src="${msg.file_url}" class="chat-rendered-video"></video>`;
+            } else if (msg.message_type === 'pdf') {
+                inlineRenderBody = `
+                    <div class="chat-rendered-pdf-card">
+                        <a href="${msg.file_url}" target="_blank">📄 Open Document: ${msg.text}</a>
+                    </div>`;
+            } else {
+                inlineRenderBody = `<div class="message-text-span">${msg.text}</div>`;
+            }
+
+            if (!isOutgoing) {
+                row.innerHTML = `
+                    <img src="${msg.profile_pic_url || '/uploads/default-avatar.png'}" class="chat-bubble-avatar" title="Click chat header to see details">
+                    <div class="bubble-layout-block">
+                        <div class="message-bubble">${inlineRenderBody}</div>
+                        <div class="message-meta">
+                            <span>${fullDateTimeString}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                row.innerHTML = `
+                    <div class="bubble-layout-block">
+                        <div class="message-bubble">${inlineRenderBody}</div>
+                        <div class="message-meta">
+                            <span>${fullDateTimeString}</span>
+                            <span id="ticks-${msg._id}" class="ticks ${msg.isRead ? 'read' : ''}">&check;&check;</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
             messageHistory.appendChild(row);
 
             if (!isOutgoing && !msg.isRead) {
@@ -242,9 +458,131 @@
         });
 
         function scrollToBottom() { messageHistory.scrollTop = messageHistory.scrollHeight; }
+
+        openProfileBtn.addEventListener('click', async () => {
+            try {
+                const res = await fetch('/api/profile/me');
+                if (!res.ok) return;
+                const profileData = await res.json();
+
+                profileUsernameInput.value = profileData.username;
+                profileNameInput.value = profileData.full_name || '';
+                profileBioInput.value = profileData.bio || '';
+                if (profileData.profile_pic_url) {
+                    modalAvatarPreview.src = profileData.profile_pic_url;
+                }
+                profilePasswordInput.value = '';
+                profileModal.classList.remove('hidden');
+            } catch (err) {
+                alert("Could not load account profiles.");
+            }
+        });
+
+        closeProfileBtn.addEventListener('click', () => profileModal.classList.add('hidden'));
+
+        avatarFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                modalAvatarPreview.src = URL.createObjectURL(file);
+            }
+        });
+
+        avatarForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const file = avatarFileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            try {
+                const res = await fetch('/api/profile/upload-avatar', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    sidebarUserAvatar.src = data.profile_pic_url;
+                    alert("Profile picture changed!");
+                } else {
+                    alert(data.error || "Upload validation failed.");
+                }
+            } catch (err) {
+                alert("Server interface error occurred uploading image.");
+            }
+        });
+
+        profileInfoForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                full_name: profileNameInput.value.trim(),
+                bio: profileBioInput.value.trim()
+            };
+
+            try {
+                const res = await fetch('/api/profile/update-info', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    alert("Profile metadata updated!");
+                } else {
+                    const data = await res.json();
+                    alert(data.error);
+                }
+            } catch (err) {
+                alert("Network communication error.");
+            }
+        });
+
+        profileSecurityForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                username: profileUsernameInput.value.trim(),
+                password: profilePasswordInput.value
+            };
+
+            try {
+                const res = await fetch('/api/profile/update-credentials', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('user-display-tag').innerText = `@${payload.username}`;
+                    currentUsername = payload.username;
+                    alert("Account security credentials synchronized!");
+                    profilePasswordInput.value = '';
+                } else {
+                    alert(data.error || "Could not change credentials.");
+                }
+            } catch (err) {
+                alert("Failed to contact configuration endpoints.");
+            }
+        });
+
+        chatHeaderUserTrigger.addEventListener('click', async () => {
+            if (!targetUserId) return;
+            try {
+                const res = await fetch(`/api/profile/user/${targetUserId}`);
+                if (!res.ok) return;
+                const data = await res.json();
+
+                publicUsernameDisplay.innerText = `@${data.username}`;
+                publicFullnameDisplay.innerText = data.full_name || 'No full name provided';
+                publicBioDisplay.innerText = data.bio || 'No biography written yet.';
+                publicAvatarDisplay.src = data.profile_pic_url || '/uploads/default-avatar.png';
+                publicModalHeaderTitle.innerText = `${data.username}'s Profile`;
+                
+                publicViewModal.classList.remove('hidden');
+            } catch (err) {
+                console.error("Failed parsing public profile interface lookups.", err);
+            }
+        });
+
+        closePublicModalBtn.addEventListener('click', () => publicViewModal.classList.add('hidden'));
+
         initializeIdentity();
 
-        // --- SMOOTH SIDEBAR TOUCH SWIPE GESTURES ---
         let touchStartX = 0;
         let touchEndX = 0;
 

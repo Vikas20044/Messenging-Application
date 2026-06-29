@@ -268,7 +268,7 @@ app.put('/api/profile/update-credentials', checkAuthSession, async (req, res) =>
 // --- STATIC PAGE ROUTING LAYER ---
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/login', (req, res) => {

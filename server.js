@@ -29,9 +29,9 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-// Ensure local file storage paths exist for profile photos and chat media attachments
-const uploadDir = path.join(__dirname, 'app', 'uploads');
-const chatUploadDir = path.join(__dirname, 'app', 'uploads', 'chat');
+// FIXED: Local file storage paths now generate directly at the project root level
+const uploadDir = path.join(__dirname, 'uploads');
+const chatUploadDir = path.join(__dirname, 'uploads', 'chat');
 
 if (!fs.existsSync(uploadDir)){
     fs.mkdirSync(uploadDir, { recursive: true });
@@ -40,9 +40,9 @@ if (!fs.existsSync(chatUploadDir)){
     fs.mkdirSync(chatUploadDir, { recursive: true });
 }
 
-// Serve static assets out of the /app directory (Where home.html and style.css live)
-app.use(express.static(path.join(__dirname, 'app'), { index: false }));
-app.use('/uploads', express.static(path.join(__dirname, 'app', 'uploads')));
+// FIXED: Serve static web assets directly out of the root repository directory
+app.use(express.static(__dirname, { index: false }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Initialize PostgreSQL Tables
 initDB();
@@ -265,29 +265,29 @@ app.put('/api/profile/update-credentials', checkAuthSession, async (req, res) =>
     }
 });
 
-// --- STATIC PAGE ROUTING LAYER ---
+// --- FIXED STATIC PAGE ROUTING LAYER (LOOKS AT PROJECT ROOT DIRECTORY) ---
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'login.html'));
+    res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 app.get('/signup', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'signup.html'));
+    res.sendFile(path.join(__dirname, 'signup.html'));
 });
 
 app.get('/forgot-password', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'forgot.html'));
+    res.sendFile(path.join(__dirname, 'forgot.html'));
 });
 
 app.get('/chat', (req, res) => {
     if (!req.session || !req.session.username) {
         return res.redirect('/login');
     }
-    res.sendFile(path.join(__dirname, 'app', 'home.html'));
+    res.sendFile(path.join(__dirname, 'home.html'));
 });
 
 app.get('/api/session-user', (req, res) => {

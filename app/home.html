@@ -3,30 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Real Time Messaging App</title>
+    <title>Real Time Messaging Application</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <nav class="top-navbar">
+        <div class="navbar-left">
+            <div class="navbar-brand">Real Time Messaging Application</div>
+            <div class="navbar-status" id="navbar-status-tag">Status: Connected</div>
+        </div>
+        
+        <div class="navbar-search-container">
+            <div class="search-wrapper-inner">
+                <svg class="search-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="user-search-input" placeholder="Search registered users..." autocomplete="off">
+            </div>
+            <div id="search-results-dropdown" class="search-dropdown hidden"></div>
+        </div>
+
+        <div class="navbar-right">
+            <div class="navbar-user-profile">
+                <img id="sidebar-user-avatar" src="/uploads/default-avatar.png" alt="Avatar">
+                <span id="user-display-tag">@username</span>
+            </div>
+            
+            <button id="open-profile-btn" class="nav-action-btn" title="Edit Profile & Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon-svg">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+            
+            <button id="exit-chat-btn" class="nav-action-btn danger" title="Exit Workspace">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon-svg">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
     <div id="sidebar-shadow" class="sidebar-overlay"></div>
 
     <div class="dashboard-wrapper">
         
         <aside class="sidebar-panel" id="sidebar-panel">
             <header class="sidebar-header">
-                <div style="display: flex; align-items: center; gap: 0.6rem; max-width: 170px; overflow: hidden;">
-                    <img id="sidebar-user-avatar" src="/uploads/default-avatar.png" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary); flex-shrink: 0;">
-                    <h2 id="user-display-tag" style="font-size: 0.95rem; margin: 0;">@username</h2>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.3rem;">
-                    <button id="open-profile-btn" class="action-btn secondary" style="padding: 0.4rem 0.5rem; font-size: 0.9rem;" title="Settings">⚙️</button>
-                    <button id="close-sidebar-mobile" class="action-btn secondary mobile-only">&times;</button>
-                    <button id="exit-chat-btn" class="action-btn danger" style="padding: 0.4rem 0.6rem;">Exit</button>
-                </div>
+                <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Conversations</h3>
+                <button id="close-sidebar-mobile" class="action-btn secondary mobile-only">&times;</button>
             </header>
-            
-            <div class="search-box-container">
-                <input type="text" id="user-search-input" placeholder="Search users..." autocomplete="off">
-                <div id="search-results-dropdown" class="search-dropdown hidden"></div>
+
+            <div class="community-box-container" style="padding: 1rem; border-bottom: 1px solid var(--bg-tertiary); display: flex; flex-direction: column; gap: 0.5rem;">
+                <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Communities</h3>
+                <div style="display: flex; gap: 0.4rem;">
+                    <button id="btn-create-room" class="action-btn secondary" style="flex: 1; padding: 0.5rem; font-size: 0.85rem;">+ Create</button>
+                    <button id="btn-join-room" class="action-btn secondary" style="flex: 1; padding: 0.5rem; font-size: 0.85rem;">🔑 Join Room</button>
+                </div>
+                <div id="community-threads-target" style="max-height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px;"></div>
             </div>
 
             <div class="active-chats-list">
@@ -35,9 +73,11 @@
             </div>
         </aside>
 
+        <div class="resize-handle" id="resize-handle" title="Drag to resize, pull to left edge to close"></div>
+
         <main id="chat-viewport" class="chat-wrapper">
             <div id="empty-view-notice" class="center-notice">
-                <h3>Welcome to Real Time Messaging App - VIKAS KR</h3>
+                <h3>Welcome to Real Time Messaging Application - VIKAS KR</h3>
                 <p>Search for a registered user or select an existing conversation to start chatting.</p>
                 <button id="open-menu-empty" class="action-btn secondary mobile-only" style="margin-top: 1rem;">Open Menu</button>
             </div>
@@ -58,11 +98,19 @@
                     <input type="password" name="password" style="display:none;" aria-hidden="true">
                     
                     <form id="chat-form" action="#" onsubmit="return false;">
-                        <button type="button" id="chat-attach-trigger" class="action-btn secondary" style="padding: 0.6rem 0.8rem; font-size: 1.1rem; border-radius: 6px;" title="Attach File">📎</button>
-                        <input type="file" id="chat-media-input" accept="image/*,audio/*,video/*,application/pdf" style="display: none;">
+                        
+                        <div style="position: relative; display: inline-block;">
+                            <button type="button" id="chat-attach-trigger" class="action-btn secondary" style="padding: 0.6rem 0.8rem; font-size: 1.1rem; border-radius: 6px;" title="Attach File">📎</button>
+                            <div id="attach-dropdown-menu" class="msg-dropdown hidden" style="bottom: 52px; top: auto; right: auto; left: 0; width: 190px;">
+                                <div id="pick-images-btn">🖼️ Upload Images (Max 10)</div>
+                                <div id="pick-videos-btn">🎥 Upload Videos (Max 10)</div>
+                                <div id="pick-docs-btn">📄 Upload Documents (Max 10)</div>
+                            </div>
+                        </div>
+                        <input type="file" id="chat-media-input" style="display: none;" multiple>
                         
                         <input type="text" id="msg-input" 
-                               placeholder="Type a private message..." 
+                               placeholder="Type a message..." 
                                required 
                                autocomplete="off" 
                                autocorrect="off" 
@@ -75,7 +123,6 @@
         </main>
     </div>
 
-    <!-- PERSONAL PROFILE MODAL -->
     <div id="profile-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -119,7 +166,6 @@
         </div>
     </div>
 
-    <!-- PUBLIC VIEW ONLY MODAL -->
     <div id="public-view-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -146,8 +192,13 @@
         let currentUserId = null;
         let currentUsername = '';
         let targetUserId = null;
+        
+        // Community Group Architecture State Variables
+        let targetRoomId = null;
+        let chosenMediaType = null;
 
         const sidebarPanel = document.getElementById('sidebar-panel');
+        const resizeHandle = document.getElementById('resize-handle');
         const sidebarShadow = document.getElementById('sidebar-shadow');
         const closeSidebarMobile = document.getElementById('close-sidebar-mobile');
         const openMenuEmpty = document.getElementById('open-menu-empty');
@@ -156,6 +207,7 @@
         const userSearchInput = document.getElementById('user-search-input');
         const searchResultsDropdown = document.getElementById('search-results-dropdown');
         const activeThreadsTarget = document.getElementById('active-threads-target');
+        const communityThreadsTarget = document.getElementById('community-threads-target');
         const chatWindowTitle = document.getElementById('chat-window-title');
         const chatWindowAvatar = document.getElementById('chat-window-avatar');
         const messageHistory = document.getElementById('message-history');
@@ -164,6 +216,7 @@
         const chatViewport = document.getElementById('chat-viewport');
 
         const chatAttachTrigger = document.getElementById('chat-attach-trigger');
+        const attachDropdownMenu = document.getElementById('attach-dropdown-menu');
         const chatMediaInput = document.getElementById('chat-media-input');
 
         const profileModal = document.getElementById('profile-modal');
@@ -188,8 +241,52 @@
         const publicFullnameDisplay = document.getElementById('public-fullname-display');
         const publicBioDisplay = document.getElementById('public-bio-display');
 
-        document.addEventListener('click', () => {
+        // Global Layout Interaction Event Dispatcher Node
+        document.addEventListener('click', (e) => {
             document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
+            if (typeof attachDropdownMenu !== 'undefined' && attachDropdownMenu) {
+                attachDropdownMenu.classList.add('hidden');
+            }
+            
+            // FIXED: Automatically collapses search dropdown records when stopping search or clicking outside
+            const searchContainer = document.querySelector('.navbar-search-container');
+            if (searchContainer && !searchContainer.contains(e.target)) {
+                searchResultsDropdown.classList.add('hidden');
+            }
+        });
+
+        // --- ENHANCED INTERACTIVE DRAGGABLE RESIZER PIPELINE (IN AND OUT COLLAPSE) ---
+        let isResizing = false;
+        resizeHandle.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            resizeHandle.classList.add('active');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            let targetedWidth = e.clientX;
+            
+            // If dragged close to the left edge (< 75px), fold it entirely closed (0px)
+            if (targetedWidth < 75) {
+                targetedWidth = 0;
+            } else if (targetedWidth > 480) {
+                targetedWidth = 480; // Hard max constraint ceiling
+            } else if (targetedWidth < 200) {
+                targetedWidth = 200; // Minimal usable operational layout width
+            }
+            
+            sidebarPanel.style.width = `${targetedWidth}px`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                resizeHandle.classList.remove('active');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
         });
 
         function openMobileSidebar() {
@@ -306,6 +403,7 @@
         });
 
         function selectActiveTargetUser(id, name, picUrl) {
+            targetRoomId = null; 
             targetUserId = id;
             chatWindowTitle.innerText = `Direct Chat with @${name}`;
             chatWindowAvatar.src = picUrl || '/uploads/default-avatar.png';
@@ -319,24 +417,118 @@
             socket.emit('joinRoom', { currentUserId, targetUserId });
         }
 
+        // --- CONTEXT FILTERED MULTIMEDIA SPECIFICATION HANDLERS ---
+        chatAttachTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            attachDropdownMenu.classList.toggle('toggle-text');
+            attachDropdownMenu.classList.toggle('hidden');
+        });
+
+        document.getElementById('pick-images-btn').addEventListener('click', () => {
+            chatMediaInput.accept = "image/*";
+            chosenMediaType = "images";
+            chatMediaInput.click();
+        });
+
+        document.getElementById('pick-videos-btn').addEventListener('click', () => {
+            chatMediaInput.accept = "video/*,video/mp4,video/webm";
+            chosenMediaType = "videos";
+            chatMediaInput.click();
+        });
+
+        document.getElementById('pick-docs-btn').addEventListener('click', () => {
+            chatMediaInput.accept = "application/pdf";
+            chosenMediaType = "documents";
+            chatMediaInput.click();
+        });
+
+        // --- ROOM TRANSACTION COMMAND LISTENERS ---
+        document.getElementById('btn-create-room').addEventListener('click', async () => {
+            const name = prompt("Enter a descriptive title for the community group:");
+            if(!name || name.trim() === "") return;
+            
+            const res = await fetch('/api/rooms/create', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ room_name: name.trim() })
+            });
+            if(res.ok) {
+                const room = await res.json();
+                alert(`Community room space generated successfully!\nShare this unique structural access pass with others: ${room.room_code}`);
+                renderRoomInSidebar(room.id, room.room_name, room.room_code);
+                selectActiveRoom(room.id, room.room_name, room.room_code);
+            }
+        });
+
+        document.getElementById('btn-join-room').addEventListener('click', async () => {
+            const code = prompt("Enter the 5-character group room access code:");
+            if(!code || code.trim() === "") return;
+            
+            const res = await fetch(`/api/rooms/lookup/${code.trim()}`);
+            if(res.ok) {
+                const room = await res.json();
+                renderRoomInSidebar(room.id, room.room_name, room.room_code);
+                selectActiveRoom(room.id, room.room_name, room.room_code);
+            } else {
+                alert("Target configuration record verification index runtime error.");
+            }
+        });
+
+        function renderRoomInSidebar(id, name, code) {
+            if(document.getElementById(`thread-room-${id}`)) return;
+            const item = document.createElement('div');
+            item.className = 'thread-item';
+            item.id = `thread-room-${id}`;
+            item.innerHTML = `👥 <strong>${name}</strong> <span style="font-size:0.75rem; color:var(--text-muted);">[${code}]</span>`;
+            item.onclick = () => selectActiveRoom(id, name, code);
+            communityThreadsTarget.appendChild(item);
+        }
+
+        function selectActiveRoom(id, name, code) {
+            targetUserId = null; 
+            targetRoomId = id;
+            
+            chatWindowTitle.innerText = `Community: ${name} [Code: ${code}]`;
+            chatWindowAvatar.src = '/uploads/default-avatar.png';
+            
+            document.getElementById('empty-view-notice').classList.add('hidden');
+            document.getElementById('active-chat-subsystem').classList.remove('hidden');
+            
+            closeMobileSidebar();
+            setTimeout(scrollToBottom, 50);
+
+            socket.emit('joinGroupRoom', { roomId: id });
+        }
+
         chatForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const text = msgInput.value.trim();
-            if(text && targetUserId) {
-                socket.emit('privateMessage', { sender_id: currentUserId, receiver_id: targetUserId, text, message_type: 'text', file_url: null });
+            if(text) {
+                if(targetUserId) {
+                    socket.emit('privateMessage', { sender_id: currentUserId, receiver_id: targetUserId, text, message_type: 'text', file_url: null });
+                } else if(targetRoomId) {
+                    socket.emit('groupMessage', { sender_id: currentUserId, room_id: targetRoomId, text, message_type: 'text', file_url: null });
+                }
                 msgInput.value = '';
                 msgInput.focus();
             }
         });
 
-        chatAttachTrigger.addEventListener('click', () => chatMediaInput.click());
-
+        // --- MULTI-FILE FILE UPLOAD PIPELINE ---
         chatMediaInput.addEventListener('change', async () => {
-            const file = chatMediaInput.files[0];
-            if (!file || !targetUserId) return;
+            const files = chatMediaInput.files;
+            if (files.length === 0 || (!targetUserId && !targetRoomId)) return;
+
+            if (files.length > 10) {
+                alert("Constraint Violation: You are limited to transmitting a maximum of 10 file objects per transaction batch.");
+                chatMediaInput.value = '';
+                return;
+            }
 
             const formData = new FormData();
-            formData.append('chatFile', file);
+            for (let i = 0; i < files.length; i++) {
+                formData.append('chatFiles', files[i]);
+            }
 
             try {
                 chatAttachTrigger.innerText = '⏳';
@@ -348,12 +540,24 @@
                 chatAttachTrigger.innerText = '📎';
 
                 if (response.ok && data.success) {
-                    socket.emit('privateMessage', {
-                        sender_id: currentUserId,
-                        receiver_id: targetUserId,
-                        text: file.name,
-                        message_type: data.message_type,
-                        file_url: data.file_url
+                    data.files.forEach(fileInfo => {
+                        if (targetUserId) {
+                            socket.emit('privateMessage', {
+                                sender_id: currentUserId,
+                                receiver_id: targetUserId,
+                                text: fileInfo.filename,
+                                message_type: fileInfo.file_url ? fileInfo.message_type : 'text',
+                                file_url: fileInfo.file_url
+                            });
+                        } else if (targetRoomId) {
+                            socket.emit('groupMessage', {
+                                sender_id: currentUserId,
+                                room_id: targetRoomId,
+                                text: fileInfo.filename,
+                                message_type: fileInfo.file_url ? fileInfo.message_type : 'text',
+                                file_url: fileInfo.file_url
+                            });
+                        }
                     });
                     chatMediaInput.value = '';
                 } else {
@@ -372,8 +576,10 @@
         });
 
         socket.on('message', (msg) => {
-            appendMessage(msg);
-            scrollToBottom();
+            if((targetUserId && msg.sender_id && !msg.room_id) || (targetRoomId && msg.room_id == targetRoomId)) {
+                appendMessage(msg);
+                scrollToBottom();
+            }
             loadActiveThreads();
         });
 
@@ -486,6 +692,7 @@
                 row.innerHTML = `
                     <img src="${msg.profile_pic_url || '/uploads/default-avatar.png'}" class="chat-bubble-avatar" title="Click chat header to see details">
                     <div class="bubble-layout-block">
+                        ${targetRoomId ? `<div class="sender-title" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 2px; font-weight: 600; text-align: left;">@${msg.username}</div>` : ''}
                         <div class="message-bubble">${inlineRenderBody}</div>
                         <div class="message-meta">
                             <span>${fullDateTimeString}</span>
@@ -498,7 +705,7 @@
                         <div class="message-bubble">${inlineRenderBody}</div>
                         <div class="message-meta">
                             <span>${fullDateTimeString}</span>
-                            <span id="ticks-${msg._id}" class="ticks ${msg.isRead ? 'read' : ''}">&check;&check;</span>
+                            ${!msg.room_id ? `<span id="ticks-${msg._id}" class="ticks ${msg.isRead ? 'read' : ''}">&check;&check;</span>` : ''}
                         </div>
                     </div>
                 `;
@@ -506,7 +713,7 @@
             
             messageHistory.appendChild(row);
 
-            if (!isOutgoing && !msg.isRead) {
+            if (!isOutgoing && !msg.isRead && !msg.room_id) {
                 socket.emit('markAsRead', msg._id);
             }
         }

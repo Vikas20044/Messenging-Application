@@ -29,7 +29,7 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-// CONFIGURATION: Ensure file storage paths match your /app directory structure
+// Ensure local file storage paths exist for profile photos and chat media attachments
 const uploadDir = path.join(__dirname, 'app', 'uploads');
 const chatUploadDir = path.join(__dirname, 'app', 'uploads', 'chat');
 
@@ -40,7 +40,7 @@ if (!fs.existsSync(chatUploadDir)){
     fs.mkdirSync(chatUploadDir, { recursive: true });
 }
 
-// CONFIGURATION: Serve static assets out of your /app directory
+// Serve static assets out of the /app directory (Where home.html and style.css live)
 app.use(express.static(path.join(__dirname, 'app'), { index: false }));
 app.use('/uploads', express.static(path.join(__dirname, 'app', 'uploads')));
 
@@ -265,7 +265,7 @@ app.put('/api/profile/update-credentials', checkAuthSession, async (req, res) =>
     }
 });
 
-// --- FIXED STATIC PAGE ROUTING LAYER (EXPLICITLY ROUTING TO /app SUBFOLDER) ---
+// --- STATIC PAGE ROUTING LAYER ---
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));

@@ -1,15 +1,15 @@
 :root {
-    --bg-primary: #0f111a;
-    --bg-secondary: #1a1d2e;
-    --bg-tertiary: #252942;
-    --accent: #5865f2;
-    --accent-hover: #4752c4;
-    --danger: #da373c;
-    --danger-hover: #a92b2f;
-    --text-main: #f2f3f5;
-    --text-muted: #949ba4;
-    --tick-unread: #949ba4;
-    --tick-read: #34b7f1;
+    --bg-primary: #f0f2f5;       /* Soft light background */
+    --bg-secondary: #ffffff;     /* Clean white background for main panels */
+    --bg-tertiary: #e4e6eb;      /* Grey tone for inputs, borders, and hover offsets */
+    --accent: #0078ff;           /* Crisp blue accent */
+    --accent-hover: #0066da;
+    --danger: #e41e3f;
+    --danger-hover: #b9132f;
+    --text-main: #050505;        /* High contrast dark text */
+    --text-muted: #65676b;       /* Soft grey muted text */
+    --tick-unread: #bcc0c4;
+    --tick-read: #20a0ff;
     --font: 'Segoe UI', Roboto, Arial, sans-serif;
 }
 
@@ -24,11 +24,40 @@ body {
     background-color: var(--bg-primary);
     color: var(--text-main);
     display: flex;
+    flex-direction: column; /* Stacks top navigation cleanly */
     width: 100vw;
     height: 100vh;
     height: 100dvh; 
     overflow: hidden;
-    position: fixed; 
+}
+
+/* --- TOP NAVIGATION BAR STYLING --- */
+.top-navbar {
+    height: 54px;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    z-index: 1100;
+    flex-shrink: 0;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--accent);
+    letter-spacing: -0.3px;
+}
+
+.navbar-status {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    background: var(--bg-primary);
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
 }
 
 /* --- AUTHENTICATION BOX STYLING --- */
@@ -41,6 +70,7 @@ body {
     max-width: 400px;
     text-align: center;
     margin: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 .auth-box h2 {
@@ -49,8 +79,8 @@ body {
 
 .auth-box input {
     width: 100%;
-    background-color: var(--bg-tertiary);
-    border: 1px solid transparent;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--bg-tertiary);
     color: var(--text-main);
     padding: 0.8rem;
     border-radius: 6px;
@@ -61,12 +91,13 @@ body {
 
 .auth-box input:focus {
     border-color: var(--accent);
+    background-color: var(--bg-secondary);
 }
 
 .auth-box button {
     width: 100%;
     background-color: var(--accent);
-    color: var(--text-main);
+    color: #ffffff;
     border: none;
     padding: 0.8rem;
     border-radius: 6px;
@@ -95,25 +126,39 @@ body {
     text-decoration: underline;
 }
 
-/* --- ADVANCED DASHBOARD SIDEBAR LAYOUT --- */
+/* --- DASHBOARD & DRAGGABLE SIDEBAR LAYER --- */
 .dashboard-wrapper {
     display: flex;
+    flex: 1;
     width: 100%;
-    height: 100%;
     overflow: hidden;
     background-color: var(--bg-primary);
     position: relative;
 }
 
 .sidebar-panel {
-    width: 320px;
+    width: 300px; /* Initial width */
     background-color: var(--bg-secondary);
-    border-right: 1px solid var(--bg-tertiary);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
     height: 100%;
     z-index: 100;
+    overflow: hidden; /* Crucial for hiding content when dragging it completely out/closed */
+}
+
+/* Draggable handle line spacer element */
+.resize-handle {
+    width: 6px;
+    background-color: var(--bg-tertiary);
+    cursor: col-resize;
+    transition: background-color 0.15s ease;
+    z-index: 150;
+    flex-shrink: 0;
+}
+
+.resize-handle:hover, .resize-handle.active {
+    background-color: var(--accent);
 }
 
 .sidebar-header {
@@ -144,8 +189,8 @@ body {
 
 .search-box-container input {
     width: 100%;
-    background-color: var(--bg-tertiary);
-    border: 1px solid transparent;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--bg-tertiary);
     color: var(--text-main);
     padding: 0.6rem 0.8rem;
     border-radius: 6px;
@@ -155,6 +200,7 @@ body {
 
 .search-box-container input:focus {
     border-color: var(--accent);
+    background-color: var(--bg-secondary);
 }
 
 .search-dropdown {
@@ -162,13 +208,13 @@ body {
     top: 85%;
     left: 1rem;
     right: 1rem;
-    background-color: var(--bg-tertiary);
+    background-color: var(--bg-secondary);
     border: 1px solid var(--accent);
     border-radius: 6px;
     max-height: 200px;
     overflow-y: auto;
     z-index: 110;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .dropdown-item {
@@ -180,6 +226,7 @@ body {
 
 .dropdown-item:hover {
     background-color: var(--accent);
+    color: #ffffff;
 }
 
 .dropdown-item.muted {
@@ -189,6 +236,7 @@ body {
 
 .dropdown-item.muted:hover {
     background-color: transparent;
+    color: var(--text-muted);
 }
 
 .active-chats-list {
@@ -212,8 +260,9 @@ body {
     margin-bottom: 0.5rem;
     cursor: pointer;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     border-left: 3px solid transparent;
+    color: var(--text-main);
 }
 
 .thread-item:hover {
@@ -228,7 +277,7 @@ body {
     margin-top: 1rem;
 }
 
-/* --- RIGHT VIEWPORT: DYNAMIC MESSAGING WINDOW --- */
+/* --- RIGHT VIEWPORT: MESSAGING CANVAS --- */
 .chat-wrapper {
     flex: 1;
     height: 100%;
@@ -321,17 +370,19 @@ body {
     font-size: 0.95rem;
     word-break: break-word;
     line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 
 .incoming .message-bubble {
     background-color: var(--bg-secondary);
     color: var(--text-main);
     border-top-left-radius: 2px;
+    border: 1px solid var(--bg-tertiary);
 }
 
 .outgoing .message-bubble {
     background-color: var(--accent);
-    color: var(--text-main);
+    color: #ffffff; 
     border-top-right-radius: 2px;
 }
 
@@ -354,7 +405,7 @@ body {
     color: var(--tick-read);
 }
 
-/* --- FIXED AND GROUND-LOCKED CHAT INPUT BAR --- */
+/* --- FIXED CHAT INPUT BAR --- */
 .input-bar {
     background-color: var(--bg-secondary);
     padding: 0.8rem 1rem;
@@ -366,7 +417,8 @@ body {
 
 #chat-form {
     display: flex;
-    background-color: var(--bg-tertiary);
+    background-color: var(--bg-primary);
+    border: 1px solid var(--bg-tertiary);
     border-radius: 8px;
     padding: 0.3rem;
     width: 100%;
@@ -387,7 +439,7 @@ body {
 
 #chat-form button[type="submit"] {
     background-color: var(--accent);
-    color: var(--text-main);
+    color: #ffffff;
     border: none;
     padding: 0.6rem 1.4rem;
     border-radius: 6px;
@@ -411,6 +463,7 @@ body {
     cursor: pointer;
     color: var(--text-main);
     transition: background-color 0.1s ease;
+    background-color: var(--bg-tertiary);
 }
 
 .action-btn.secondary {
@@ -419,10 +472,12 @@ body {
 
 .action-btn.secondary:hover {
     background-color: var(--accent);
+    color: #ffffff;
 }
 
 .action-btn.danger {
     background-color: var(--danger);
+    color: #ffffff;
 }
 
 .action-btn.danger:hover {
@@ -503,7 +558,7 @@ body {
     text-decoration: underline;
 }
 
-/* --- THREE DOTS DROPDOWN AND AI LABEL WORKSPACE STYLES --- */
+/* --- DROPDOWN WORKSPACE STYLES --- */
 .three-dots-icon {
     cursor: pointer;
     color: var(--text-muted);
@@ -523,12 +578,12 @@ body {
     border: 1px solid var(--bg-tertiary);
     border-radius: 6px;
     z-index: 50;
-    width: 150px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    width: 170px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     overflow: hidden;
 }
 .msg-dropdown div {
-    padding: 8px 12px;
+    padding: 10px 14px;
     font-size: 0.85rem;
     cursor: pointer;
     color: var(--text-main);
@@ -536,20 +591,21 @@ body {
 }
 .msg-dropdown div:hover {
     background-color: var(--accent);
+    color: #ffffff;
 }
 .translated-label {
     display: block;
     font-size: 0.75rem;
-    color: var(--tick-read);
+    color: var(--accent);
     font-style: italic;
     margin-top: 4px;
 }
 
-/* --- DYNAMIC PROFILE SETTINGS MODAL STYLES --- */
+/* --- MODAL DIALOGS STYLES --- */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.4);
     display: flex; justify-content: center; align-items: center;
     z-index: 2000;
     padding: 1rem;
@@ -560,7 +616,7 @@ body {
     border-radius: 8px;
     width: 100%;
     max-width: 440px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
     overflow: hidden;
     border: 1px solid var(--bg-tertiary);
     animation: zoomInModal 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -572,11 +628,12 @@ body {
 }
 
 .modal-header {
-    background: var(--bg-tertiary);
+    background: var(--bg-primary);
     padding: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid var(--bg-tertiary);
 }
 
 .modal-header h3 {
@@ -636,8 +693,8 @@ body {
 }
 
 .form-group input, .form-group textarea {
-    background: var(--bg-tertiary);
-    border: 1px solid transparent;
+    background: var(--bg-primary);
+    border: 1px solid var(--bg-tertiary);
     color: var(--text-main);
     padding: 0.7rem;
     border-radius: 6px;
@@ -649,6 +706,7 @@ body {
 
 .form-group input:focus, .form-group textarea:focus {
     border-color: var(--accent);
+    background: var(--bg-secondary);
 }
 
 .form-group textarea {
@@ -657,13 +715,14 @@ body {
 
 .action-btn.primary {
     background-color: var(--accent);
+    color: #ffffff;
 }
 
 .action-btn.primary:hover {
     background-color: var(--accent-hover);
 }
 
-/* --- DYNAMIC MOBILE TRANSITION OVERRIDES --- */
+/* --- MOBILE TRANSITION LAYOUT OVERRIDES --- */
 .mobile-only {
     display: none;
 }
@@ -674,7 +733,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.3);
     z-index: 90;
     opacity: 0;
     visibility: hidden;
@@ -690,15 +749,19 @@ body {
     .mobile-only {
         display: inline-block;
     }
+    
+    .resize-handle {
+        display: none !important; /* Disables mouse resizer handle on mobile screen views */
+    }
 
     .sidebar-panel {
         position: fixed;
-        top: 0;
+        top: 54px; /* Drops cleanly beneath the Top Navbar */
         left: 0;
         bottom: 0;
-        width: 280px; 
+        width: 280px !important; 
         z-index: 1000;
-        box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.05);
         transform: translate3d(-100%, 0, 0);
         will-change: transform;
         transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);

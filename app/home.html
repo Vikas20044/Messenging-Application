@@ -3,14 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Real Time Messaging App</title>
+    <title>Real Time Messaging Application</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <nav class="top-navbar">
-        <div class="navbar-brand">EchoChat Workspace</div>
-        <div class="navbar-status" id="navbar-status-tag">Status: Connected</div>
+        <div class="navbar-left">
+            <div class="navbar-brand">Real Time Messaging Application</div>
+            <div class="navbar-status" id="navbar-status-tag">Status: Connected</div>
+        </div>
+        
+        <div class="navbar-search-container">
+            <div class="search-wrapper-inner">
+                <svg class="search-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="user-search-input" placeholder="Search registered users..." autocomplete="off">
+            </div>
+            <div id="search-results-dropdown" class="search-dropdown hidden"></div>
+        </div>
+
+        <div class="navbar-right">
+            <div class="navbar-user-profile">
+                <img id="sidebar-user-avatar" src="/uploads/default-avatar.png" alt="Avatar">
+                <span id="user-display-tag">@username</span>
+            </div>
+            
+            <button id="open-profile-btn" class="nav-action-btn" title="Edit Profile & Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon-svg">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+            
+            <button id="exit-chat-btn" class="nav-action-btn danger" title="Exit Workspace">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon-svg">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+            </button>
+        </div>
     </nav>
 
     <div id="sidebar-shadow" class="sidebar-overlay"></div>
@@ -19,21 +54,9 @@
         
         <aside class="sidebar-panel" id="sidebar-panel">
             <header class="sidebar-header">
-                <div style="display: flex; align-items: center; gap: 0.6rem; max-width: 170px; overflow: hidden;">
-                    <img id="sidebar-user-avatar" src="/uploads/default-avatar.png" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary); flex-shrink: 0;">
-                    <h2 id="user-display-tag" style="font-size: 0.95rem; margin: 0;">@username</h2>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.3rem;">
-                    <button id="open-profile-btn" class="action-btn secondary" style="padding: 0.4rem 0.5rem; font-size: 0.9rem;" title="Settings">⚙️</button>
-                    <button id="close-sidebar-mobile" class="action-btn secondary mobile-only">&times;</button>
-                    <button id="exit-chat-btn" class="action-btn danger" style="padding: 0.4rem 0.6rem;">Exit</button>
-                </div>
+                <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Conversations</h3>
+                <button id="close-sidebar-mobile" class="action-btn secondary mobile-only">&times;</button>
             </header>
-            
-            <div class="search-box-container">
-                <input type="text" id="user-search-input" placeholder="Search users..." autocomplete="off">
-                <div id="search-results-dropdown" class="search-dropdown hidden"></div>
-            </div>
 
             <div class="community-box-container" style="padding: 1rem; border-bottom: 1px solid var(--bg-tertiary); display: flex; flex-direction: column; gap: 0.5rem;">
                 <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Communities</h3>
@@ -54,7 +77,7 @@
 
         <main id="chat-viewport" class="chat-wrapper">
             <div id="empty-view-notice" class="center-notice">
-                <h3>Welcome to Real Time Messaging App - VIKAS KR</h3>
+                <h3>Welcome to Real Time Messaging Application - VIKAS KR</h3>
                 <p>Search for a registered user or select an existing conversation to start chatting.</p>
                 <button id="open-menu-empty" class="action-btn secondary mobile-only" style="margin-top: 1rem;">Open Menu</button>
             </div>
@@ -218,9 +241,18 @@
         const publicFullnameDisplay = document.getElementById('public-fullname-display');
         const publicBioDisplay = document.getElementById('public-bio-display');
 
-        document.addEventListener('click', () => {
+        // Global Layout Interaction Event Dispatcher Node
+        document.addEventListener('click', (e) => {
             document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
-            attachDropdownMenu.classList.add('hidden');
+            if (typeof attachDropdownMenu !== 'undefined' && attachDropdownMenu) {
+                attachDropdownMenu.classList.add('hidden');
+            }
+            
+            // FIXED: Automatically collapses search dropdown records when stopping search or clicking outside
+            const searchContainer = document.querySelector('.navbar-search-container');
+            if (searchContainer && !searchContainer.contains(e.target)) {
+                searchResultsDropdown.classList.add('hidden');
+            }
         });
 
         // --- ENHANCED INTERACTIVE DRAGGABLE RESIZER PIPELINE (IN AND OUT COLLAPSE) ---
@@ -242,7 +274,7 @@
             } else if (targetedWidth > 480) {
                 targetedWidth = 480; // Hard max constraint ceiling
             } else if (targetedWidth < 200) {
-                targetedWidth = 200; // Minimal usable operational layout width width
+                targetedWidth = 200; // Minimal usable operational layout width
             }
             
             sidebarPanel.style.width = `${targetedWidth}px`;
@@ -388,6 +420,7 @@
         // --- CONTEXT FILTERED MULTIMEDIA SPECIFICATION HANDLERS ---
         chatAttachTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
+            attachDropdownMenu.classList.toggle('toggle-text');
             attachDropdownMenu.classList.toggle('hidden');
         });
 

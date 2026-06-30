@@ -47,6 +47,20 @@ app.use('/uploads', express.static(path.join(__dirname, 'app', 'uploads')));
 // Initialize PostgreSQL Tables
 initDB();
 
+// HOT DATABASE SCHEMA MIGRATION: Ensure details columns exist on the rooms table structure
+async function checkSchemaMigration() {
+    try {
+        await pool.query(`
+            ALTER TABLE rooms ADD COLUMN IF NOT EXISTS room_desc TEXT DEFAULT '';
+            ALTER TABLE rooms ADD COLUMN IF NOT EXISTS room_icon TEXT DEFAULT '/uploads/default-group.png';
+        `);
+        console.log('PostgreSQL database room details schema synchronized successfully.');
+    } catch (err) {
+        console.error('Error executing live rooms database structure alteration adjustments:', err);
+    }
+}
+setTimeout(checkSchemaMigration, 1500);
+
 // Bind Modular API endpoints
 app.use('/api', authRoutes);
 
@@ -135,7 +149,7 @@ app.post('/api/chat/upload', checkAuthSession, uploadChatMediaBulk.array('chatFi
 // --- COMMUNITY GROUP ROOM MANAGEMENT ENDPOINTS ---
 
 app.post('/api/rooms/create', checkAuthSession, async (req, res) => {
-    const { room_name } = req.body;
+    const { room_name, room_desc } = req.body;
     if (!room_name) return res.status(400).json({ error: 'Room name token parameter missing.' });
     
     const generateCode = () => Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -145,9 +159,10 @@ app.post('/api/rooms/create', checkAuthSession, async (req, res) => {
         const collisionCheck = await pool.query('SELECT id FROM rooms WHERE room_code = $1', [roomCode]);
         if (collisionCheck.rows.length > 0) roomCode = generateCode(); 
 
+        // SAVING EXTENDED STRUCTURAL COMMUNITY PARAMETERS
         const result = await pool.query(
-            'INSERT INTO rooms (room_name, room_code, created_by) VALUES ($1, $2, $3) RETURNING id, room_name, room_code',
-            [room_name, roomCode, req.session.userId]
+            'INSERT INTO rooms (room_name, room_code, room_desc, room_icon, created_by) VALUES ($1, $2, $3, $4, $5) RETURNING id, room_name, room_code, room_desc, room_icon',
+            [room_name, roomCode, room_desc || '', '/uploads/default-group.png', req.session.userId]
         );
         res.json(result.rows[0]);
     } catch (err) {
@@ -159,7 +174,7 @@ app.post('/api/rooms/create', checkAuthSession, async (req, res) => {
 app.get('/api/rooms/lookup/:code', checkAuthSession, async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT id, room_name, room_code FROM rooms WHERE room_code = $1', 
+            'SELECT id, room_name, room_code, room_desc, room_icon FROM rooms WHERE room_code = $1', 
             [req.params.code.toUpperCase().trim()]
         );
         if (result.rows.length === 0) {
@@ -268,7 +283,7 @@ app.put('/api/profile/update-credentials', checkAuthSession, async (req, res) =>
 // --- STATIC PAGE ROUTING LAYER ---
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/login', (req, res) => {

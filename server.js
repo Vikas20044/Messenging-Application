@@ -159,7 +159,6 @@ app.post('/api/rooms/create', checkAuthSession, async (req, res) => {
         const collisionCheck = await pool.query('SELECT id FROM rooms WHERE room_code = $1', [roomCode]);
         if (collisionCheck.rows.length > 0) roomCode = generateCode(); 
 
-        // SAVING EXTENDED STRUCTURAL COMMUNITY PARAMETERS
         const result = await pool.query(
             'INSERT INTO rooms (room_name, room_code, room_desc, room_icon, created_by) VALUES ($1, $2, $3, $4, $5) RETURNING id, room_name, room_code, room_desc, room_icon',
             [room_name, roomCode, room_desc || '', '/uploads/default-group.png', req.session.userId]
@@ -192,7 +191,7 @@ app.get('/api/rooms/lookup/:code', checkAuthSession, async (req, res) => {
 app.get('/api/profile/me', checkAuthSession, async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT username, full_name, bio, profile_pic_url FROM users WHERE id = $1', 
+            "SELECT username, full_name, bio, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", 
             [req.session.userId]
         );
         res.json(result.rows[0]);
@@ -204,8 +203,9 @@ app.get('/api/profile/me', checkAuthSession, async (req, res) => {
 
 app.get('/api/profile/user/:id', checkAuthSession, async (req, res) => {
     try {
+        // FIXED: Added COALESCE to structural lookup queries to secure default assets at DB extraction level
         const result = await pool.query(
-            'SELECT username, full_name, bio, profile_pic_url FROM users WHERE id = $1', 
+            "SELECT username, full_name, bio, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", 
             [req.params.id]
         );
         if (result.rows.length === 0) {

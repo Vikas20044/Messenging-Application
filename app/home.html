@@ -27,7 +27,7 @@
 
         <div class="navbar-right">
             <div class="navbar-user-profile">
-                <img id="sidebar-user-avatar" src="/uploads/default-avatar.png" alt="Avatar">
+                <img id="sidebar-user-avatar" src="/uploads/default-avatar.png" alt="Avatar" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';">
                 <span id="user-display-tag">username</span>
             </div>
             
@@ -85,11 +85,11 @@
             <div id="active-chat-subsystem" class="hidden-layout hidden">
                 <header class="chat-header">
                     <button id="back-to-sidebar" class="action-btn secondary mobile-only">&#9776; Menu</button>
-                    <div class="channel-info" id="chat-header-user-trigger" style="display: flex; align-items: center; gap: 12px; cursor: pointer; min-width: 0;" title="Click to view bio details">
-                        <img id="chat-window-avatar" src="/uploads/default-avatar.png" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary); flex-shrink: 0;">
+                    <div class="channel-info" id="chat-header-user-trigger" style="display: flex; align-items: center; gap: 12px; cursor: pointer; min-width: 0; flex: 1;" title="Click to view details and description">
+                        <img id="chat-window-avatar" src="/uploads/default-avatar.png" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary); flex-shrink: 0;">
                         <div style="display: flex; flex-direction: column; min-width: 0;">
                             <h2 id="chat-window-title" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Select a User</h2>
-                            <p id="chat-window-subtitle" style="margin-top: 1px;"></p>
+                            <p id="chat-window-subtitle" style="margin-top: 1px; font-size: 0.78rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></p>
                         </div>
                     </div>
                 </header>
@@ -156,7 +156,7 @@
             </header>
             <div class="modal-body">
                 <div class="profile-avatar-section">
-                    <img id="modal-avatar-preview" src="/uploads/default-avatar.png" alt="Preview">
+                    <img id="modal-avatar-preview" src="/uploads/default-avatar.png" alt="Preview" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';">
                     <form id="avatar-form" style="display: flex; gap: 0.5rem; align-items: center;">
                         <input type="file" id="avatar-file-input" accept="image/*" style="display: none;">
                         <button type="button" class="action-btn secondary" onclick="document.getElementById('avatar-file-input').click()">Choose Image</button>
@@ -198,13 +198,13 @@
                 <button id="close-public-modal-btn" class="close-modal-x">&times;</button>
             </header>
             <div class="modal-body" style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
-                <img id="public-avatar-display" src="/uploads/default-avatar.png" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); background: var(--bg-primary);">
+                <img id="public-avatar-display" src="/uploads/default-avatar.png" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); background: var(--bg-primary);">
                 <div>
                     <h2 id="public-username-display" style="font-size: 1.3rem; color: var(--text-main); margin-bottom: 0.2rem;">username</h2>
                     <p id="public-fullname-display" style="font-size: 1rem; color: var(--text-muted); font-weight: 500;"></p>
                 </div>
                 <div style="background: var(--bg-primary); border: 1px solid var(--bg-tertiary); width: 100%; padding: 1rem; border-radius: 6px; text-align: left;">
-                    <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 0.4rem;">Biography</span>
+                    <span id="public-detail-label-context" style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 0.4rem;">Biography</span>
                     <p id="public-bio-display" style="font-size: 0.95rem; color: var(--text-main); word-break: break-word; white-space: pre-line; line-height: 1.4;">No bio written yet.</p>
                 </div>
             </div>
@@ -220,6 +220,11 @@
         
         let targetRoomId = null;
         let chosenMediaType = null;
+
+        let activeRoomName = '';
+        let activeRoomCode = '';
+        let activeRoomDesc = '';
+        let activeRoomIcon = '';
 
         const sidebarPanel = document.getElementById('sidebar-panel');
         const resizeHandle = document.getElementById('resize-handle');
@@ -271,6 +276,7 @@
         const publicUsernameDisplay = document.getElementById('public-username-display');
         const publicFullnameDisplay = document.getElementById('public-fullname-display');
         const publicBioDisplay = document.getElementById('public-bio-display');
+        const publicDetailLabelContext = document.getElementById('public-detail-label-context');
 
         document.addEventListener('click', (e) => {
             document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
@@ -384,9 +390,9 @@
                 item.id = `thread-user-${user.id}`;
                 if (targetUserId === user.id) item.classList.add('active-selected');
                 
-                // FIXED: Removed the @ symbol prefix from the recent chat usernames
+                // FIXED: Added defensive onerror lifecycle attribute injection straight into dynamically rendered thread elements
                 item.innerHTML = `
-                    <img id="thread-avatar-${user.id}" src="${user.profile_pic_url}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary); flex-shrink: 0;">
+                    <img id="thread-avatar-${user.id}" src="${user.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary); flex-shrink: 0;">
                     <span id="thread-name-${user.id}" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${user.username}</span>
                 `;
                 item.onclick = () => selectActiveTargetUser(user.id, user.username, user.profile_pic_url);
@@ -414,7 +420,7 @@
                     block.style.gap = '10px';
                     
                     block.innerHTML = `
-                        <img src="${u.profile_pic_url}" style="width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: var(--bg-secondary); flex-shrink: 0;">
+                        <img src="${u.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" style="width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: var(--bg-secondary); flex-shrink: 0;">
                         <span>${u.username}</span>
                     `;
                     block.onclick = () => {
@@ -432,13 +438,12 @@
             targetRoomId = null; 
             targetUserId = id;
             chatWindowTitle.innerText = `${name}`;
-            chatWindowSubtitle.innerText = "Direct Message";
+            chatWindowSubtitle.innerText = "Active Chat Session";
             chatWindowAvatar.src = picUrl || '/uploads/default-avatar.png';
             
             document.getElementById('empty-view-notice').classList.add('hidden');
             document.getElementById('active-chat-subsystem').classList.remove('hidden');
             
-            // Re-render chat lists to show active highlights
             document.querySelectorAll('.thread-item').forEach(el => el.classList.remove('active-selected'));
             const activeEl = document.getElementById(`thread-user-${id}`);
             if(activeEl) activeEl.classList.add('active-selected');
@@ -473,7 +478,6 @@
             chatMediaInput.click();
         });
 
-        // --- ROOM CREATION WORKSPACE WITH APP INTERFACE MODAL ---
         document.getElementById('btn-create-room').addEventListener('click', () => {
             groupNameInput.value = '';
             groupDescInput.value = '';
@@ -528,9 +532,8 @@
             
             const groupIcon = icon || '/uploads/default-group.png';
             
-            // FIXED: Added comprehensive details and image visualization to structural group listing
             item.innerHTML = `
-                <img src="${groupIcon}" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover; background: var(--bg-tertiary); flex-shrink: 0;">
+                <img src="${groupIcon}" onerror="this.onerror=null; this.src='/uploads/default-group.png';" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover; background: var(--bg-tertiary); flex-shrink: 0;">
                 <div style="display: flex; flex-direction: column; min-width: 0; flex: 1;">
                     <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">${name}</span>
                     <span style="font-size: 0.72rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Code: ${code}</span>
@@ -544,12 +547,14 @@
             targetUserId = null; 
             targetRoomId = id;
             
-            const groupIcon = icon || '/uploads/default-group.png';
-            const roomDescText = desc || 'No description provided for this group space.';
+            activeRoomName = name;
+            activeRoomCode = code;
+            activeRoomDesc = desc || 'No description provided for this group space.';
+            activeRoomIcon = icon || '/uploads/default-group.png';
             
             chatWindowTitle.innerText = `${name}`;
-            chatWindowSubtitle.innerText = `Access Pass: ${code} • ${roomDescText}`;
-            chatWindowAvatar.src = groupIcon;
+            chatWindowSubtitle.innerText = `Access Pass: ${code} • ${activeRoomDesc}`;
+            chatWindowAvatar.src = activeRoomIcon;
             
             document.getElementById('empty-view-notice').classList.add('hidden');
             document.getElementById('active-chat-subsystem').classList.remove('hidden');
@@ -752,7 +757,7 @@
 
             if (!isOutgoing) {
                 row.innerHTML = `
-                    <img src="${msg.profile_pic_url || '/uploads/default-avatar.png'}" class="chat-bubble-avatar" title="Click chat header to see details">
+                    <img src="${msg.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" class="chat-bubble-avatar" title="Click chat header to see details">
                     <div class="bubble-layout-block">
                         ${targetRoomId ? `<div class="sender-title" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 2px; font-weight: 600; text-align: left;">${msg.username}</div>` : ''}
                         <div class="message-bubble">${inlineRenderBody}</div>
@@ -895,9 +900,16 @@
 
         chatHeaderUserTrigger.addEventListener('click', async () => {
             if (targetRoomId) {
-                alert(`Community View\n\nTitle: ${chatWindowTitle.innerText}\nConfiguration parameters verified.`);
+                publicUsernameDisplay.innerText = activeRoomName;
+                publicFullnameDisplay.innerText = `Community Registry Code: ${activeRoomCode}`;
+                publicBioDisplay.innerText = activeRoomDesc;
+                publicAvatarDisplay.src = activeRoomIcon;
+                publicDetailLabelContext.innerText = "Group Description";
+                publicModalHeaderTitle.innerText = `Group Workspace Details`;
+                publicViewModal.classList.remove('hidden');
                 return;
             }
+            
             if (!targetUserId) return;
             try {
                 const res = await fetch(`/api/profile/user/${targetUserId}`);
@@ -908,11 +920,12 @@
                 publicFullnameDisplay.innerText = data.full_name || 'No full name provided';
                 publicBioDisplay.innerText = data.bio || 'No biography written yet.';
                 publicAvatarDisplay.src = data.profile_pic_url || '/uploads/default-avatar.png';
-                publicModalHeaderTitle.innerText = `${data.username}'s Profile`;
+                publicDetailLabelContext.innerText = "Biography";
+                publicModalHeaderTitle.innerText = `User Profile Card`;
                 
                 publicViewModal.classList.remove('hidden');
             } catch (err) {
-                console.error("Failed parsing public profile interface lookups.", err);
+                console.error("Failed parsing profile interface lookups.", err);
             }
         });
 

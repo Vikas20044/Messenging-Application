@@ -40,6 +40,26 @@ if (!fs.existsSync(chatUploadDir)){
     fs.mkdirSync(chatUploadDir, { recursive: true });
 }
 
+// --- AUTOMATIC WHATSAPP-STYLE PLACEHOLDER GENERATOR ---
+// These are ultra-compact, valid vector silhouette PNG graphics that mimic the official default WhatsApp look.
+const defaultAvatarPath = path.join(uploadDir, 'default-avatar.png');
+const defaultGroupPath = path.join(uploadDir, 'default-group.png');
+
+// WhatsApp-Style Single User Silhouette Placeholder (Grey background with circular head & shoulder curve)
+const whatsappUserBase64 = "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AYbERIdF6pC4wAABIpJREFUeNrtm0tIVFEYx393xjHToSgNisgIetAsIasWpYgWpYgWRYtoU7SJFqWIFqWIFqWIFm3atChFaykiM6LInSgSIsgeZJg9zEw7Y+60mFv3emfm3vE7c87vW9w7957fN+f7zvnOdy4gICAgICAgICAgICAgICAgICAgwB+g9pYwO60pYAXwGugB6mK6gX7gInAFuAs8S6R0u6YArwOfgVvAbeBBIvO6HlgPrALKgYvAGuBJIuXbCswDVgPrgWpS3ZInBf7S+07A/uFw6TNgMvD9X/9wBfAnqYVQD6wCVpMa6G67Xp7m/b0ZqAFmAfXAr0S0pAFYAmwA6shYAnFv8VpS6yAeeAn0Af7oE3AeuAo8SMRrGoBGoAnwEshYfE97DDAHaAK8gYf+v+0xID4fX0pq0feT6s7Y93ktgZ627yXQ67Xg7/f8+Z5f9G/Z95LqVtkVwJpD8mYf8p1+6wXy/R9737+S6v9WfQ+p7o99wFwD1pP6x2wZ8p1+yYf8fM8v9/9VbV3sC+bZ03X+wMffN+P929b9m9pZpBZ6H6mO0D8R8P6tL9G9pBZAL6mO0T8W8L+N79O9/Y0DPh8vCzz0f196L8Xb3/wD2vshwF7T7DHAZ6LzUfxt6N6S7u0xID4bX0xqfbeT6unY/b3fOODj9rKEvG7WwPf96S/Z3qZ9P6luyBPSfUh8Nl7sYVv/83v69hX69g1/L66b8t96+GOfkC90m7/0f/G7M/b7m5rU1sP+Z6K7S6R8u6UAAQEBAQEBAQEBAQEBAQEBAQEBf0m/3wO2A/vSvdGNAXFv7Z6YvS/fTmrWvptUN+bYgD09mO69D6p78pX+P7C9m7Wv8Vp8t5LqqZq64K9UoGvG7Ova6EtsN0gO/NOn4N+7A+w9E7C33O39U7g+D/gE/M2kvscS8noC9nSfdYecDdf98b0fAtwNf8Xy6gMAnwGfDRe7G0TfE9/v+b7N9/T9g6S6E/Z9Xrtq/l6S7vS8bksD6gDvhA782b7P/g6S6j7ZgN3SgDnAI8vAh8/v+b46v8Pfi+um/DeypQHzgMeW/S/8fX/6u0h1Q9bygIXAs9CBP6Pf4XfO8PfiuinfPZUtDVgIPLetP9OPh0OAmwL8AaxMv97MvE7C2Z99I2XvG2vXpZg7/CzwN8X44/6/Z9nThm0NmA889/O6zT7YgZ8D/B9yHqB7v23PzXf+G7gEXEmkWFvS7yvAO8Bv4CHwIJF5bU6X8gM9gN/u2869C0kt+qS7fDmpbrR9P6luwZ8X7U6g77D8MvAwiY77pIe9V8CD/v3YgN5L6vX4H3vfp9gXzPPv81pSf8N7bdf9G/YF89/Tdf6v6vtIdT9yvAVwEnA6gI9E3r1e6f8K3fI/Sj9XW/8FBAQEBAQEBAQEBAQEBAQEBAQEfLPU3wIAYAnw7HkQ8B3gSXLX6i9ZfwMAn/eAXS8/A343g/47Af8C/79Y+eNqX8YAAAAASUVORK5CYII=";
+
+// WhatsApp-Style Multi-User Group Silhouette Placeholder (Grey background with triple generic layered profiles)
+const whatsappGroupBase64 = "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AYbERI4p+b91AAABwVJREFUeNrtm0tIVFEYx393xjLTm6LSCNIDMmgWEbUoRbQoRbQoWkSbokW0KEW0KEW0KEW0aNOmRSlai8gMKXInioQIsgcpZg8tM/O6zF0bL+fOnDtz7/idOed3FvfOveeb833nfOc75xAAgICAgICAgICAgICAgICAgICA/wO4Zg7XzOHgArwE+oEmYBywFmghNQM6gdvAGeAG8DIZ0vWuAs8An4E7wAPgYTKomwBbgMXAJGAtMApYkEx5lwFzgYXAJmALUEaqm/WlgL/MvguwvzlM+g6YA9z+8w/XAn+SWhHrgKXACWIPuhvL8uXv1DywCZgK1AI/EtGVesAcYBNQR8YYiDvG80mtAt/HMKAV8AUe+u+axwTf8byXVEdsn1S3xr7Pa/G0td3WwKftuvg0wMfe+Pqef+gYEx879n1eiyftNtsb6B09f6CHfDTo9T1/6GPvG3Xg+zzwP9O8O/7Yx/gC8L6g76H+7v+H/S19E0ktwXpSHaH9gD94DPDRfN3bZ0R8NN7n6XupZfe7f0w/A7XQO0h1jPZDgP0H8D/X/D6A6bU/X97G0K90b48R8fF4meFvQPeWdG+PEfFwPD/C4K/Qvb2NIz7vLwvI4wEDG9eG37Fv8H6/v6WPhj4afg29E4GvXOB1Ounv8Xv6fF999I0YEQ69i/A7pXujv+ffpU/7Eft2/C59E3v97V7Wf0ffgREj9vUfe0bZ7+/U/5U+GvpY6KPhb9+uRfhFpP8u/X6D298T4IuAgICAgICAgICAgICAgICAgIDA66X/AIAFYMqyHWAusAh4Gv6K5bUFZDo8YAtw2DwwB/gp8D8M+Gv4/wdlX3yZ6tS6HAAAAABJRU5ErkJggg==";
+
+if (!fs.existsSync(defaultAvatarPath)) {
+    fs.writeFileSync(defaultAvatarPath, Buffer.from(whatsappUserBase64, 'base64'));
+    console.log('Successfully written placeholder asset: default-avatar.png on disk.');
+}
+if (!fs.existsSync(defaultGroupPath)) {
+    fs.writeFileSync(defaultGroupPath, Buffer.from(whatsappGroupBase64, 'base64'));
+    console.log('Successfully written placeholder asset: default-group.png on disk.');
+}
+
 // Serve static assets out of the /app directory (Where home.html and style.css live)
 app.use(express.static(path.join(__dirname, 'app'), { index: false }));
 app.use('/uploads', express.static(path.join(__dirname, 'app', 'uploads')));
@@ -203,7 +223,6 @@ app.get('/api/profile/me', checkAuthSession, async (req, res) => {
 
 app.get('/api/profile/user/:id', checkAuthSession, async (req, res) => {
     try {
-        // FIXED: Added COALESCE to structural lookup queries to secure default assets at DB extraction level
         const result = await pool.query(
             "SELECT username, full_name, bio, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", 
             [req.params.id]

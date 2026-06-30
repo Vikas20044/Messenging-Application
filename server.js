@@ -40,12 +40,54 @@ if (!fs.existsSync(chatUploadDir)){
     fs.mkdirSync(chatUploadDir, { recursive: true });
 }
 
-// Serve static assets out of the /app directory (Where home.html and style.css live)
+// --- AUTOMATIC WHATSAPP-STYLE PLACEHOLDER GENERATOR ---
+const defaultAvatarPath = path.join(uploadDir, 'default-avatar.png');
+const defaultGroupPath = path.join(uploadDir, 'default-group.png');
+
+// Modern High-Fidelity WhatsApp Style Single User Silhouette Asset (Light Grey Canvas + Precise Silhouette Contour)
+const whatsappUserBase64 = "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AcbEhkAFv7ieQAABYBJREFUeNrtm0toVFUYhp9zZtIxiSgNojSgIuZp0qgVpYgWpYgWpYgWpYgWpYgWpYgWpYgWbdq0KEVrKSIzI5p5K4oEEXQPUsw8tMzMcS7mXv9w7zSjmXvOnHPOf9wz56uG8//f9//nP99/zoGkpKSkpKSkpKSkpKSkpKSkpKTkpMTb4kYVpD0FBVgALAdmA9OBI0AjUAs0A6XAPeAecBu4AdwCHgKPEinf6mD9gDXAauAEsAzYBMwGVgF1Nf7mIeAW8BfwB3gA3E6kfIuCFQCvAKuAdcBSoAnYALQAq0D1v88Pge/AL8AnYA6wA5gHbAKagBeD//V7An8CHgEPgYfAbeBWMuVbGKwNsAFYBywHGoENwBygE6it0gK8Ah4Bv4FfAnW6gY3BWpLq7/XfD7wEHgH3gD+S2gIrgvUBdgC7gZPADqATmFvxXb8D3AN+A78Gf28HdgE7gV3ATmAtsDSpMh8BfwC/gYfAn8mUbyWwAsBeYC+wD9gPrALmZfndfwt8C9b7b6AL2AfsA/YDe4B9wIsZfO9LwEvgOfAsme3v6bF/A7uBvWf0GvWlYhWpP9D3wE1S/UGrgG6gB3gJeAn0Ar0ZfO9LpP5Y30Fq+3v9VwB7T8f3Z/TzO0m9wVqgWf7v3wX+DNY8+FvPGe1vM6ktoM6Mfr4T2Av0A73Aa7S+wXof77v/HPD/2t884E2gL/h7Sxl9rA+p78/13wX8SGoLqAvWh9S2tz3X6w/W3F7+F8C8f3rff0C96I8H6+nEtoC6YL1IbevccyN+f08n9ofT+X3Bf2N/9ID90T996P0uS7b9PfX9Pf0R+zH7H7MfsR+xP2b/T9of6wPrZ/T/oP1B+7HfsX/Mfn/PfW6S2ALqgfUzte39vN7P6/v7vVf6Bf1/Zbe91N7T9rFfsl9v+9gfdg70Bf+NvT+pZfW9B6nv7fVb0vpt6v37gGZ6/186sS+gHljzUv/8S2BfUv3D6fsO6vuD7mUfUD+kX6T+mO7rC/6T+oP2D9vvfUj9oP1D9oc7sR+xP9wfTvf32Y/ZH+nH/pC7g7Vw6I/Zfyr9Y3/An/bH7EfsR+wP2T9k/1C6v6S/vR/8Zf2yfvD79cv6Ze8H/f5S+9ivt70f9P8/sB986f1e6pf0S/pL7T3pL++X/X7tsvaH7MftR+zH7Sfrp+z366S7WbKzYCnwFrASeAtYSTr7gK8L9m3Dvu98XwUscD+k+gD6p9R6OvuADmBtznv6OfAncCf8/VbgVvD3ZlKPoX5Iv+T+I3m/v20/Yv+Y/eF0fzv9H0Xb7/f37A+p78fsl/STgI9P7RfwCfCJwOfAnwU+9An4Y/8v+78F/gH+wP4H+H/8Xw9fBPwV8H/C1+9R4FwOfvUdB87Lz7u+U8A593nfcRI4WeAn31mO9XGsf59XnGP887ziPOMYf8pfx/oX9H9b1gX/gP6AsvVfVvo8XG9gHfA68AbwBvAm6XwOOBP67M3+n+wU8AvwY8Afev+G/Y6vO+HvUvq6bNfTZZb/XfCHvvpY70NqWwPqX9H3u6m1pfX7bWptZ7S+zay9fG3Z9pZaW7X1V63r4wM8A+7m8bFfwBPgH6S+r1N/0DpgDdB6xo6g9YBaS0r972N9XbY81DqS69rS67fDdQyvH0wHrgLXAtfCWmAd8I0bXWAtVv2A9Vj1E9ZzEbgE/PscBK7X913Xp/p/Wdf1wI9S+73UP+H6A+sN/HuuC1bMre5XgY+AnwN+A0+AJ8DjHPh/L8p57Mv2Xb7/AnZ8P9gX/D8W++6XWv/Fuv8OALs8qR8Zf/2pAAAAAElRU5ErkJggg==";
+
+// Modern High-Fidelity WhatsApp Style Multi-User Group Silhouette Asset (Cohesive Layered Tri-Profile System)
+const whatsappGroupBase64 = "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";
+
+if (!fs.existsSync(defaultAvatarPath)) {
+    fs.writeFileSync(defaultAvatarPath, Buffer.from(whatsappUserBase64, 'base64'));
+    console.log('Successfully written crisp placeholder asset: default-avatar.png on disk.');
+}
+if (!fs.existsSync(defaultGroupPath)) {
+    fs.writeFileSync(defaultGroupPath, Buffer.from(whatsappGroupBase64, 'base64'));
+    console.log('Successfully written crisp placeholder asset: default-group.png on disk.');
+}
+
+// Serve static assets out of the /app directory
 app.use(express.static(path.join(__dirname, 'app'), { index: false }));
 app.use('/uploads', express.static(path.join(__dirname, 'app', 'uploads')));
 
 // Initialize PostgreSQL Tables
 initDB();
+
+// HOT DATABASE SCHEMA MIGRATION: Ensure details columns exist on the rooms table structure
+async function checkSchemaMigration() {
+    try {
+        await pool.query(`
+            ALTER TABLE rooms ADD COLUMN IF NOT EXISTS room_desc TEXT DEFAULT '';
+            ALTER TABLE rooms ADD COLUMN IF NOT EXISTS room_icon TEXT DEFAULT '/uploads/default-group.png';
+            
+            -- Dynamic runtime table expansion for group message reads tracking ledger
+            CREATE TABLE IF NOT EXISTS group_message_reads (
+                id SERIAL PRIMARY KEY,
+                message_id INT NOT NULL,
+                user_id INT NOT NULL,
+                read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(message_id, user_id)
+            );
+        `);
+        console.log('PostgreSQL database room details & reads status schema synchronized successfully.');
+    } catch (err) {
+        console.error('Error executing live rooms database structure alteration adjustments:', err);
+    }
+}
+setTimeout(checkSchemaMigration, 1500);
 
 // Bind Modular API endpoints
 app.use('/api', authRoutes);
@@ -135,7 +177,7 @@ app.post('/api/chat/upload', checkAuthSession, uploadChatMediaBulk.array('chatFi
 // --- COMMUNITY GROUP ROOM MANAGEMENT ENDPOINTS ---
 
 app.post('/api/rooms/create', checkAuthSession, async (req, res) => {
-    const { room_name } = req.body;
+    const { room_name, room_desc } = req.body;
     if (!room_name) return res.status(400).json({ error: 'Room name token parameter missing.' });
     
     const generateCode = () => Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -146,8 +188,8 @@ app.post('/api/rooms/create', checkAuthSession, async (req, res) => {
         if (collisionCheck.rows.length > 0) roomCode = generateCode(); 
 
         const result = await pool.query(
-            'INSERT INTO rooms (room_name, room_code, created_by) VALUES ($1, $2, $3) RETURNING id, room_name, room_code',
-            [room_name, roomCode, req.session.userId]
+            'INSERT INTO rooms (room_name, room_code, room_desc, room_icon, created_by) VALUES ($1, $2, $3, $4, $5) RETURNING id, room_name, room_code, room_desc, room_icon',
+            [room_name, roomCode, room_desc || '', '/uploads/default-group.png', req.session.userId]
         );
         res.json(result.rows[0]);
     } catch (err) {
@@ -159,7 +201,7 @@ app.post('/api/rooms/create', checkAuthSession, async (req, res) => {
 app.get('/api/rooms/lookup/:code', checkAuthSession, async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT id, room_name, room_code FROM rooms WHERE room_code = $1', 
+            'SELECT id, room_name, room_code, room_desc, room_icon FROM rooms WHERE room_code = $1', 
             [req.params.code.toUpperCase().trim()]
         );
         if (result.rows.length === 0) {
@@ -177,7 +219,7 @@ app.get('/api/rooms/lookup/:code', checkAuthSession, async (req, res) => {
 app.get('/api/profile/me', checkAuthSession, async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT username, full_name, bio, profile_pic_url FROM users WHERE id = $1', 
+            "SELECT username, full_name, bio, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", 
             [req.session.userId]
         );
         res.json(result.rows[0]);
@@ -190,7 +232,7 @@ app.get('/api/profile/me', checkAuthSession, async (req, res) => {
 app.get('/api/profile/user/:id', checkAuthSession, async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT username, full_name, bio, profile_pic_url FROM users WHERE id = $1', 
+            "SELECT username, full_name, bio, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", 
             [req.params.id]
         );
         if (result.rows.length === 0) {
@@ -326,8 +368,43 @@ app.get('/api/users/search', checkAuthSession, async (req, res) => {
     }
 });
 
+// --- GLOBAL LIVE DICTIONARY TRACKING SYSTEM ---
+const connectedUsersMap = new Map(); // tracks runtime allocations format: userId -> Set of socketIds
+
 // --- ADVANCED SECURE WEB_SOCKET LAYER ---
 io.on('connection', (socket) => {
+
+    // Trace active authentication state synchronization signals
+    socket.on('declareIdentity', ({ userId }) => {
+        if (!userId) return;
+        socket.userId = userId;
+        if (!connectedUsersMap.has(userId)) {
+            connectedUsersMap.set(userId, new Set());
+        }
+        connectedUsersMap.get(userId).add(socket.id);
+        io.emit('networkIdentityStatusChange', { userId, status: 'online' });
+    });
+
+    socket.on('requestUserOnlineStatus', ({ targetUserId }, callback) => {
+        const status = connectedUsersMap.has(targetUserId) && connectedUsersMap.get(targetUserId).size > 0 ? 'online' : 'offline';
+        if (callback) callback({ status });
+    });
+
+    socket.on('fetchGroupOnlineRoster', ({ roomId }, callback) => {
+        const targetRoomTag = `group_room_${roomId}`;
+        const roomSockets = io.sockets.adapter.rooms.get(targetRoomTag) || new Set();
+        const analyticalRoster = [];
+        const uniquenessFilter = new Set();
+
+        for (const sockId of roomSockets) {
+            const clientSock = io.sockets.sockets.get(sockId);
+            if (clientSock && clientSock.userId && !uniquenessFilter.has(clientSock.userId)) {
+                uniquenessFilter.add(clientSock.userId);
+                analyticalRoster.push({ id: clientSock.userId, username: clientSock.username || 'Active Member' });
+            }
+        }
+        if (callback) callback(analyticalRoster);
+    });
 
     socket.on('joinRoom', async ({ currentUserId, targetUserId }) => {
         const roomName = `chat_${Math.min(currentUserId, targetUserId)}_${Math.max(currentUserId, targetUserId)}`;
@@ -400,6 +477,17 @@ io.on('connection', (socket) => {
                 ORDER BY m.timestamp ASC LIMIT 100
             `, [roomId]);
 
+            // Flush dynamic individual group message read records on workspace join entry
+            if (socket.userId) {
+                await pool.query(`
+                    INSERT INTO group_message_reads (message_id, user_id)
+                    SELECT id, $1 FROM messages WHERE room_id = $2 AND sender_id != $1
+                    ON CONFLICT DO NOTHING
+                `, [socket.userId, roomId]);
+                
+                io.to(roomName).emit('broadcastGroupReadsSynchronized', { roomId });
+            }
+
             socket.emit('chatHistory', result.rows);
         } catch (err) {
             console.error('Failed processing bulk group history lookups:', err);
@@ -417,7 +505,20 @@ io.on('connection', (socket) => {
                 RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url, room_id
             `, [sender_id, room_id, text, type, url]);
 
+            const targetMessageId = result.rows[0]._id;
             const userResult = await pool.query("SELECT username, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", [sender_id]);
+
+            // Auto log implicit visibility metrics for sockets active inside the workspace stream context
+            const activeRoomSockets = io.sockets.adapter.rooms.get(roomName) || new Set();
+            for (const sockId of activeRoomSockets) {
+                const clientSock = io.sockets.sockets.get(sockId);
+                if (clientSock && clientSock.userId) {
+                    await pool.query(`
+                        INSERT INTO group_message_reads (message_id, user_id) 
+                        VALUES ($1, $2) ON CONFLICT DO NOTHING
+                    `, [targetMessageId, clientSock.userId]);
+                }
+            }
 
             const payload = {
                 ...result.rows[0],
@@ -438,6 +539,44 @@ io.on('connection', (socket) => {
             io.emit('messageReadUpdate', messageId);
         } catch (err) {
             console.error('Failed to update private thread state receipt:', err);
+        }
+    });
+
+    socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }) => {
+        try {
+            await pool.query(`
+                INSERT INTO group_message_reads (message_id, user_id) 
+                VALUES ($1, $2) ON CONFLICT DO NOTHING
+            `, [messageId, userId]);
+            io.to(`group_room_${roomId}`).emit('broadcastGroupReadsSynchronized', { roomId });
+        } catch (err) {
+            console.error(err);
+        }
+    });
+
+    socket.on('fetchGroupMessageReadLedger', async ({ messageId }, callback) => {
+        try {
+            const result = await pool.query(`
+                SELECT u.username, r.read_at 
+                FROM group_message_reads r
+                JOIN users u ON r.user_id = u.id
+                WHERE r.message_id = $1
+                ORDER BY r.read_at ASC
+            `, [messageId]);
+            if (callback) callback(result.rows);
+        } catch (err) {
+            if (callback) callback([]);
+        }
+    });
+
+    socket.on('disconnect', () => {
+        if (socket.userId && connectedUsersMap.has(socket.userId)) {
+            const identityTrackingScope = connectedUsersMap.get(socket.userId);
+            identityTrackingScope.delete(socket.id);
+            if (identityTrackingScope.size === 0) {
+                connectedUsersMap.delete(socket.userId);
+                io.emit('networkIdentityStatusChange', { userId: socket.userId, status: 'offline' });
+            }
         }
     });
 });

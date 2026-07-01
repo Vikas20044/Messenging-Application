@@ -444,7 +444,7 @@ body {
     flex: 1;
     padding: 1.5rem;
     overflow-y: auto;
-    overflow-x: hidden; /* Prevent horizontal container shifting on dropdown generation */
+    overflow-x: hidden; 
     -webkit-overflow-scrolling: touch; 
     display: flex;
     flex-direction: column;
@@ -706,7 +706,6 @@ body {
     color: var(--text-main);
 }
 
-/* FIXED: Corrects translation list cutoff behaviors via contextual alignment selectors */
 .msg-dropdown {
     position: absolute;
     top: 24px;
@@ -719,11 +718,11 @@ body {
     overflow: hidden;
 }
 .incoming .msg-dropdown {
-    left: 0;   /* Flows smoothly to the right inside the chat pane viewport */
+    left: 0;   
     right: auto;
 }
 .outgoing .msg-dropdown {
-    right: 0;  /* Flows smoothly to the left inside the chat pane viewport */
+    right: 0;  
     left: auto;
 }
 

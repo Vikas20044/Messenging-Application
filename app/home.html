@@ -92,7 +92,6 @@
                             <p id="chat-window-subtitle" style="margin-top: 1px; font-size: 0.78rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></p>
                         </div>
                     </div>
-                    <!-- Core Action Placement Matrix for Live Status Frameworks -->
                     <div id="header-action-panel" style="display: flex; align-items: center; gap: 0.5rem;">
                         <button id="check-room-online-btn" class="action-btn secondary hidden" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;">🟢 Who's Online</button>
                     </div>
@@ -114,6 +113,20 @@
                                 <div id="pick-docs-btn">📄 Upload Documents (Max 10)</div>
                             </div>
                         </div>
+
+                        <div style="position: relative; display: inline-block;">
+                            <button type="button" id="chat-lang-trigger" class="action-btn secondary" style="padding: 0.6rem 0.8rem; font-size: 1.1rem; border-radius: 6px;" title="Select Typing Transliteration Language">🌐</button>
+                            <div id="input-lang-dropdown" class="msg-dropdown hidden" style="bottom: 52px; top: auto; right: auto; left: 0; width: 165px;">
+                                <div data-lang="auto" style="font-weight: bold; color: var(--accent);">Standard Keyboard</div>
+                                <div data-lang="kn">Kannada (ಕನ್ನಡ)</div>
+                                <div data-lang="ta">Tamil (தமிழ்)</div>
+                                <div data-lang="te">Telugu (తెలుగు)</div>
+                                <div data-lang="ml">Malayalam (മലയാളം)</div>
+                                <div data-lang="bn">Bengali (বাংলা)</div>
+                                <div data-lang="hi">Hindi (हिन्दी)</div>
+                            </div>
+                        </div>
+
                         <input type="file" id="chat-media-input" style="display: none;" multiple>
                         
                         <input type="text" id="msg-input" 
@@ -152,7 +165,6 @@
         </div>
     </div>
 
-    <!-- Live Group Presence Status Roster Card Overlay Layer -->
     <div id="group-online-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -160,12 +172,10 @@
                 <button id="close-group-online-modal" class="close-modal-x">&times;</button>
             </header>
             <div class="modal-body" id="group-online-list-target" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                <!-- Dynamically written items go here -->
             </div>
         </div>
     </div>
 
-    <!-- High-Fidelity Multi-User Group Read Receipts Metric Audit popover layout -->
     <div id="receipts-audit-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -173,7 +183,6 @@
                 <button id="close-receipts-modal" class="close-modal-x">&times;</button>
             </header>
             <div class="modal-body" id="receipts-list-target" style="display: flex; flex-direction: column; gap: 0.6rem;">
-                <!-- Dynamic logs written injection target frame -->
             </div>
         </div>
     </div>
@@ -256,6 +265,9 @@
         let activeRoomDesc = '';
         let activeRoomIcon = '';
 
+        // RUNTIME TRACKER FOR OUTGOING TRANSLITERATION CHOICE
+        let selectedOutgoingLang = 'auto';
+
         const sidebarPanel = document.getElementById('sidebar-panel');
         const resizeHandle = document.getElementById('resize-handle');
         const sidebarShadow = document.getElementById('sidebar-shadow');
@@ -278,6 +290,10 @@
         const chatAttachTrigger = document.getElementById('chat-attach-trigger');
         const attachDropdownMenu = document.getElementById('attach-dropdown-menu');
         const chatMediaInput = document.getElementById('chat-media-input');
+
+        // TARGET HANDLERS FOR THE INPUT LANGUAGE SELECTOR
+        const chatLangTrigger = document.getElementById('chat-lang-trigger');
+        const inputLangDropdown = document.getElementById('input-lang-dropdown');
 
         const createGroupModal = document.getElementById('create-group-modal');
         const closeGroupModalBtn = document.getElementById('close-group-modal-btn');
@@ -308,7 +324,6 @@
         const publicBioDisplay = document.getElementById('public-bio-display');
         const publicDetailLabelContext = document.getElementById('public-detail-label-context');
 
-        // Target allocations for presence mapping controls
         const checkRoomOnlineBtn = document.getElementById('check-room-online-btn');
         const groupOnlineModal = document.getElementById('group-online-modal');
         const closeGroupOnlineModal = document.getElementById('close-group-online-modal');
@@ -398,7 +413,6 @@
             currentUsername = data.username;
             document.getElementById('user-display-tag').innerText = `${currentUsername}`;
             
-            // Declare global structural web socket alignment tags
             socket.emit('declareIdentity', { userId: currentUserId });
 
             loadActiveThreads();
@@ -444,7 +458,6 @@
                 item.onclick = () => selectActiveTargetUser(user.id, user.username, user.profile_pic_url);
                 activeThreadsTarget.appendChild(item);
 
-                // Run contextual presence synchronization lookup routines
                 socket.emit('requestUserOnlineStatus', { targetUserId: user.id }, (reply) => {
                     const dynamicBadge = document.getElementById(`status-badge-${user.id}`);
                     if (dynamicBadge) {
@@ -505,7 +518,6 @@
 
             closeMobileSidebar();
             
-            // Query dynamic snapshot state parameters
             socket.emit('requestUserOnlineStatus', { targetUserId: id }, (reply) => {
                 chatWindowSubtitle.innerText = reply.status === 'online' ? '🟢 Online Now' : '⚪ Offline';
             });
@@ -518,6 +530,87 @@
             e.stopPropagation();
             attachDropdownMenu.classList.toggle('toggle-text');
             attachDropdownMenu.classList.toggle('hidden');
+        });
+
+        // TOGGLE LANGUAGE DROPDOWN AND PREVENT DOCUMENT COLLISION
+        chatLangTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = inputLangDropdown.classList.contains('hidden');
+            document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
+            if (isHidden) {
+                inputLangDropdown.classList.remove('hidden');
+            }
+        });
+
+        // HANDLE DYNAMIC SELECTION METRICS FOR PHONETIC INPUT
+        inputLangDropdown.querySelectorAll('div').forEach(item => {
+            item.addEventListener('click', (e) => {
+                selectedOutgoingLang = e.target.getAttribute('data-lang');
+                if (selectedOutgoingLang === 'auto') {
+                    chatLangTrigger.innerText = '🌐';
+                    msgInput.placeholder = "Type a message...";
+                } else {
+                    chatLangTrigger.innerText = selectedOutgoingLang.toUpperCase();
+                    msgInput.placeholder = `Type phonetically (e.g., namaskara)...`;
+                }
+                inputLangDropdown.classList.add('hidden');
+                msgInput.focus();
+            });
+        });
+
+        // --- REAL-TIME AS-YOU-TYPE PHONETIC TRANSLITERATION ENGINE ---
+        msgInput.addEventListener('keydown', async (e) => {
+            if (selectedOutgoingLang === 'auto') return;
+
+            // Trigger mapping replacement whenever the spacebar is pressed
+            if (e.key === ' ') {
+                const value = msgInput.value;
+                const selectionStart = msgInput.selectionStart;
+                const textBeforeCursor = value.substring(0, selectionStart);
+
+                // Isolate the immediate untranslated English alphanumeric string preceding the cursor
+                const lastWordMatch = textBeforeCursor.match(/([a-zA-Z0-9]+)$/);
+                if (!lastWordMatch) return;
+
+                const lastWord = lastWordMatch[1];
+                e.preventDefault(); // Temporarily halt layout updates to safely calculate text indexes
+
+                const itcMap = {
+                    kn: 'kn-t-i0-und',
+                    ta: 'ta-t-i0-und',
+                    te: 'te-t-i0-und',
+                    ml: 'ml-t-i0-und',
+                    bn: 'bn-t-i0-und',
+                    hi: 'hi-t-i0-und'
+                };
+
+                const targetItc = itcMap[selectedOutgoingLang];
+                try {
+                    const res = await fetch(`https://inputtools.google.com/request?text=${encodeURIComponent(lastWord)}&itc=${targetItc}&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8&app=chat-transliterate`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data[0] === 'SUCCESS' && data[1] && data[1][0] && data[1][0][1] && data[1][0][1][0]) {
+                            const transliteratedWord = data[1][0][1][0];
+                            const startPos = selectionStart - lastWord.length;
+                            const textAfterCursor = value.substring(selectionStart);
+
+                            // Rewrite internal text state seamlessly without moving field bounds
+                            msgInput.value = value.substring(0, startPos) + transliteratedWord + ' ' + textAfterCursor;
+                            
+                            const newCursorPos = startPos + transliteratedWord.length + 1;
+                            msgInput.setSelectionRange(newCursorPos, newCursorPos);
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Transliteration engine connection timeout.", err);
+                }
+
+                // Safe structural fallback: Append space normally if API encounters network loss
+                const textAfterCursor = value.substring(selectionStart);
+                msgInput.value = textBeforeCursor + ' ' + textAfterCursor;
+                msgInput.setSelectionRange(selectionStart + 1, selectionStart + 1);
+            }
         });
 
         document.getElementById('pick-images-btn').addEventListener('click', () => {
@@ -630,7 +723,6 @@
             socket.emit('joinGroupRoom', { roomId: id });
         }
 
-        // Connect room-specific live interaction events
         checkRoomOnlineBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (!targetRoomId) return;
@@ -659,10 +751,30 @@
 
         closeGroupOnlineModal.addEventListener('click', () => groupOnlineModal.classList.add('hidden'));
 
-        chatForm.addEventListener('submit', (e) => {
+        // PROCESS SUBMISSIONS WITH FINAL STRING CLEANUP FOR ANY UNTRANSFORMED TRAILING WORDS
+        chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const text = msgInput.value.trim();
+            let text = msgInput.value.trim();
             if(text) {
+                // If the user presses enter before typing space on their last word, convert it instantly
+                if (selectedOutgoingLang !== 'auto' && /[a-zA-Z0-9]/.test(text)) {
+                    try {
+                        msgInput.disabled = true;
+                        const itcMap = { kn: 'kn-t-i0-und', ta: 'ta-t-i0-und', te: 'te-t-i0-und', ml: 'ml-t-i0-und', bn: 'bn-t-i0-und', hi: 'hi-t-i0-und' };
+                        const res = await fetch(`https://inputtools.google.com/request?text=${encodeURIComponent(text)}&itc=${itcMap[selectedOutgoingLang]}&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8&app=chat-transliterate`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data[0] === 'SUCCESS' && data[1] && data[1][0] && data[1][0][1] && data[1][0][1][0]) {
+                                text = data[1][0][1][0];
+                            }
+                        }
+                    } catch(err) {
+                        console.error(err);
+                    } finally {
+                        msgInput.disabled = false;
+                    }
+                }
+
                 if(targetUserId) {
                     socket.emit('privateMessage', { sender_id: currentUserId, receiver_id: targetUserId, text, message_type: 'text', file_url: null });
                 } else if(targetRoomId) {
@@ -737,7 +849,6 @@
             if((targetUserId && msg.sender_id && !msg.room_id) || (targetRoomId && msg.room_id == targetRoomId)) {
                 appendMessage(msg);
                 
-                // If viewing a group room where a new message arrives, mark it read instantly
                 if (targetRoomId && msg.sender_id !== currentUserId) {
                     socket.emit('explicitMarkGroupMessageAsRead', { messageId: msg._id, userId: currentUserId, roomId: targetRoomId });
                 }
@@ -763,7 +874,6 @@
             }
         });
 
-        // Watch incoming individual reactive status mutations
         socket.on('networkIdentityStatusChange', ({ userId, status }) => {
             const badge = document.getElementById(`status-badge-${userId}`);
             if (badge) badge.className = `global-presence-badge ${status}`;
@@ -773,10 +883,8 @@
             }
         });
 
-        // Synchronize room-wide audit metrics dynamically
         socket.on('broadcastGroupReadsSynchronized', ({ roomId }) => {
             if (targetRoomId === roomId) {
-                // If viewing current group workspace room, trigger historical ledger ticks updates
                 document.querySelectorAll('.group-ticks-tracker').forEach(async (el) => {
                     const msgId = el.getAttribute('data-msg-id');
                     socket.emit('fetchGroupMessageReadLedger', { messageId: msgId }, (ledger) => {
@@ -833,7 +941,6 @@
             }
         }
 
-        // Visual layout tracker hooks for group audit triggers
         function triggerReceiptsAudit(msgId) {
             socket.emit('fetchGroupMessageReadLedger', { messageId: msgId }, (ledger) => {
                 receiptsListTarget.innerHTML = '';
@@ -918,16 +1025,12 @@
                     </div>
                 `;
             } else {
-                // Determine read receipt elements depending on active channel types
                 let contextualTicks = '';
                 if (!targetRoomId) {
-                    // 1v1 conversations path logic
                     contextualTicks = `<span id="ticks-${msg._id}" class="ticks ${msg.isRead ? 'read' : ''}">&check;&check;</span>`;
                 } else {
-                    // Community group path logic
                     contextualTicks = `<span class="group-ticks-tracker ticks" data-msg-id="${msg._id}" onclick="triggerReceiptsAudit(${msg._id})" style="cursor:pointer; font-size:0.7rem; font-weight:700;">✓ Checked</span>`;
                     
-                    // Fetch receipt counts asynchronously
                     socket.emit('fetchGroupMessageReadLedger', { messageId: msg._id }, (ledger) => {
                         const trackingToken = document.querySelector(`[data-msg-id="${msg._id}"]`);
                         if (trackingToken && ledger && ledger.length > 0) {

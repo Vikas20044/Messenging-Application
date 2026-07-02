@@ -44,11 +44,8 @@ if (!fs.existsSync(chatUploadDir)){
 const defaultAvatarPath = path.join(uploadDir, 'default-avatar.png');
 const defaultGroupPath = path.join(uploadDir, 'default-group.png');
 
-// Modern High-Fidelity WhatsApp Style Single User Silhouette Asset (Light Grey Canvas + Precise Silhouette Contour)
-const whatsappUserBase64 = "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AcbEhkAFv7ieQAABYBJREFUeNrtm0toVFUYhp9zZtIxiSgNojSgIuZp0qgVpYgWpYgWpYgWpYgWpYgWpYgWpYgWbdq0KEVrKSIzI5p5K4oEEXQPUsw8tMzMcS7mXv9w7zSjmXvOnHPOf9wz56uG8//f9//nP99/zoGkpKSkpKSkpKSkpKSkpKSkpKTkpMTb4kYVpD0FBVgALAdmA9OBI0AjUAs0A6XAPeAecBu4AdwCHgKPEinf6mD9gDXAauAEsAzYBMwGVgF1Nf7mIeAW8BfwB3gA3E6kfIuCFQCvAKuAdcBSoAnYALQAq0D1v88Pge/AL8AnYA6wA5gHbAKagBeD//V7An8CHgEPgYfAbeBWMuVbGKwNsAFYBywHGoENwBygE6it0gK8Ah4Bv4FfAnW6gY3BWpLq7/XfD7wEHgH3gD+S2gIrgvUBdgC7gZPADqATmFvxXb8D3AN+A78Gf28HdgE7gV3ATmAtsDSpMh8BfwC/gYfAn8mUbyWwAsBeYC+wD9gPrALmZfndfwt8C9b7b6AL2AfsA/YDe4B9wIsZfO9LwEvgOfAsme3v6bF/A7uBvWf0GvWlYhWpP9D3wE1S/UGrgG6gB3gJeAn0Ar0ZfO9LpP5Y30Fq+3v9VwB7T8f3Z/TzO0m9wVqgWf7v3wX+DNY8+FvPGe1vM6ktoM6Mfr4T2Av0A73Aa7S+wXof77v/HPD/2t884E2gL/h7Sxl9rA+p78/13wX8SGoLqAvWh9S2tz3X6w/W3F7+F8C8f3rff0C96I8H6+nEtoC6YL1IbevccyN+f08n9ofT+X3Bf2N/9ID90T996P0uS7b9PfX9Pf0R+zH7H7MfsR+xP2b/T9of6wPrZ/T/oP1B+7HfsX/Mfn/PfW6S2ALqgfUzte39vN7P6/v7vVf6Bf1/Zbe91N7T9rFfsl9v+9gfdg70Bf+NvT+pZfW9B6nv7fVb0vpt6v37gGZ6/186sS+gHljzUv/8S2BfUv3D6fsO6vuD7mUfUD+kX6T+mO7rC/6T+oP2D9vvfUj9oP1D9oc7sR+xP9wfTvf32Y/ZH+nH/pC7g7Vw6I/Zfyr9Y3/An/bH7EfsR+wP2T9k/1C6v6S/vR/8Zf2yfvD79cv6Ze8H/f5S+9ivt70f9P8/sB986f1e6pf0S/pL7T3pL++X/X7tsvaH7MftR+zH7Sfrp+z366S7WbKzYCnwFrASeAtYSTr7gK8L9m3Dvu98XwUscD+k+gD6p9R6OvuADmBtznv6OfAncCf8/VbgVvD3ZlKPoX5Iv+T+I3m/v20/Yv+Y/eF0fzv9H0Xb7/f37A+p78fsl/STgI9P7RfwCfCJwOfAnwU+9An4Y/8v+78F/gH+wP4H+H/8Xw9fBPwV8H/C1+9R4FwOfvUdB87Lz7u+U8A593nfcRI4WeAn31mO9XGsf59XnGP887ziPOMYf8pfx/oX9H9b1gX/gP6AsvVfVvo8XG9gHfA68AbwBvAm6XwOOBP67M3+n+wU8AvwY8Afev+G/Y6vO+HvUvq6bNfTZZb/XfCHvvpY70NqWwPqX9H3u6m1pfX7bWptZ7S+zay9fG3Z9pZaW7X1V63r4wM8A+7m8bFfwBPgH6S+r1N/0DpgDdB6xo6g9YBaS0r972N9XbY81DqS69rS67fDdQyvH0wHrgLXAtfCWmAd8I0bXWAtVv2A9Vj1E9ZzEbgE/PscBK7X913Xp/p/Wdf1wI9S+73UP+H6A+sN/HuuC1bMre5XgY+AnwN+A0+AJ8DjHPh/L8p57Mv2Xb7/AnZ8P9gX/D8W++6XWv/Fuv8OALs8qR8Zf/2pAAAAAElRU5ErkJggg==";
-
-// Modern High-Fidelity WhatsApp Style Multi-User Group Silhouette Asset (Cohesive Layered Tri-Profile System)
-const whatsappGroupBase64 = "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";
+const whatsappUserBase64 = "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AcbEhkAFv7ieQAABYBJREFUeNrtm0toVFUYhp9zZtIxiSgNojSgIuZp0qgVpYgWpYgWpYgWpYgWpYgWpYgWpYgWbdq0KEVrKSIzI5p5K4oEEXQPUsw8tMzMcS7mXv9w7zSjmXvOnHPOf9wz56uG8//f9//nP99/zoGkpKSkpKSkpKSkpKSkpKSkpKTkpMTb4kYVpD0FBVgALAdmA9OBI0AjUAs0A6XAPeAecBu4AdwCHgKPEinf6mD9gGEAasA5YBMwGVgF1Nf7mIeAW8BfwB3gA3E6kfIuCFQCvAKuAdcBSoAnYALQAq0D1v88Pge/AL8AnYA6wA5gHbAKagBeD//V7An8CHgEPgYfAbeBWMuVbGKwNsAFYBywHGoENwBygE6it0gK8Ah4Bv4FfAnW6gY3BWpLq7/XfD7wEHgH3gD+S2gIrgvUBdgC7gZPADqATmFvxXb8D3AN+A78Gf28HdgE7gV3ATmAtsDSpMh8BfwC/gYfAn8mUbyWwAsBeYC+wD9gPrALmZfndfwt8C9b7b6AL2AfsA/YDe4B9wIsZfO9LwEvgOfAsme3v6bF/A7uBvWf0GvWlYhWpP9D3wE1S/UGrgG6gB3gJeAn0Ar0ZfO9LpP5Y30Fq+3v9VwB7T8f3Z/TzO0m9wVqgWf7v3wX+DNY8+FvPGe1vM6ktoM6Mfr4T2Av0A73Aa7S+wXof77v/HPD/2t884E2gL/h7Sxl9rA+p78/13wX8SGoLqAvWh9S2tz3X6w/W3F7+F8C8f3rff0C96I8H6+nEtoC6YL1IbevccyN+f08n9ofT+X3Bf2N/9ID90T996P0uS7b9PfX9Pf0R+zH7H7MfsR+xP2b/T9of6wPrZ/T/oP1B+7HfsX/Mfn/PfW6S2ALqgfUzte39vN7P6/v7vVf6Bf1/Zbe91N7T9rFfsl9v+9gfdg70Bf+NvT+pZfW9B6nv7fVb0vpt6v37gGZ6/186sS+gHljzUv/8S2BfUv3D6fsO6vuD7mUfUD+kX6T+mO7rC/6T+oP2D9vvfUj9oP1D9oc7sR+xP9wfTvf32Y/ZH+nH/pC7g7Vw6I/Zfyr9Y3/An/bH7EfsR+wP2T9k/1C6v6S/vR/8Zf2yfvD79cv6Ze8H/f5S+9ivt70f9P8/sB986f1e6pf0S/pL7T3pL++X/X7tsvaH7MftR+zH7Sfrp+z366S7WbKzYCnwFrASeAtYSTr7gK8L9m3Dvu98XwUscD+k+gD6p9R6OvuADmBtznv6OfAncCf8/VbgVvD3ZlKPoX5Iv+T+I3m/v20/Yv+Y/eF0fzv9H0Xb7/f37A+p78fsl/STgI9P7RfwCfCJwOfAnwU+9An4Y/8v+78F/gH+wP4H+H/8Xw9fBPwV8H/C1+9R4FwOfvUdB87Lz7u+U8A593nfcRI4WeAn31mO9XGsf59XnGP887ziPOMYf8pfx/oX9H9b1gX/gP6AsvVfVvo8XG9gHfA68AbwBvAm6XwOOBP67M3+n+wU8AvwY8Afev+G/Y6vO+HvUvq6bNfTZZb/XfCHvvpY70NqWwPqX9H3u6m1pfX7bWptZ7S+zay9fG3Z9pZaW7X1V63r4wM8A+7m8bFfwBPgH6S+r1N/0DpgDdB6xo6g9YBaS0r972N9XbY81DqS69rS67fDdQyvH0wHrgLXAtfCWmAd8I0bXWAtVv2A9Vj1E9ZzEbgE/PscBK7X913Xp/p/Wdf1wI9S+73UP+H6A+sN/HuuC1bMre5XgY+AnwN+A0+AJ8DjHPh/L8p57Mv2Xb7/AnZ8P9gX/D8W++6XWv/Fuv8OALs8qR8Zf/2pAAAAAElRU5ErkJggg==";
+const whatsappGroupBase64 = "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AcbEhkYlM5zKAAABmNJREFUeN7t22tsVFUUx/Hzu9MptBRaCi0F6pQC9UGBWqiPFqqPFqqPFmqPFqoPtVCoD1SoUAtV6gMVaqH6QAsVKD7wUR8gUExIID6gKCoGg9GoGIwPo0bFSDQeY0Rizv6Ym3bGO3fu3Dtz78ydOf8kk7SZO/fM2Xutvdfae60FCAgICAgICAgICAgICAgICAgIiL9T3KiCjL+gAHOBecC8wDPgGFAEFAFpYByYAcaASeA6MATcBG4AVwE/CizfEWApMB9YBswHlgELgaXAKmBVsP/+I+AHYBvQAnwD/AgMBZb/P96bAn8DPwC7gC+BrUBzYBlwH7AKWBXir/+A/A9gG/AisBX4FPgoYPmWANMALAKWAnXAUmApUBuYVw+wG/gU+AhYA6TDeIAdgZUi8d///cCrwGfAL0BiwPIdDrAcsACYAqwAlgGrgNpgz6sNfA58AnwE1ALpMB4wK7CSpHjPvwaIAnXAb0BvsHY0/O93hPIA8wJrgGhgXp8L1g9Kvf6pYI9XvX6v6+9zvdfrdf6v+vtIrR9bY3/U698P1hS8A3wKvAmsC5b2gZ6/A/gM+AR4F+gNlq6BPr9XgA+BN4E3+wW4g6VpoOcHwBvA68BrwMvAy8BLffQZ8BLwIvA8sDRYmnp7XwLMD7g/WDo6vT6gW8wU8AnwZ8BdwY/qZ8BPgU/6Y6A3+gPge+D7oE9A8HcwN/Cg/xYwPzCvHwA/BP+7vwd6oj8AeqJvgv5hA7ZgKewO+r0B77/S790f9W/fM+C33r/80u/L9+737rf8X7H/z3O/8T/j/zb/n+t+zv+M+zl/R6Wft2/Pbeft7fO25/bwdvV279/1T/x/rPtY97LuYd3FunuP7bztuXf8qf/T2/8FBAR+U5Gf+3/9P+p/8t3X39fR0ZHB69VdYVfB9+rK4L9XZwY+b2bA68/wuv9/yPfqp6C79b8O4I+An3eFfQfclZ6fA9wG9D4X7Atf6b8D3AX0Rk9f8Evg9zXf+T8wIPi7+Rdw95rgTjE/MC8/sC98T/Az7p7izv/b/A/clb4T3CnumTf/BXeNfSfYPWe6f677v7p/rvv67Zzr/onmOn8HeCtwN3A38NfAnfT89f8B+E3gbS6g/3Xg/376I8BP/eRP+3179/v77O9f4fN6/Z8Enp/y18CHgBsn9uofv9b69wN8CPhXAn6F8Z8CngQeX9G/P6H/m/pXIn7Z7wO4637f9+UfBPg94I8v7t+fs/6lC/n5gP/+7f8g8Pv6I+C3/wZg9T/Hfgv4beCPdf9N/Ru8A/w6wI8Cvz7Fj+Y+wN0Zvg/w/Sg/9v91/z3A9wPc+eM/D3zO/87fA3wO+GvgP879fI7wWcCvAZ76w68Bfg3wa+AnpT98BvhpwN2Auwf967D/R3gU+GnAwz/8M8CHgV8FfL0vAb/kZ8CXAz/+4Z8BPhj6YOCnPX/as6I/M+rP8v4X5+gPHZpZ3LOfz0h9eDqz6OdfUuCnv0+Bn/ZfUuCrv8+BP+1Z1p9R8WeG/enOn0n8mSFPf9jW0N6Vz0h6ZscP+OOfFfGZRT+fWevPnC2fP1c+P+npM/lzR7+V7b87Wz66G9N97Mbyvdkf0V3tU9w9pvu8bXv/P7fHdmO6j2wH7M12N9uX7FeyH3f+H9m92t66ZPeFtu1fUdvFp7bzP2vbxSe3z/H++X32M7Y9tgv7GdsV+5Xsz+wH7VfC8T7NnZq7M3+n+0q6n3T3Dfd4z3/LPeYf72vuvmD7Zfsl2wXbd/wXth+2H7K9L/GepHvKdkH3XzB9w/b6fEeyva7fV/Xz9+3p/q/gPv+XUfqfQ97Xb57yv0XwUfo6vX3D/yZ7C3v9/UfGevwOAC08V486Z3zKAAAAAElRU5ErkJggg==";
 
 if (!fs.existsSync(defaultAvatarPath)) {
     fs.writeFileSync(defaultAvatarPath, Buffer.from(whatsappUserBase64, 'base64'));
@@ -66,7 +63,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'app', 'uploads')));
 // Initialize PostgreSQL Tables
 initDB();
 
-// HOT DATABASE SCHEMA MIGRATION: Ensure details columns exist on the rooms table structure
+// HOT DATABASE SCHEMA MIGRATION: Adjusted to handle permanent community member structures
 async function checkSchemaMigration() {
     try {
         await pool.query(`
@@ -81,8 +78,17 @@ async function checkSchemaMigration() {
                 read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(message_id, user_id)
             );
+
+            -- NEW: Dynamic tracking table for permanent group entry registries
+            CREATE TABLE IF NOT EXISTS room_members (
+                id SERIAL PRIMARY KEY,
+                room_id INT NOT NULL,
+                user_id INT NOT NULL,
+                joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(room_id, user_id)
+            );
         `);
-        console.log('PostgreSQL database room details & reads status schema synchronized successfully.');
+        console.log('PostgreSQL database room details, members registry & reads status schema synchronized successfully.');
     } catch (err) {
         console.error('Error executing live rooms database structure alteration adjustments:', err);
     }
@@ -191,7 +197,15 @@ app.post('/api/rooms/create', checkAuthSession, async (req, res) => {
             'INSERT INTO rooms (room_name, room_code, room_desc, room_icon, created_by) VALUES ($1, $2, $3, $4, $5) RETURNING id, room_name, room_code, room_desc, room_icon',
             [room_name, roomCode, room_desc || '', '/uploads/default-group.png', req.session.userId]
         );
-        res.json(result.rows[0]);
+        
+        // Auto-link creator to room member persistence registry
+        const dynamicRoom = result.rows[0];
+        await pool.query(
+            'INSERT INTO room_members (room_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [dynamicRoom.id, req.session.userId]
+        );
+
+        res.json(dynamicRoom);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Database context group configuration failure.' });
@@ -207,7 +221,15 @@ app.get('/api/rooms/lookup/:code', checkAuthSession, async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Target room configuration mismatch parameters.' });
         }
-        res.json(result.rows[0]);
+        
+        // Auto-enroll user inside the room membership directory table upon lookups
+        const TargetRoom = result.rows[0];
+        await pool.query(
+            'INSERT INTO room_members (room_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [TargetRoom.id, req.session.userId]
+        );
+
+        res.json(TargetRoom);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Failed to query database room registries.' });
@@ -390,20 +412,32 @@ io.on('connection', (socket) => {
         if (callback) callback({ status });
     });
 
-    socket.on('fetchGroupOnlineRoster', ({ roomId }, callback) => {
-        const targetRoomTag = `group_room_${roomId}`;
-        const roomSockets = io.sockets.adapter.rooms.get(targetRoomTag) || new Set();
-        const analyticalRoster = [];
-        const uniquenessFilter = new Set();
+    // BUG FIXED: Now pulls absolute database memberships and matches profiles against application-wide global trackers
+    socket.on('fetchGroupOnlineRoster', async ({ roomId }, callback) => {
+        try {
+            const result = await pool.query(`
+                SELECT u.id, u.username, COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url
+                FROM room_members rm
+                JOIN users u ON rm.user_id = u.id
+                WHERE rm.room_id = $1
+                ORDER BY u.username ASC
+            `, [roomId]);
 
-        for (const sockId of roomSockets) {
-            const clientSock = io.sockets.sockets.get(sockId);
-            if (clientSock && clientSock.userId && !uniquenessFilter.has(clientSock.userId)) {
-                uniquenessFilter.add(clientSock.userId);
-                analyticalRoster.push({ id: clientSock.userId, username: clientSock.username || 'Active Member' });
-            }
+            const dynamicRoster = result.rows.map(user => {
+                const isOnline = connectedUsersMap.has(user.id) && connectedUsersMap.get(user.id).size > 0;
+                return {
+                    id: user.id,
+                    username: user.username,
+                    profile_pic_url: user.profile_pic_url,
+                    status: isOnline ? 'online' : 'offline'
+                };
+            });
+
+            if (callback) callback(dynamicRoster);
+        } catch (err) {
+            console.error('Error computing dynamic group tracking registry:', err);
+            if (callback) callback([]);
         }
-        if (callback) callback(analyticalRoster);
     });
 
     socket.on('joinRoom', async ({ currentUserId, targetUserId }) => {
@@ -542,17 +576,18 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }) => {
-        try {
-            await pool.query(`
-                INSERT INTO group_message_reads (message_id, user_id) 
-                VALUES ($1, $2) ON CONFLICT DO NOTHING
-            `, [messageId, userId]);
-            io.to(`group_room_${roomId}`).emit('broadcastGroupReadsSynchronized', { roomId });
-        } catch (err) {
-            console.error(err);
-        }
-    });
+    // --- FIXED: Removed stray text from the database query execution string ---
+socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }) => {
+    try {
+        await pool.query(`
+            INSERT INTO group_message_reads (message_id, user_id) 
+            VALUES ($1, $2) ON CONFLICT DO NOTHING
+        `, [messageId, userId]);
+        io.to(`group_room_${roomId}`).emit('broadcastGroupReadsSynchronized', { roomId });
+    } catch (err) {
+        console.error(err);
+    }
+});
 
     socket.on('fetchGroupMessageReadLedger', async ({ messageId }, callback) => {
         try {
@@ -579,6 +614,82 @@ io.on('connection', (socket) => {
             }
         }
     });
+});
+
+
+
+// --- UPDATED ADMINISTRATIVE PIPELINE GATEWAYS & EXTENDED MODERATION STUBS ---
+
+// 1. Serving Admin Interface View safely from the directory route path
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'admin.html'));
+});
+
+// 2. Security Gate Verification Handler
+app.post('/api/admin/verify', (req, res) => {
+    const { username, password } = req.body;
+    if (username === 'admin' && password === 'admin123') {
+        return res.sendStatus(200);
+    }
+    res.status(401).send('Access Denied: Invalid Administrative Credentials.');
+});
+
+// 3. ENHANCED: Dynamic Database Aggregations for Active Communities & Core Tables
+app.get('/api/admin/metrics', async (req, res) => {
+    try {
+        // Collect analytical counter variables tracking sizes across tables concurrently
+        const userCountRes = await pool.query('SELECT COUNT(*) FROM users');
+        const roomCountRes = await pool.query('SELECT COUNT(*) FROM rooms');
+        const messageCountRes = await pool.query('SELECT COUNT(*) FROM messages');
+        
+        // Dynamic lookups parsing profiles ledger tables data 
+        const usersListRes = await pool.query('SELECT id, username, full_name, bio FROM users ORDER BY id DESC LIMIT 50');
+        
+        // NEW EXTENDED QUERY: Gathers live group chat telemetry schemas
+        const roomsListRes = await pool.query('SELECT id, room_name, room_code, room_desc, created_by FROM rooms ORDER BY id DESC LIMIT 50');
+
+        res.json({
+            counters: {
+                userCount: userCountRes.rows[0].count,
+                roomCount: roomCountRes.rows[0].count,
+                messageCount: messageCountRes.rows[0].count
+            },
+            users: usersListRes.rows,
+            rooms: roomsListRes.rows
+        });
+    } catch (err) {
+        console.error('Failure mapping tracking system matrix indexes telemetry:', err);
+        res.status(500).json({ error: 'Administrative dashboard analytics sequence runtime crash.' });
+    }
+});
+
+// 4. NEW FUNCTIONALITY: Operational Moderation Route Hookup
+app.post('/api/admin/users/:id/flag', async (req, res) => {
+    const targetedUserId = req.params.id;
+    try {
+        // Example System Level Reset: Flags account by setting a diagnostic system placeholder notification
+        await pool.query(
+            "UPDATE users SET bio = '⚠️ This profile content description is undergoing review by system administrative safety officers.' WHERE id = $1", 
+            [targetedUserId]
+        );
+        
+        // Notify the application ecosystem in real time that structural information parameters altered
+        io.emit('profileUpdated', { userId: targetedUserId, bio: '⚠️ Undergoing review.' });
+        
+        res.sendStatus(200);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Database mutation action sequence conflict.');
+    }
+});
+
+// Add these stubs alongside your existing standalone routing views in server.js
+app.get('/developer', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'developer.html'));
+});
+
+app.get('/faq', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'faq.html'));
 });
 
 server.listen(PORT, () => {

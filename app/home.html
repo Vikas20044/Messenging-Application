@@ -12,6 +12,18 @@
         <div class="navbar-left">
             <div class="navbar-brand">Real Time Messaging Application</div>
             <div class="navbar-status" id="navbar-status-tag">Status: Connected</div>
+            
+            <!-- High UI/UX About Navigation Dropdown Menu -->
+            <div class="navbar-item-container">
+                <button type="button" id="navbar-about-trigger" class="nav-action-btn" title="Learn more about the application">
+                    <span>About</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <div id="navbar-about-dropdown" class="msg-dropdown hidden" style="top: 42px; left: 0; width: 160px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); z-index: 2200;">
+                    <div onclick="switchMainView('developer')" class="navbar-about-item">👨‍💻 Developers</div>
+                    <div onclick="switchMainView('faq')" class="navbar-about-item">❓ Help & FAQ</div>
+                </div>
+            </div>
         </div>
         
         <div class="navbar-search-container">
@@ -54,17 +66,17 @@
         
         <aside class="sidebar-panel" id="sidebar-panel">
             <header class="sidebar-header">
-                <h3 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; font-weight:700;">Conversations</h3>
+                <h3 class="sidebar-panel-header-text">Conversations</h3>
                 <button id="close-sidebar-mobile" class="action-btn secondary mobile-only">&times;</button>
             </header>
 
-            <div class="community-box-container" style="padding: 1rem; border-bottom: 1px solid var(--bg-tertiary); display: flex; flex-direction: column; gap: 0.5rem;">
-                <h3 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; font-weight:700;">Communities</h3>
+            <div class="community-box-container">
+                <h3 class="sidebar-panel-header-text">Communities</h3>
                 <div style="display: flex; gap: 0.4rem;">
-                    <button id="btn-create-room" class="action-btn secondary" style="flex: 1; padding: 0.5rem; font-size: 0.85rem;">+ Create</button>
-                    <button id="btn-join-room" class="action-btn secondary" style="flex: 1; padding: 0.5rem; font-size: 0.85rem;">🔑 Join Room</button>
+                    <button id="btn-create-room" class="action-btn secondary community-action-split-btn">+ Create</button>
+                    <button id="btn-join-room" class="action-btn secondary community-action-split-btn">🔑 Join Room</button>
                 </div>
-                <div id="community-threads-target" style="max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; margin-top: 0.3rem;"></div>
+                <div id="community-threads-target"></div>
             </div>
 
             <div class="active-chats-list">
@@ -93,7 +105,7 @@
                         </div>
                     </div>
                     <div id="header-action-panel" style="display: flex; align-items: center; gap: 0.5rem;">
-                        <button id="check-room-online-btn" class="action-btn secondary hidden" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;">🟢 Who's Online</button>
+                        <button id="check-room-online-btn" class="action-btn secondary hidden" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;">👥 Community Directory</button>
                     </div>
                 </header>
 
@@ -123,7 +135,24 @@
                                 <div data-lang="te">Telugu (తెలుగు)</div>
                                 <div data-lang="ml">Malayalam (മലയാളം)</div>
                                 <div data-lang="bn">Bengali (বাংলা)</div>
-                                <div data-lang="hi">Hindi (हिन्दी)</div>
+                                <div data-lang="hi">Hindi (ಹಿन्दी)</div>
+                            </div>
+                        </div>
+
+                        <!-- WhatsApp-Style Categorized Emoji Keyboard Trigger Dropdown Subsystem -->
+                        <div style="position: relative; display: inline-block;">
+                            <button type="button" id="chat-emoji-trigger" class="action-btn secondary" style="padding: 0.6rem 0.8rem; font-size: 1.1rem; border-radius: 6px;" title="Insert Emoji">😀</button>
+                            <div id="emoji-picker-panel" class="emoji-picker-panel hidden">
+                                <div class="emoji-tabs-row" id="emoji-tabs-row">
+                                    <button type="button" class="emoji-tab-btn active" data-cat="smileys" title="Smileys & Emotion">😀</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="people" title="People & Body">👋</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="nature" title="Animals & Nature">🍏</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="food" title="Food & Drink">🍔</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="travel" title="Travel & Places">🚗</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="activities" title="Activities & Objects">🎉</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="symbols" title="Symbols & Flags">❤️</button>
+                                </div>
+                                <div class="emoji-grid-viewport" id="emoji-grid-viewport"></div>
                             </div>
                         </div>
 
@@ -140,9 +169,11 @@
                     </form>
                 </div>
             </div>
+
         </main>
     </div>
 
+    <!-- CREATE ROOM MODAL -->
     <div id="create-group-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -165,10 +196,11 @@
         </div>
     </div>
 
+    <!-- ROOM ONLINE ROSTER MODAL -->
     <div id="group-online-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
-                <h3>Active Room Members</h3>
+                <h3>Community Members & Status</h3>
                 <button id="close-group-online-modal" class="close-modal-x">&times;</button>
             </header>
             <div class="modal-body" id="group-online-list-target" style="display: flex; flex-direction: column; gap: 0.75rem;">
@@ -176,6 +208,7 @@
         </div>
     </div>
 
+    <!-- SEEN RECEIPTS AUDIT MODAL -->
     <div id="receipts-audit-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -187,6 +220,7 @@
         </div>
     </div>
 
+    <!-- PROFILE MANAGEMENT MODAL -->
     <div id="profile-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -230,6 +264,7 @@
         </div>
     </div>
 
+    <!-- PUBLIC DETAILS INSPECTOR MODAL -->
     <div id="public-view-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -265,7 +300,6 @@
         let activeRoomDesc = '';
         let activeRoomIcon = '';
 
-        // RUNTIME TRACKER FOR OUTGOING TRANSLITERATION CHOICE
         let selectedOutgoingLang = 'auto';
 
         const sidebarPanel = document.getElementById('sidebar-panel');
@@ -291,9 +325,16 @@
         const attachDropdownMenu = document.getElementById('attach-dropdown-menu');
         const chatMediaInput = document.getElementById('chat-media-input');
 
-        // TARGET HANDLERS FOR THE INPUT LANGUAGE SELECTOR
         const chatLangTrigger = document.getElementById('chat-lang-trigger');
         const inputLangDropdown = document.getElementById('input-lang-dropdown');
+
+        const chatEmojiTrigger = document.getElementById('chat-emoji-trigger');
+        const emojiPickerPanel = document.getElementById('emoji-picker-panel');
+        const emojiGridViewport = document.getElementById('emoji-grid-viewport');
+        const emojiTabsRow = document.getElementById('emoji-tabs-row');
+
+        const navbarAboutTrigger = document.getElementById('navbar-about-trigger');
+        const navbarAboutDropdown = document.getElementById('navbar-about-dropdown');
 
         const createGroupModal = document.getElementById('create-group-modal');
         const closeGroupModalBtn = document.getElementById('close-group-modal-btn');
@@ -333,10 +374,97 @@
         const closeReceiptsModal = document.getElementById('close-receipts-modal');
         const receiptsListTarget = document.getElementById('receipts-list-target');
 
+        // Categorized Extensive Native Emoji Storage Array
+        const emojiDatabase = {
+            smileys: [
+                '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','☠️','👽','👾','🤖','🎃','😺','😸','😹','😻','😼','😽','🙀','😿','😾'
+            ],
+            people: [
+                '👋','🤚','🖐️','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','🦿','🦵','🦶','👂','🦻','👃','🧠','🫀','🫁','🦷','🦴','👀','👁️','👅','👄','💋','🩸','👶','👧','🧒','👦','👩','🧑','👨','👩‍🦱','🧑‍🦱','👨‍🦱','👩‍🦰','🧑‍🦰','👨‍🦰','👱‍♀️','👱','👱‍♂️','👩‍🦳','🧑‍🦳','👨‍🦳','👩‍🦲','🧑‍🦲','👨‍🦲','🧔','👵','🧓','👴','👲','🧕','👮‍♀️','👮','👮‍♂️','👷‍♀️','👷','👷‍♂️','💂‍♀️','💂','💂‍♂️','🕵️‍♀️','🕵️','🕵️‍♂️','👩‍⚕️','🧑‍⚕️','👨‍⚕️'
+            ],
+            nature: [
+                '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🪱','🐛','🦋','🐌','🐞','🐜','🪰','🪲','🪳','🕷️','🕸️','🦂','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊','🐅','🐆','🦓','🦍','🦧','🦣','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🦬','🦙','🐐','🐏','🐑','🐎','🐖','🐄','🐂','🐃','🦌','🐕','🐩','🦮','🐕‍🦺','🐈','🐈‍⬛','🐓','🦃','🦤','🦚','🦜','🦢','🦩','🕊️','🐇','🦝','🦨','🦡','🦫','🦦','🦥','🐁','🐀','🐿️','🦔','🐾','🐉','🐲','🌵','🎄','🌲','🌳','🌴','🪵','🌱','🌿','☘️','🍀','🎍','🪴','🎋','🍃','🍂','🍁','🍄','🐚','🪨','🌾','💐','🌷','🌹','🥀','🌺','🌸','🌼','🌻','🌞','🌝','🌛','🌜','🌙','🪐','💫','⭐️','🌟','✨','⚡️','彗星','💥','🔥','🌪️','🌈','☀️','🌤️','⛅️','🌥️','☁️','🌧️','⛈️','🌩️','❄️','⛄️','💨','💧','💦','🌊'
+            ],
+            food: [
+                '🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆',' avocado ','🥦','🥬','🥒','🌶️','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖',' pretzels ','🧀','🥚','🍳',' butter ','🥞','🧇','🥓','🥩','🍗','🍖','🌭','🍔','🍟','🍕','🫓','🥪','🥙','🧆','🌮','🌯','🫔','🥗','🥘','🫕','🥣','🍲',' popcorn ','🧂','🥫',' Bento ','🍘','🍙','🍚','🍛','🍜','🍝','🍣','🍤','🍥','🥮','🍡','🥟','🥠','🥡','🍦','🍧','🍨','🍩','🍪','🎂','🍰',' cupcakes ','🥧','🍫','🍬','🍭',' pudding ','🍯','🍼','🥛','☕️','🫖','🍵','🍶','🍾','🍷','🍸','🍹','🍺','🍻','🥂','🥃','🥤','🧋','🧃','🧉','🧊'
+            ],
+            travel: [
+                '🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🛵','摩托车','🛺','🚲','🛴','🛹','🛼','🚏','🛣️','🛤️','🛢️','⛽️','🚨','🚥','🚦','🛑','🚧','⚓️','⛵️',' Canoes ',' Speedboats ','🛥️','🚢','✈️','🛩️','🛫','🛬','🪂','💺',' Helicopter ','🚟',' Cable cars ','🚡',' Satellite ','🚀',' UFO ','🛎️','🧳','⌛️','⏳','⏰','⏱️','⏲️','🕰️','🗺️',' Compass ','🏔️',' Mountain ','🌋','🗻',' Camping ','🏖️',' Desert ',' Island ','🏞️',' Stadium ','🏛️',' Construction site ',' Brick ',' Hut ',' Houses ',' Houses with gardens ',' Office buildings ',' Post Office ',' Post Office ',' Hospital ',' Bank ',' Hotel ',' Love Hotel ',' Convenience store ',' School ',' Department store ',' Factory ',' Castle ',' Castle ',' Wedding ',' Tokyo Tower ',' Statue of Liberty ',' Church ',' Mosque ',' Hindu Temple ',' Synagogue ',' Shinto Shrine ',' Kaaba ',' Fountain ',' Tent ',' Foggy ',' Tokyo Tower ',' Cityscape ',' Sunrise ',' Sunrise ',' Cityscape at dusk ',' Sunset ',' Bridge at night ',' Carousel ',' Ferris Wheel ',' Roller Coaster ',' Locomotive ',' Tram '
+            ],
+            activities: [
+                '⚽️','🏀','🏈','⚾️','🥎','🎾',' volleyball ',' Volleyball ',' 🏉 ',' 🥏 ',' 🎱 ',' 🪀 ',' 🏓 ',' 🏸 ',' 🏒 ',' 🏑 ',' 🥍 ',' 🏏 ',' 🪃 ',' 🥅 ',' ⛳️ ',' 🪁 ',' 🏹 ',' 🎣 ',' 🤿 ',' 🥊 ',' 🥋 ',' 🎽 ',' 🛹 ',' 🛼 ',' 🛷 ',' 🥌 ',' 🎿 ',' ⛷️ ',' 🏂 ',' 🏋️‍♀️ ',' 🤺 ',' 🤼‍♂️ ',' 🤸‍♀️ ',' ⛹️‍♂️ ',' 🤾‍♂️ ',' 🧗‍♀️ ',' 🧘‍♀️ ',' 🚴‍♂️ ',' 🚵‍♂️ ',' 🏆 ',' 🥇 ',' 🥈 ',' 🥉 ',' 🏅 ',' 🎖️ ',' 🎟️ ',' 🎫 ',' 🎪 ',' 🎭 ',' 🖼️ ',' 🎨 ',' 🎬 ',' 🎤 ',' 🎧 ',' 🎼 ',' 🎹 ',' 🥁 ',' 🪘 ',' 🎷 ',' 🎺 ',' 🎸 ',' 🪕 ',' 🎻 ',' 🎲 ',' ♟️ ',' 🎯 ',' 🎳 ',' 🎮 ',' 🎰 ',' 🧩 ',' 🕶️ ',' 🥽 ',' 🥼 ',' 🦺 ',' 👔 ',' 👕 ',' 👖 ',' 🧣 ',' 🧤 ',' 🧥 ',' Socks ',' 🧦 ',' 👗 ',' Kimono ',' 👘 ',' Sari ',' 🥻 ',' Swimwear ',' 🩱 ',' Underpants ',' 𩨐 ',' Shorts ',' 🩳 ',' 👚 ',' 👛 ',' 👜 ',' 👝 ',' 🎒 ',' 👞 ',' 👟 ',' 🥾 ',' 🥿 ',' 👠 ',' 👡 ',' Ballet Shoes ',' 🩰 ',' 👢 ',' 👑 ',' 👒 ',' 🎩 ',' 🎓 ','  Cap ',' 🧢 ',' Helmet ',' ⛑️ ',' 📿 ',' Lipstick ',' 💄 ',' Ring ',' 💍 ',' Diamond ',' 💎 ',' Megaphone ',' 📢 ',' Loudspeaker ',' 📣 ',' Post Horn ',' 📯 ',' Bell ',' 🔔 ',' Muted Bell ',' 🔕 ',' Radio ',' 📻 ',' Accordion ',' 🪗 ',' Smartphone ',' 📱 ',' Telephone ',' ☎️ ',' Pager ',' 📟 ',' Fax ',' 📠 ',' Battery ',' 🔋 ',' Plug ',' 🔌 ',' Laptop ',' 💻 ',' Desktop ',' 🖥️ ',' Printer ',' 🖨️ ',' Keyboard ',' ⌨️ ',' Computer Mouse ',' 鼠标 ',' Trackball ',' Trackball ',' Floppy Disk ',' 💾 ',' CD ',' 💿 ',' Calculator ',' 🧮 ',' Video Camera ',' 🎥 ',' Film Strip ',' 🎞️ ',' Projector ',' 📽️ ',' Television ',' 📺 ',' Camera ',' 📷 ',' Flash Camera ',' 📸 ',' Video Recorder ',' 📹 ',' VHS ',' 专栏 ',' Magnifying Glass ',' 🔍 ',' Candle ',' 🕯️ ',' Diya Oil Lamp ',' 🪔 ',' Light Bulb ',' 💡 ',' Flashlight ',' 🔦 ',' Paper Lantern ',' 🏮 ',' Mirror ',' 🪞 ',' Fire Extinguisher ',' 🧯 ',' Shopping Cart ',' 🛒 ',' Cash ',' 💸 ',' Dollar ',' 💵 ',' Yen ',' 💴 ',' Euro ',' 💶 ',' Pound ',' 💷 ',' Coin ',' 🪙 ',' Money Bag ',' 💰 ',' Credit Card ',' 💳 ',' Scales ',' ⚖️ ',' Toolbox ',' 🧰 ',' Screwdriver ',' 🪛 ',' Wrench ',' 🔧 ',' Hammer ',' 🔨 ',' Pick ',' ⛏️ ',' Saw ',' 🪚 ',' Nut & Bolt ',' 🔩 ',' Gear ',' ⚙️ ',' Chain ',' ⛓️ ',' Magnet ',' 🧲 ',' Gun ',' 🔫 ',' Bomb ',' 💣 ',' Firecracker ',' 🧨 ',' Axe ',' 🪓 ',' Dagger ',' 🗡️ ',' Shield ',' 🛡️ ',' Cigarette ',' 🚬 ',' Coffin ',' ⚰️ ',' Crystal Ball ',' 🔮 ',' Nazar Amulet ',' 🧿 ',' Barber Pole ',' 💈 ',' Test Tube ',' 🧪 ',' Thermometer ',' 🌡️ ',' Broom ',' 🧹 ',' Plunger ',' 🪠 ',' Basket ','  basket ',' Toilet Paper ',' 🧻 ',' Soap ',' 🧼 ',' Toothbrush ',' 🪥 ',' Bucket ',' 🪣 ',' Key ',' 🔑 ',' Padlock ',' 🔒 ',' Unlock ',' 🔓 '
+            ],
+            symbols: [
+                '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️','☦️','🛐','⛎','♈️','♉️','♊️','♋️','♌️','♍️','♎️','♏️','♐️','♑️','♒️','♓️','🆔','⚛️','🈳','🈹','☢️','☣️','📴','📳','🈶','🈚️','營','🈺','🈲','✴️','🆚','💮','🉐','🈴','🈵','🈺','㊗️','㊙️','🔴','🔵','⚫️','⚪️','🟤','🟣','🟢','🟡','🟠','🟥','🟦','⬛️','⬜️','🟫','🟪','🟩','🟨','🟧','🏁','🚩','🎌','🏴','🏳️','🏳️‍🌈','🏳️‍⚧️','🏴‍☠️','🇮🇳','🇺🇸','🇬🇧','🇨🇦','🇦🇺','🇩累','🇫🇷','🇯🇵','🇧🇷','🇷🇺','🇨🇳','🇰睿','🇿🇦','🇪🇸','🇮🇹','🇲🇽','🇸🇦','🇦🇪','🇸🇬','🇨🇭'
+            ]
+        };
+
+        // Population Engine Strategy
+        function renderEmojiCategory(categoryName) {
+            emojiGridViewport.innerHTML = '';
+            const emojis = emojiDatabase[categoryName] || [];
+            
+            emojis.forEach(emoji => {
+                const item = document.createElement('span');
+                item.className = 'emoji-item';
+                item.innerText = emoji;
+                
+                // WhatsApp-style smart insertion logic at exact cursor layout position
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const startPos = msgInput.selectionStart;
+                    const endPos = msgInput.selectionEnd;
+                    const currentText = msgInput.value;
+                    
+                    msgInput.value = currentText.substring(0, startPos) + emoji + currentText.substring(endPos);
+                    
+                    // Adjust cursor location forward smoothly
+                    const newCursorPos = startPos + emoji.length;
+                    msgInput.setSelectionRange(newCursorPos, newCursorPos);
+                    msgInput.focus();
+                });
+                
+                emojiGridViewport.appendChild(item);
+            });
+        }
+
+        // Tab switcher context routing
+        emojiTabsRow.querySelectorAll('.emoji-tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                emojiTabsRow.querySelectorAll('.emoji-tab-btn').forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+                renderEmojiCategory(btn.getAttribute('data-cat'));
+            });
+        });
+
+        // Structural Panel visibility toggle handles
+        chatEmojiTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = emojiPickerPanel.classList.contains('hidden');
+            
+            // Smoothly close alternate operational menus
+            document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
+            if (typeof attachDropdownMenu !== 'undefined' && attachDropdownMenu) attachDropdownMenu.classList.add('hidden');
+            if (typeof inputLangDropdown !== 'undefined' && inputLangDropdown) inputLangDropdown.classList.add('hidden');
+            
+            if (isHidden) {
+                emojiPickerPanel.classList.remove('hidden');
+                // Initial setup execution mapping
+                const activeTab = emojiTabsRow.querySelector('.emoji-tab-btn.active');
+                renderEmojiCategory(activeTab ? activeTab.getAttribute('data-cat') : 'smileys');
+            } else {
+                emojiPickerPanel.classList.add('hidden');
+            }
+        });
+
         document.addEventListener('click', (e) => {
             document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
             if (typeof attachDropdownMenu !== 'undefined' && attachDropdownMenu) {
                 attachDropdownMenu.classList.add('hidden');
+            }
+            if (emojiPickerPanel && !emojiPickerPanel.contains(e.target) && e.target !== chatEmojiTrigger) {
+                emojiPickerPanel.classList.add('hidden');
             }
             
             const searchContainer = document.querySelector('.navbar-search-container');
@@ -344,6 +472,37 @@
                 searchResultsDropdown.classList.add('hidden');
             }
         });
+
+        // Toggle Navbar About Dropdown Contexts Safely
+        navbarAboutTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = navbarAboutDropdown.classList.contains('hidden');
+            document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
+            if (isHidden) {
+                navbarAboutDropdown.classList.remove('hidden');
+            }
+        });
+
+        // Dynamic SPA View Switcher Engine Logic
+        function switchMainView(targetView) {
+            const emptyNotice = document.getElementById('empty-view-notice');
+            const chatSubsystem = document.getElementById('active-chat-subsystem');
+
+            // Handle direct page routing redirects to standalone files
+            if (targetView === 'developer') {
+                window.location.href = '/developer';
+                return;
+            } else if (targetView === 'faq') {
+                window.location.href = '/faq';
+                return;
+            } else if (targetView === 'workspace') {
+                chatSubsystem.classList.add('hidden');
+                emptyNotice.classList.remove('hidden');
+            }
+            
+            navbarAboutDropdown.classList.add('hidden');
+            closeMobileSidebar();
+        }
 
         let isResizing = false;
         resizeHandle.addEventListener('mousedown', (e) => {
@@ -450,7 +609,7 @@
                 
                 item.innerHTML = `
                     <div style="position: relative; display: inline-block; flex-shrink: 0;">
-                        <img id="thread-avatar-${user.id}" src="${user.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary);">
+                        <img id="thread-avatar-${user.id}" src="${user.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary); margin-bottom: 0;">
                         <div id="status-badge-${user.id}" class="global-presence-badge offline"></div>
                     </div>
                     <span id="thread-name-${user.id}" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${user.username}</span>
@@ -517,6 +676,7 @@
             if(activeEl) activeEl.classList.add('active-selected');
 
             closeMobileSidebar();
+            if (emojiPickerPanel) emojiPickerPanel.classList.add('hidden');
             
             socket.emit('requestUserOnlineStatus', { targetUserId: id }, (reply) => {
                 chatWindowSubtitle.innerText = reply.status === 'online' ? '🟢 Online Now' : '⚪ Offline';
@@ -532,7 +692,6 @@
             attachDropdownMenu.classList.toggle('hidden');
         });
 
-        // TOGGLE LANGUAGE DROPDOWN AND PREVENT DOCUMENT COLLISION
         chatLangTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
             const isHidden = inputLangDropdown.classList.contains('hidden');
@@ -542,7 +701,6 @@
             }
         });
 
-        // HANDLE DYNAMIC SELECTION METRICS FOR PHONETIC INPUT
         inputLangDropdown.querySelectorAll('div').forEach(item => {
             item.addEventListener('click', (e) => {
                 selectedOutgoingLang = e.target.getAttribute('data-lang');
@@ -558,22 +716,19 @@
             });
         });
 
-        // --- REAL-TIME AS-YOU-TYPE PHONETIC TRANSLITERATION ENGINE ---
         msgInput.addEventListener('keydown', async (e) => {
             if (selectedOutgoingLang === 'auto') return;
 
-            // Trigger mapping replacement whenever the spacebar is pressed
             if (e.key === ' ') {
                 const value = msgInput.value;
                 const selectionStart = msgInput.selectionStart;
                 const textBeforeCursor = value.substring(0, selectionStart);
 
-                // Isolate the immediate untranslated English alphanumeric string preceding the cursor
                 const lastWordMatch = textBeforeCursor.match(/([a-zA-Z0-9]+)$/);
                 if (!lastWordMatch) return;
 
                 const lastWord = lastWordMatch[1];
-                e.preventDefault(); // Temporarily halt layout updates to safely calculate text indexes
+                e.preventDefault(); 
 
                 const itcMap = {
                     kn: 'kn-t-i0-und',
@@ -594,7 +749,6 @@
                             const startPos = selectionStart - lastWord.length;
                             const textAfterCursor = value.substring(selectionStart);
 
-                            // Rewrite internal text state seamlessly without moving field bounds
                             msgInput.value = value.substring(0, startPos) + transliteratedWord + ' ' + textAfterCursor;
                             
                             const newCursorPos = startPos + transliteratedWord.length + 1;
@@ -606,7 +760,6 @@
                     console.error("Transliteration engine connection timeout.", err);
                 }
 
-                // Safe structural fallback: Append space normally if API encounters network loss
                 const textAfterCursor = value.substring(selectionStart);
                 msgInput.value = textBeforeCursor + ' ' + textAfterCursor;
                 msgInput.setSelectionRange(selectionStart + 1, selectionStart + 1);
@@ -718,6 +871,8 @@
             if(activeEl) activeEl.classList.add('active-selected');
 
             closeMobileSidebar();
+            if (emojiPickerPanel) emojiPickerPanel.classList.add('hidden');
+            
             setTimeout(scrollToBottom, 50);
 
             socket.emit('joinGroupRoom', { roomId: id });
@@ -729,18 +884,22 @@
             socket.emit('fetchGroupOnlineRoster', { roomId: targetRoomId }, (roster) => {
                 groupOnlineListTarget.innerHTML = '';
                 if (roster.length === 0) {
-                    groupOnlineListTarget.innerHTML = '<p class="empty-text">No active connections found.</p>';
+                    groupOnlineListTarget.innerHTML = '<p class="empty-text">No active records available.</p>';
                 } else {
                     roster.forEach(m => {
                         const row = document.createElement('div');
                         row.style.display = 'flex';
                         row.style.alignItems = 'center';
-                        row.style.gap = '10px';
-                        row.style.padding = '0.4rem 0';
+                        row.style.justifyContent = 'space-between';
+                        row.style.padding = '0.5rem 0';
+                        row.style.borderBottom = '1px solid var(--bg-tertiary)';
                         row.innerHTML = `
-                            <span style="color: #22c55e; font-size: 1.1rem;">●</span>
-                            <span style="font-weight: 600; color: var(--text-main); font-size: 0.95rem;">${m.username}</span>
-                            ${m.id === currentUserId ? '<span style="font-size:0.75rem; color: var(--text-muted);">(You)</span>' : ''}
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <img src="${m.profile_pic_url}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary);">
+                                <span style="font-weight: 600; color: var(--text-main); font-size: 0.95rem;">${m.username}</span>
+                                ${m.id === currentUserId ? '<span style="font-size:0.75rem; color: var(--text-muted);">(You)</span>' : ''}
+                            </div>
+                            <span class="global-presence-badge ${m.status}" style="position: static; width: 10px; height: 10px; display: inline-block;"></span>
                         `;
                         groupOnlineListTarget.appendChild(row);
                     });
@@ -751,12 +910,11 @@
 
         closeGroupOnlineModal.addEventListener('click', () => groupOnlineModal.classList.add('hidden'));
 
-        // PROCESS SUBMISSIONS WITH FINAL STRING CLEANUP FOR ANY UNTRANSFORMED TRAILING WORDS
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (emojiPickerPanel) emojiPickerPanel.classList.add('hidden');
             let text = msgInput.value.trim();
             if(text) {
-                // If the user presses enter before typing space on their last word, convert it instantly
                 if (selectedOutgoingLang !== 'auto' && /[a-zA-Z0-9]/.test(text)) {
                     try {
                         msgInput.disabled = true;

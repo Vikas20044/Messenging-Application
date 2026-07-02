@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application FAQ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* CRITICAL FIX: Override global style.css body lock to enable page scrolling */
+        body {
+            overflow-y: auto !important;
+            height: auto !important;
+        }
+
+        .faq-container {
+            max-width: 760px;
+            margin: 4rem auto;
+            padding: 0 1.5rem;
+        }
+        .faq-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .faq-header h1 {
+            font-size: 2.4rem;
+            color: var(--text-main);
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+        .faq-header p {
+            color: var(--text-muted);
+        }
+        .faq-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .faq-item {
+            background: #ffffff;
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(54, 42, 33, 0.01);
+        }
+        .faq-item:hover {
+            border-color: var(--accent);
+        }
+        .faq-question {
+            padding: 1.25rem 1.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            background: #ffffff;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .faq-question:hover {
+            background-color: var(--bg-secondary);
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.55;
+        }
+        .faq-answer-inner {
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--bg-tertiary);
+        }
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+        }
+        .faq-item.active .faq-question {
+            color: var(--accent);
+            background: var(--bg-secondary);
+        }
+        .faq-icon {
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+        }
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+            color: var(--accent);
+        }
+        .back-block {
+            text-align: center;
+            margin-top: 3.5rem;
+        }
+        .back-block button {
+            padding: 0.6rem 1.5rem;
+            font-size: 0.9rem;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="faq-container">
+        <div class="faq-header">
+            <h1>Frequently Asked Questions</h1>
+            <p>Everything you need to know about navigating the application interfaces smoothly.</p>
+        </div>
+
+        <div class="faq-wrapper">
+            <!-- FAQ Item 1 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I use the typing Transliteration engine?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        Click on the globe icon (🌐) next to the conversation input stream, choose your target native language, and type phonetically using your English keyboard[cite: 2]. Pressing the **Spacebar** will instantly convert the phonetics to script characters[cite: 2].
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Item 2 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How can I view message-seen metrics in community pools?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        For any group context message you broadcast, an active interactive timestamp flag labeled "✓ Checked" appears underneath[cite: 2]. Click directly on that token check link to spin up a granular dynamic tracking audit modal revealing who saw it and when[cite: 2].
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Item 3 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What file transfer limitations are configured on disk?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        You can upload images, micro-videos, audio records, or structural PDF data documents[cite: 2]. The platform limits file processing batches to a maximum of 10 media elements per upload operation with an explicit size constraint ceiling of 15MB[cite: 2].
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Item 4 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Can I translate text messages that I have already received?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        Yes. Hover or tap the targeted message and click on the vertical three-dots icon (⋮)[cite: 3]. A dynamic menu will allow you to translate the text content to regional formats like Kannada, Tamil, Telugu, Malayalam, or Bengali, with an option to translate it back into English[cite: 3].
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Item 5 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What database management structure secures my data records?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        The backend infrastructure utilizing live migrations and indexing configurations is powered safely via a cloud **PostgreSQL Neon** engine instance, optimizing fast transactional query lookups for your user databases and chat histories[cite: 3].
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Item 6 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I generate or join an explicit Community chat room?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        To generate one, use the **+ Create** button inside the sidebar panel and fill out your workspace parameters[cite: 3]. To join an active pool, click **🔑 Join Room** and enter the unique 5-character configuration access pass code shared by the channel admin[cite: 3].
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Item 7 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I check which members are online inside a community channel?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        While active inside a community workspace space, click directly on the **👥 Community Directory** button located in the conversation top header panel[cite: 3]. This triggers a dynamic status grid matrix showing active user sessions and connection indicators[cite: 3].
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Item 8 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Where can I change my profile picture, full name, or login password?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        Click on the settings gear icon in the main layout deck header[cite: 3]. The dynamic user panel dialogue allows you to upload custom avatar image attachments, edit biographical indicators, or update your username and security password credentials safely[cite: 3].
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Item 9 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Does the user directory support live real-time query lookups?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        Yes. Typing characters into the top layout search input bar queries backend indices instantaneously[cite: 3]. Matching results generate down into an active dropdown ledger with avatar graphics, allowing you to establish direct thread communication fields instantly[cite: 3].
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Item 10 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Are there physical touch navigation gesture shortcuts configured for mobile?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        Yes. On adaptive viewport hand-held touch layouts, you can swipe your finger right starting from the outer left viewport border edge to pop open the sidebar navigator panel, or swipe back left across the screen overlay context to hide it cleanly[cite: 3].
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Item 11 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What happens if my connection status shifts to offline?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        The real-time `Socket.io` networking engine automatically monitors your global identity state metrics[cite: 3]. If the connection breaks, your identity indicator badge switches to offline status across active contact rosters until connection sync pipelines clear up[cite: 3].
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="back-block">
+            <button class="action-btn secondary" onclick="window.location.href='/chat'">← Return to Workspace</button>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const item = question.parentElement;
+                item.classList.toggle('active');
+            });
+        });
+    </script>
+</body>
+</html>

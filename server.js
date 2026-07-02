@@ -616,6 +616,74 @@ socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }
     });
 });
 
+
+
+// --- UPDATED ADMINISTRATIVE PIPELINE GATEWAYS & EXTENDED MODERATION STUBS ---
+
+// 1. Serving Admin Interface View safely from the directory route path
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'admin.html'));
+});
+
+// 2. Security Gate Verification Handler
+app.post('/api/admin/verify', (req, res) => {
+    const { username, password } = req.body;
+    if (username === 'admin' && password === 'admin123') {
+        return res.sendStatus(200);
+    }
+    res.status(401).send('Access Denied: Invalid Administrative Credentials.');
+});
+
+// 3. ENHANCED: Dynamic Database Aggregations for Active Communities & Core Tables
+app.get('/api/admin/metrics', async (req, res) => {
+    try {
+        // Collect analytical counter variables tracking sizes across tables concurrently
+        const userCountRes = await pool.query('SELECT COUNT(*) FROM users');
+        const roomCountRes = await pool.query('SELECT COUNT(*) FROM rooms');
+        const messageCountRes = await pool.query('SELECT COUNT(*) FROM messages');
+        
+        // Dynamic lookups parsing profiles ledger tables data 
+        const usersListRes = await pool.query('SELECT id, username, full_name, bio FROM users ORDER BY id DESC LIMIT 50');
+        
+        // NEW EXTENDED QUERY: Gathers live group chat telemetry schemas
+        const roomsListRes = await pool.query('SELECT id, room_name, room_code, room_desc, created_by FROM rooms ORDER BY id DESC LIMIT 50');
+
+        res.json({
+            counters: {
+                userCount: userCountRes.rows[0].count,
+                roomCount: roomCountRes.rows[0].count,
+                messageCount: messageCountRes.rows[0].count
+            },
+            users: usersListRes.rows,
+            rooms: roomsListRes.rows
+        });
+    } catch (err) {
+        console.error('Failure mapping tracking system matrix indexes telemetry:', err);
+        res.status(500).json({ error: 'Administrative dashboard analytics sequence runtime crash.' });
+    }
+});
+
+// 4. NEW FUNCTIONALITY: Operational Moderation Route Hookup
+app.post('/api/admin/users/:id/flag', async (req, res) => {
+    const targetedUserId = req.params.id;
+    try {
+        // Example System Level Reset: Flags account by setting a diagnostic system placeholder notification
+        await pool.query(
+            "UPDATE users SET bio = '⚠️ This profile content description is undergoing review by system administrative safety officers.' WHERE id = $1", 
+            [targetedUserId]
+        );
+        
+        // Notify the application ecosystem in real time that structural information parameters altered
+        io.emit('profileUpdated', { userId: targetedUserId, bio: '⚠️ Undergoing review.' });
+        
+        res.sendStatus(200);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Database mutation action sequence conflict.');
+    }
+});
+
+
 server.listen(PORT, () => {
     console.log(`Application running dynamically at http://localhost:${PORT}`);
 });

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard Control Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js CDN Engine for Visual Analytics Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* CRITICAL SCROLLING FIX: Overrides global overflow rules safely */
+        html, body {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            height: auto !important;
+            background-color: var(--bg-primary) !important;
+        }
+
+        .admin-dashboard-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--bg-tertiary);
+            padding-bottom: 1rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .stat-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 10px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.01);
+        }
+        .stat-card h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+        .stat-card .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        /* CHART DATA ARCHITECTURE SECTION */
+        .charts-container-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .chart-card {
+            background-color: #ffffff;
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+        }
+        .chart-card h3 {
+            font-size: 1rem;
+            margin-bottom: 1.2rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .data-table-section {
+            background-color: #ffffff;
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .data-table-section h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        th, td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--bg-tertiary);
+        }
+        th {
+            background-color: var(--bg-secondary);
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: var(--bg-secondary);
+        }
+        .badge {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 4px;
+        }
+        .badge.active-status {
+            background: rgba(34, 197, 94, 0.12);
+            color: #16a34a;
+        }
+        .badge.room-code {
+            background: rgba(203, 110, 50, 0.12);
+            color: var(--accent);
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        .mod-btn {
+            background: none;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .mod-btn:hover {
+            background: #ef4444;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PORTAL AUTHENTICATION LOCK SCREEN -->
+    <div id="admin-auth-gate" class="auth-box" style="margin: 15vh auto;">
+        <h2>Admin Portal Authorization</h2>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.2rem;">Please verify system root access credentials</p>
+        <form id="admin-login-form">
+            <input type="text" id="admin-user" placeholder="Admin Username" required autocomplete="off">
+            <input type="password" id="admin-pass" placeholder="Secret Access Key" required>
+            <button type="submit" style="background-color: var(--text-main);">Verify Authentication</button>
+        </form>
+        <p class="toggle-text"><a href="/login">Return to User Login</a></p>
+    </div>
+
+    <!-- MAIN ADMINISTRATIVE WORKSPACE METRICS DASHBOARD -->
+    <div id="admin-dashboard-view" class="admin-dashboard-container hidden">
+        <header class="admin-header">
+            <div>
+                <h1 style="font-size: 1.6rem; color: var(--text-main);">System Administration Engine</h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Real-time analytical trends & operational matrix data.</p>
+            </div>
+            <button id="admin-logout-btn" class="action-btn danger">Exit Panel</button>
+        </header>
+
+        <!-- TOP STATS CARDS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Registered Accounts</h3>
+                <div class="stat-value" id="dashboard-total-users">--</div>
+                <p style="font-size:0.75rem; color: var(--text-muted);">Database structural profiles</p>
+            </div>
+            <div class="stat-card">
+                <h3>Active Communities</h3>
+                <div class="stat-value" id="dashboard-total-rooms">--</div>
+                <p style="font-size:0.75rem; color: var(--text-muted);">Dynamic space channels</p>
+            </div>
+            <div class="stat-card">
+                <h3>Transmitted Data Volume</h3>
+                <div class="stat-value" id="dashboard-total-messages">--</div>
+                <p style="font-size:0.75rem; color: var(--text-muted);">Global speech records logged</p>
+            </div>
+        </div>
+
+        <!-- NEW VISUAL CHART RENDER GRIDS -->
+        <div class="charts-container-grid">
+            <div class="chart-card">
+                <h3>Application Layout Activity (Data Ratios)</h3>
+                <div style="position: relative; height: 260px; display: flex; justify-content: center;">
+                    <canvas id="ratioDoughnutChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>System Growth Distribution</h3>
+                <div style="position: relative; height: 260px;">
+                    <canvas id="growthBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- REGISTERED USERS MANAGEMENT REGISTRY -->
+        <div class="data-table-section">
+            <h2>Registered Database Accounts Ledger</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Username</th>
+                            <th>Display Name</th>
+                            <th>Biography Summary</th>
+                            <th>Moderation Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-users-table-body">
+                        <tr>
+                            <td colspan="5" style="text-align:center; color: var(--text-muted);">Querying system tables...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- NEW COMMUNITY CHANNELS SYSTEM LEDGER -->
+        <div class="data-table-section">
+            <h2>Active Messaging Communities Registry</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Room ID</th>
+                            <th>Community Name</th>
+                            <th>Access Passcode</th>
+                            <th>Description Detail</th>
+                            <th>Creator Identifier</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-rooms-table-body">
+                        <tr>
+                            <td colspan="5" style="text-align:center; color: var(--text-muted);">Querying namespace indexes...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const authGate = document.getElementById('admin-auth-gate');
+        const dashboardView = document.getElementById('admin-dashboard-view');
+        
+        let ratioChartInstance = null;
+        let growthChartInstance = null;
+
+        document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('admin-user').value.trim();
+            const password = document.getElementById('admin-pass').value;
+
+            const res = await fetch('/api/admin/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (res.ok) {
+                authGate.classList.add('hidden');
+                dashboardView.classList.remove('hidden');
+                loadDashboardMetrics();
+            } else {
+                alert(await res.text());
+            }
+        });
+
+        async function loadDashboardMetrics() {
+            try {
+                const res = await fetch('/api/admin/metrics');
+                if (!res.ok) return;
+                const data = await res.json();
+
+                // Inject Counter Cards Values
+                const totalUsers = parseInt(data.counters.userCount);
+                const totalRooms = parseInt(data.counters.roomCount);
+                const totalMessages = parseInt(data.counters.messageCount);
+
+                document.getElementById('dashboard-total-users').innerText = totalUsers;
+                document.getElementById('dashboard-total-rooms').innerText = totalRooms;
+                document.getElementById('dashboard-total-messages').innerText = totalMessages;
+
+                // Render Beautiful Theme-Compliant Charts
+                renderApplicationCharts(totalUsers, totalRooms, totalMessages);
+
+                // Populate User Accounts Ledger Table
+                const userTbody = document.getElementById('admin-users-table-body');
+                userTbody.innerHTML = '';
+                data.users.forEach(u => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>#${u.id}</strong></td>
+                        <td>${u.username}</td>
+                        <td>${u.full_name || '<em style="color:var(--text-muted)">Unset</em>'}</td>
+                        <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.bio || 'No profile bio setup.'}</td>
+                        <td><button class="mod-btn" onclick="executeUserModeration(${u.id}, '${u.username}')">Flag / Purge</button></td>
+                    `;
+                    userTbody.appendChild(tr);
+                });
+
+                // Populate Communities Registry Table
+                const roomTbody = document.getElementById('admin-rooms-table-body');
+                roomTbody.innerHTML = '';
+                if(data.rooms.length === 0) {
+                    roomTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No community rooms generated yet.</td></tr>`;
+                } else {
+                    data.rooms.forEach(r => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong>#${r.id}</strong></td>
+                            <td style="font-weight:600;">${r.room_name}</td>
+                            <td><span class="badge room-code">${r.room_code}</span></td>
+                            <td style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.room_desc || 'No profile overview given.'}</td>
+                            <td><span class="badge">User ID: ${r.created_by}</span></td>
+                        `;
+                        roomTbody.appendChild(tr);
+                    });
+                }
+
+            } catch (err) {
+                console.error("Failed to map dynamic pipeline analytics dashboard data logs:", err);
+            }
+        }
+
+        // CHARTS LOGIC MODULE WITH EMBEDDED CONTEXT CONFIGURATIONS
+        function renderApplicationCharts(users, rooms, messages) {
+            const terracotta = '#cb6e32';
+            const espresso = '#362a21';
+            const sand = '#f5ebe0';
+            const cream = '#fdf8f2';
+
+            // 1. Ratio Doughnut Chart Setup
+            const ctxDoughnut = document.getElementById('ratioDoughnutChart').getContext('2d');
+            if(ratioChartInstance) ratioChartInstance.destroy();
+            ratioChartInstance = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Users Profiles', 'Created Rooms'],
+                    datasets: [{
+                        data: [users, rooms],
+                        backgroundColor: [terracotta, sand],
+                        borderColor: cream,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: espresso, font: { family: 'inherit' } } }
+                    }
+                }
+            });
+
+            // 2. Growth/Volume Activity Bar Chart Setup
+            const ctxBar = document.getElementById('growthBarChart').getContext('2d');
+            if(growthChartInstance) growthChartInstance.destroy();
+            growthChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Users Base', 'Room Hubs', 'Message Output Volume'],
+                    datasets: [{
+                        label: 'Core Pipeline Registry Load Metrics',
+                        data: [users, rooms, messages],
+                        backgroundColor: [espresso, terracotta, '#a0af9b'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: espresso } },
+                        x: { grid: { display: false }, ticks: { color: espresso } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // INTERACTIVE MODERATION PLACEHOLDER STUB
+        async function executeUserModeration(userId, username) {
+            if(confirm(`Are you sure you want to flag and execute a structural diagnostic cleanup cycle on user account "${username}" (#${userId})?`)) {
+                const res = await fetch(`/api/admin/users/${userId}/flag`, { method: 'POST' });
+                if(res.ok) {
+                    alert(`Account management actions executed safely on user: ${username}`);
+                    loadDashboardMetrics();
+                } else {
+                    alert("Unable to process moderation sequence requests on live database tables.");
+                }
+            }
+        }
+
+        document.getElementById('admin-logout-btn').addEventListener('click', () => {
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

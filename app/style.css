@@ -1,15 +1,15 @@
 :root {
-    --bg-primary: #ffffff;       /* Pure clean premium white background canvas */
-    --bg-secondary: #fafbfc;     /* Sophisticated soft-white variant highlights */
-    --bg-tertiary: #f1f5f9;      /* Ultra-smooth crisp modern slate grey outline borders */
-    --accent: #0284c7;           /* Vibrant modern Oceanic Blue/Teal signature brand color */
-    --accent-hover: #0369a1;
-    --danger: #ef4444;
-    --danger-hover: #dc2626;
-    --text-main: #1e293b;        /* High-contrast deep slate grey readability text */
-    --text-muted: #64748b;       /* Balanced slate muted description subtext entries */
-    --tick-unread: #cbd5e1;
-    --tick-read: #0284c7;
+    --bg-primary: #fffdfa;       /* Cozy warm-milk white background canvas */
+    --bg-secondary: #fdf8f2;     /* Smooth warm cream highlights */
+    --bg-tertiary: #f5ebe0;      /* Gentle warm sand borders and structural dividers */
+    --accent: #cb6e32;           /* Rich terracotta orange signature brand color */
+    --accent-hover: #b2531a;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+    --text-main: #362a21;        /* High-contrast deep espresso grey readability text */
+    --text-muted: #7d6f63;       /* Balanced soft taupe description subtext entries */
+    --tick-unread: #dcd1c4;
+    --tick-read: #cb6e32;
     --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 

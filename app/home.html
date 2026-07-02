@@ -88,11 +88,74 @@
         <div class="resize-handle" id="resize-handle" title="Drag to resize, pull to left edge to close"></div>
 
         <main id="chat-viewport" class="chat-wrapper">
-            <div id="empty-view-notice" class="center-notice">
-                <h3>Welcome to Real Time Messaging Application - VIKAS KR</h3>
-                <p>Search for a registered user or select an existing conversation to start chatting.</p>
-                <button id="open-menu-empty" class="action-btn secondary mobile-only" style="margin-top: 1rem;">Open Menu</button>
+            <!-- RECONSTRUCTED HIGH UI/UX DASHBOARD LANDING SCREEN CONTAINER -->
+<div id="empty-view-notice" class="dashboard-landing-container">
+    
+    <!-- Hero Welcome Banner Section -->
+    <header class="dashboard-hero">
+        <div class="hero-content">
+            <span class="hero-badge">✨ Connected & Secure</span>
+            <h1>Welcome Back to Workspace Hub</h1>
+            <p>Experience real-time contextual interactions powered by native AI translation pipelines and secure cloud synchronization hooks.</p>
+        </div>
+        <div class="hero-visual-element">
+            <div class="glow-sphere"></div>
+        </div>
+    </header>
+
+    <!-- Quick Action Launchpad Grid Layout -->
+    <section class="dashboard-grid">
+        
+        <!-- Action Card 1: Explore Communities -->
+        <div class="dashboard-card" onclick="document.getElementById('btn-join-room').click()">
+            <div class="card-icon-wrapper bento-orange">
+                <span>🔑</span>
             </div>
+            <h3>Join Rooms & Communities</h3>
+            <p>Enter a 5-character group pass code to synchronize with dedicated team community channels instantly.</p>
+            <span class="card-action-link">Access Channel &rarr;</span>
+        </div>
+
+        <!-- Action Card 2: AI Multi-Language Transliterator -->
+        <div class="dashboard-card" onclick="document.getElementById('chat-lang-trigger').click()">
+            <div class="card-icon-wrapper bento-blue">
+                <span>🌐</span>
+            </div>
+            <h3>AI Phonetic Input Engine</h3>
+            <p>Type phonetically in English to generate real-time local scripts including Kannada, Hindi, Tamil, and Telugu.</p>
+         
+        </div>
+
+        <!-- Action Card 3: Secure Document Vault -->
+        <div class="dashboard-card" onclick="userSearchInput.focus()">
+            <div class="card-icon-wrapper bento-green">
+                <span>📎</span>
+            </div>
+            <h3>Bulk Attachment Delivery</h3>
+            <p>Transmit up to 10 compressed media files, audio blocks, or vector PDFs safely in parallel pipelines (Max 15MB).</p>
+            
+        </div>
+
+        <!-- Action Card 4: Edit System Credentials -->
+        <div class="dashboard-card" onclick="document.getElementById('open-profile-btn').click()">
+            <div class="card-icon-wrapper bento-purple">
+                <span>👨‍💻</span>
+            </div>
+            <h3>Account Customization</h3>
+            <p>Synchronize your avatar photos, update biometric display names, and maintain custom tracking bios.</p>
+            <span class="card-action-link">Update Settings &rarr;</span>
+        </div>
+
+    </section>
+
+    <!-- Interactive Navigation Banner For Small Screen Form Factors -->
+    <div class="mobile-dashboard-footer mobile-only">
+        <button id="open-menu-empty" class="action-btn primary" style="width: 100%; padding: 0.85rem;">
+            📂 Open Conversations Drawer
+        </button>
+    </div>
+
+</div>
 
             <div id="active-chat-subsystem" class="hidden-layout hidden">
                 <header class="chat-header">

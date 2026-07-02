@@ -1231,3 +1231,105 @@ body {
     text-decoration: none; 
     color: var(--text-main);
 }
+/* ==========================================================================
+   WHATSAPP-STYLE INTERACTIVE EMOJI KEYBOARD LAYOUT
+   ========================================================================== */
+
+   .emoji-picker-panel {
+    position: absolute;
+    bottom: 56px;
+    left: 0;
+    width: 325px;
+    height: 340px;
+    background-color: #ffffff;
+    border: 1px solid var(--bg-tertiary);
+    border-radius: 12px;
+    box-shadow: 0 12px 35px rgba(54, 42, 33, 0.12);
+    display: flex;
+    flex-direction: column;
+    z-index: 2500;
+    overflow: hidden;
+    animation: whatsappEmojiDrawer 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes whatsappEmojiDrawer {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollable Horizontal Category Switcher Row Bar */
+.emoji-tabs-row {
+    display: flex;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--bg-tertiary);
+    overflow-x: auto;
+    flex-shrink: 0;
+    scrollbar-width: none; /* Hide standard Firefox tracks */
+}
+
+.emoji-tabs-row::-webkit-scrollbar {
+    display: none; /* Hide standard Chrome/Safari tracks */
+}
+
+.emoji-tab-btn {
+    flex: 1;
+    padding: 0.65rem 0;
+    background: transparent;
+    border: none;
+    font-size: 1.15rem;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.15s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.emoji-tab-btn:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.emoji-tab-btn.active {
+    background-color: #ffffff;
+    border-bottom: 3px solid var(--accent);
+}
+
+/* Multi-column Grid Viewport Container */
+.emoji-grid-viewport {
+    flex: 1;
+    padding: 0.6rem;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.35rem;
+    overflow-y: auto;
+    align-content: start;
+}
+
+.emoji-item {
+    font-size: 1.45rem;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    padding: 0.2rem;
+    border-radius: 6px;
+    transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.1s linear;
+}
+
+.emoji-item:hover {
+    transform: scale(1.22);
+    background-color: var(--bg-secondary);
+}
+
+/* Mobile responsive constraints logic adapters */
+@media (max-width: 480px) {
+    .emoji-picker-panel {
+        width: 285px;
+        height: 290px;
+        bottom: 52px;
+    }
+    .emoji-grid-viewport {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.3rem;
+    }
+    .emoji-item {
+        font-size: 1.3rem;
+    }
+}

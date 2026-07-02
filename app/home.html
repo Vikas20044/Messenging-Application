@@ -139,6 +139,23 @@
                             </div>
                         </div>
 
+                        <!-- WhatsApp-Style Categorized Emoji Keyboard Trigger Dropdown Subsystem -->
+                        <div style="position: relative; display: inline-block;">
+                            <button type="button" id="chat-emoji-trigger" class="action-btn secondary" style="padding: 0.6rem 0.8rem; font-size: 1.1rem; border-radius: 6px;" title="Insert Emoji">😀</button>
+                            <div id="emoji-picker-panel" class="emoji-picker-panel hidden">
+                                <div class="emoji-tabs-row" id="emoji-tabs-row">
+                                    <button type="button" class="emoji-tab-btn active" data-cat="smileys" title="Smileys & Emotion">😀</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="people" title="People & Body">👋</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="nature" title="Animals & Nature">🍏</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="food" title="Food & Drink">🍔</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="travel" title="Travel & Places">🚗</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="activities" title="Activities & Objects">🎉</button>
+                                    <button type="button" class="emoji-tab-btn" data-cat="symbols" title="Symbols & Flags">❤️</button>
+                                </div>
+                                <div class="emoji-grid-viewport" id="emoji-grid-viewport"></div>
+                            </div>
+                        </div>
+
                         <input type="file" id="chat-media-input" style="display: none;" multiple>
                         
                         <input type="text" id="msg-input" 
@@ -311,6 +328,11 @@
         const chatLangTrigger = document.getElementById('chat-lang-trigger');
         const inputLangDropdown = document.getElementById('input-lang-dropdown');
 
+        const chatEmojiTrigger = document.getElementById('chat-emoji-trigger');
+        const emojiPickerPanel = document.getElementById('emoji-picker-panel');
+        const emojiGridViewport = document.getElementById('emoji-grid-viewport');
+        const emojiTabsRow = document.getElementById('emoji-tabs-row');
+
         const navbarAboutTrigger = document.getElementById('navbar-about-trigger');
         const navbarAboutDropdown = document.getElementById('navbar-about-dropdown');
 
@@ -352,10 +374,97 @@
         const closeReceiptsModal = document.getElementById('close-receipts-modal');
         const receiptsListTarget = document.getElementById('receipts-list-target');
 
+        // Categorized Extensive Native Emoji Storage Array
+        const emojiDatabase = {
+            smileys: [
+                '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','☠️','👽','👾','🤖','🎃','😺','😸','😹','😻','😼','😽','🙀','😿','😾'
+            ],
+            people: [
+                '👋','🤚','🖐️','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','🦿','🦵','🦶','👂','🦻','👃','🧠','🫀','🫁','🦷','🦴','👀','👁️','👅','👄','💋','🩸','👶','👧','🧒','👦','👩','🧑','👨','👩‍🦱','🧑‍🦱','👨‍🦱','👩‍🦰','🧑‍🦰','👨‍🦰','👱‍♀️','👱','👱‍♂️','👩‍🦳','🧑‍🦳','👨‍🦳','👩‍🦲','🧑‍🦲','👨‍🦲','🧔','👵','🧓','👴','👲','🧕','👮‍♀️','👮','👮‍♂️','👷‍♀️','👷','👷‍♂️','💂‍♀️','💂','💂‍♂️','🕵️‍♀️','🕵️','🕵️‍♂️','👩‍⚕️','🧑‍⚕️','👨‍⚕️'
+            ],
+            nature: [
+                '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🪱','🐛','🦋','🐌','🐞','🐜','🪰','🪲','🪳','🕷️','🕸️','🦂','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊','🐅','🐆','🦓','🦍','🦧','🦣','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🦬','🦙','🐐','🐏','🐑','🐎','🐖','🐄','🐂','🐃','🦌','🐕','🐩','🦮','🐕‍🦺','🐈','🐈‍⬛','🐓','🦃','🦤','🦚','🦜','🦢','🦩','🕊️','🐇','🦝','🦨','🦡','🦫','🦦','🦥','🐁','🐀','🐿️','🦔','🐾','🐉','🐲','🌵','🎄','🌲','🌳','🌴','🪵','🌱','🌿','☘️','🍀','🎍','🪴','🎋','🍃','🍂','🍁','🍄','🐚','🪨','🌾','💐','🌷','🌹','🥀','🌺','🌸','🌼','🌻','🌞','🌝','🌛','🌜','🌙','🪐','💫','⭐️','🌟','✨','⚡️','彗星','💥','🔥','🌪️','🌈','☀️','🌤️','⛅️','🌥️','☁️','🌧️','⛈️','🌩️','❄️','⛄️','💨','💧','💦','🌊'
+            ],
+            food: [
+                '🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆',' avocado ','🥦','🥬','🥒','🌶️','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖',' pretzels ','🧀','🥚','🍳',' butter ','🥞','🧇','🥓','🥩','🍗','🍖','🌭','🍔','🍟','🍕','🫓','🥪','🥙','🧆','🌮','🌯','🫔','🥗','🥘','🫕','🥣','🍲',' popcorn ','🧂','🥫',' Bento ','🍘','🍙','🍚','🍛','🍜','🍝','🍣','🍤','🍥','🥮','🍡','🥟','🥠','🥡','🍦','🍧','🍨','🍩','🍪','🎂','🍰',' cupcakes ','🥧','🍫','🍬','🍭',' pudding ','🍯','🍼','🥛','☕️','🫖','🍵','🍶','🍾','🍷','🍸','🍹','🍺','🍻','🥂','🥃','🥤','🧋','🧃','🧉','🧊'
+            ],
+            travel: [
+                '🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🛵','摩托车','🛺','🚲','🛴','🛹','🛼','🚏','🛣️','🛤️','🛢️','⛽️','🚨','🚥','🚦','🛑','🚧','⚓️','⛵️',' Canoes ',' Speedboats ','🛥️','🚢','✈️','🛩️','🛫','🛬','🪂','💺',' Helicopter ','🚟',' Cable cars ','🚡',' Satellite ','🚀',' UFO ','🛎️','🧳','⌛️','⏳','⏰','⏱️','⏲️','🕰️','🗺️',' Compass ','🏔️',' Mountain ','🌋','🗻',' Camping ','🏖️',' Desert ',' Island ','🏞️',' Stadium ','🏛️',' Construction site ',' Brick ',' Hut ',' Houses ',' Houses with gardens ',' Office buildings ',' Post Office ',' Post Office ',' Hospital ',' Bank ',' Hotel ',' Love Hotel ',' Convenience store ',' School ',' Department store ',' Factory ',' Castle ',' Castle ',' Wedding ',' Tokyo Tower ',' Statue of Liberty ',' Church ',' Mosque ',' Hindu Temple ',' Synagogue ',' Shinto Shrine ',' Kaaba ',' Fountain ',' Tent ',' Foggy ',' Tokyo Tower ',' Cityscape ',' Sunrise ',' Sunrise ',' Cityscape at dusk ',' Sunset ',' Bridge at night ',' Carousel ',' Ferris Wheel ',' Roller Coaster ',' Locomotive ',' Tram '
+            ],
+            activities: [
+                '⚽️','🏀','🏈','⚾️','🥎','🎾',' volleyball ',' Volleyball ',' 🏉 ',' 🥏 ',' 🎱 ',' 🪀 ',' 🏓 ',' 🏸 ',' 🏒 ',' 🏑 ',' 🥍 ',' 🏏 ',' 🪃 ',' 🥅 ',' ⛳️ ',' 🪁 ',' 🏹 ',' 🎣 ',' 🤿 ',' 🥊 ',' 🥋 ',' 🎽 ',' 🛹 ',' 🛼 ',' 🛷 ',' 🥌 ',' 🎿 ',' ⛷️ ',' 🏂 ',' 🏋️‍♀️ ',' 🤺 ',' 🤼‍♂️ ',' 🤸‍♀️ ',' ⛹️‍♂️ ',' 🤾‍♂️ ',' 🧗‍♀️ ',' 🧘‍♀️ ',' 🚴‍♂️ ',' 🚵‍♂️ ',' 🏆 ',' 🥇 ',' 🥈 ',' 🥉 ',' 🏅 ',' 🎖️ ',' 🎟️ ',' 🎫 ',' 🎪 ',' 🎭 ',' 🖼️ ',' 🎨 ',' 🎬 ',' 🎤 ',' 🎧 ',' 🎼 ',' 🎹 ',' 🥁 ',' 🪘 ',' 🎷 ',' 🎺 ',' 🎸 ',' 🪕 ',' 🎻 ',' 🎲 ',' ♟️ ',' 🎯 ',' 🎳 ',' 🎮 ',' 🎰 ',' 🧩 ',' 🕶️ ',' 🥽 ',' 🥼 ',' 🦺 ',' 👔 ',' 👕 ',' 👖 ',' 🧣 ',' 🧤 ',' 🧥 ',' Socks ',' 🧦 ',' 👗 ',' Kimono ',' 👘 ',' Sari ',' 🥻 ',' Swimwear ',' 🩱 ',' Underpants ',' 𩨐 ',' Shorts ',' 🩳 ',' 👚 ',' 👛 ',' 👜 ',' 👝 ',' 🎒 ',' 👞 ',' 👟 ',' 🥾 ',' 🥿 ',' 👠 ',' 👡 ',' Ballet Shoes ',' 🩰 ',' 👢 ',' 👑 ',' 👒 ',' 🎩 ',' 🎓 ','  Cap ',' 🧢 ',' Helmet ',' ⛑️ ',' 📿 ',' Lipstick ',' 💄 ',' Ring ',' 💍 ',' Diamond ',' 💎 ',' Megaphone ',' 📢 ',' Loudspeaker ',' 📣 ',' Post Horn ',' 📯 ',' Bell ',' 🔔 ',' Muted Bell ',' 🔕 ',' Radio ',' 📻 ',' Accordion ',' 🪗 ',' Smartphone ',' 📱 ',' Telephone ',' ☎️ ',' Pager ',' 📟 ',' Fax ',' 📠 ',' Battery ',' 🔋 ',' Plug ',' 🔌 ',' Laptop ',' 💻 ',' Desktop ',' 🖥️ ',' Printer ',' 🖨️ ',' Keyboard ',' ⌨️ ',' Computer Mouse ',' 鼠标 ',' Trackball ',' Trackball ',' Floppy Disk ',' 💾 ',' CD ',' 💿 ',' Calculator ',' 🧮 ',' Video Camera ',' 🎥 ',' Film Strip ',' 🎞️ ',' Projector ',' 📽️ ',' Television ',' 📺 ',' Camera ',' 📷 ',' Flash Camera ',' 📸 ',' Video Recorder ',' 📹 ',' VHS ',' 专栏 ',' Magnifying Glass ',' 🔍 ',' Candle ',' 🕯️ ',' Diya Oil Lamp ',' 🪔 ',' Light Bulb ',' 💡 ',' Flashlight ',' 🔦 ',' Paper Lantern ',' 🏮 ',' Mirror ',' 🪞 ',' Fire Extinguisher ',' 🧯 ',' Shopping Cart ',' 🛒 ',' Cash ',' 💸 ',' Dollar ',' 💵 ',' Yen ',' 💴 ',' Euro ',' 💶 ',' Pound ',' 💷 ',' Coin ',' 🪙 ',' Money Bag ',' 💰 ',' Credit Card ',' 💳 ',' Scales ',' ⚖️ ',' Toolbox ',' 🧰 ',' Screwdriver ',' 🪛 ',' Wrench ',' 🔧 ',' Hammer ',' 🔨 ',' Pick ',' ⛏️ ',' Saw ',' 🪚 ',' Nut & Bolt ',' 🔩 ',' Gear ',' ⚙️ ',' Chain ',' ⛓️ ',' Magnet ',' 🧲 ',' Gun ',' 🔫 ',' Bomb ',' 💣 ',' Firecracker ',' 🧨 ',' Axe ',' 🪓 ',' Dagger ',' 🗡️ ',' Shield ',' 🛡️ ',' Cigarette ',' 🚬 ',' Coffin ',' ⚰️ ',' Crystal Ball ',' 🔮 ',' Nazar Amulet ',' 🧿 ',' Barber Pole ',' 💈 ',' Test Tube ',' 🧪 ',' Thermometer ',' 🌡️ ',' Broom ',' 🧹 ',' Plunger ',' 🪠 ',' Basket ','  basket ',' Toilet Paper ',' 🧻 ',' Soap ',' 🧼 ',' Toothbrush ',' 🪥 ',' Bucket ',' 🪣 ',' Key ',' 🔑 ',' Padlock ',' 🔒 ',' Unlock ',' 🔓 '
+            ],
+            symbols: [
+                '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️','☦️','🛐','⛎','♈️','♉️','♊️','♋️','♌️','♍️','♎️','♏️','♐️','♑️','♒️','♓️','🆔','⚛️','🈳','🈹','☢️','☣️','📴','📳','🈶','🈚️','營','🈺','🈲','✴️','🆚','💮','🉐','🈴','🈵','🈺','㊗️','㊙️','🔴','🔵','⚫️','⚪️','🟤','🟣','🟢','🟡','🟠','🟥','🟦','⬛️','⬜️','🟫','🟪','🟩','🟨','🟧','🏁','🚩','🎌','🏴','🏳️','🏳️‍🌈','🏳️‍⚧️','🏴‍☠️','🇮🇳','🇺🇸','🇬🇧','🇨🇦','🇦🇺','🇩累','🇫🇷','🇯🇵','🇧🇷','🇷🇺','🇨🇳','🇰睿','🇿🇦','🇪🇸','🇮🇹','🇲🇽','🇸🇦','🇦🇪','🇸🇬','🇨🇭'
+            ]
+        };
+
+        // Population Engine Strategy
+        function renderEmojiCategory(categoryName) {
+            emojiGridViewport.innerHTML = '';
+            const emojis = emojiDatabase[categoryName] || [];
+            
+            emojis.forEach(emoji => {
+                const item = document.createElement('span');
+                item.className = 'emoji-item';
+                item.innerText = emoji;
+                
+                // WhatsApp-style smart insertion logic at exact cursor layout position
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const startPos = msgInput.selectionStart;
+                    const endPos = msgInput.selectionEnd;
+                    const currentText = msgInput.value;
+                    
+                    msgInput.value = currentText.substring(0, startPos) + emoji + currentText.substring(endPos);
+                    
+                    // Adjust cursor location forward smoothly
+                    const newCursorPos = startPos + emoji.length;
+                    msgInput.setSelectionRange(newCursorPos, newCursorPos);
+                    msgInput.focus();
+                });
+                
+                emojiGridViewport.appendChild(item);
+            });
+        }
+
+        // Tab switcher context routing
+        emojiTabsRow.querySelectorAll('.emoji-tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                emojiTabsRow.querySelectorAll('.emoji-tab-btn').forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+                renderEmojiCategory(btn.getAttribute('data-cat'));
+            });
+        });
+
+        // Structural Panel visibility toggle handles
+        chatEmojiTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = emojiPickerPanel.classList.contains('hidden');
+            
+            // Smoothly close alternate operational menus
+            document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
+            if (typeof attachDropdownMenu !== 'undefined' && attachDropdownMenu) attachDropdownMenu.classList.add('hidden');
+            if (typeof inputLangDropdown !== 'undefined' && inputLangDropdown) inputLangDropdown.classList.add('hidden');
+            
+            if (isHidden) {
+                emojiPickerPanel.classList.remove('hidden');
+                // Initial setup execution mapping
+                const activeTab = emojiTabsRow.querySelector('.emoji-tab-btn.active');
+                renderEmojiCategory(activeTab ? activeTab.getAttribute('data-cat') : 'smileys');
+            } else {
+                emojiPickerPanel.classList.add('hidden');
+            }
+        });
+
         document.addEventListener('click', (e) => {
             document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
             if (typeof attachDropdownMenu !== 'undefined' && attachDropdownMenu) {
                 attachDropdownMenu.classList.add('hidden');
+            }
+            if (emojiPickerPanel && !emojiPickerPanel.contains(e.target) && e.target !== chatEmojiTrigger) {
+                emojiPickerPanel.classList.add('hidden');
             }
             
             const searchContainer = document.querySelector('.navbar-search-container');
@@ -567,6 +676,7 @@
             if(activeEl) activeEl.classList.add('active-selected');
 
             closeMobileSidebar();
+            if (emojiPickerPanel) emojiPickerPanel.classList.add('hidden');
             
             socket.emit('requestUserOnlineStatus', { targetUserId: id }, (reply) => {
                 chatWindowSubtitle.innerText = reply.status === 'online' ? '🟢 Online Now' : '⚪ Offline';
@@ -761,6 +871,8 @@
             if(activeEl) activeEl.classList.add('active-selected');
 
             closeMobileSidebar();
+            if (emojiPickerPanel) emojiPickerPanel.classList.add('hidden');
+            
             setTimeout(scrollToBottom, 50);
 
             socket.emit('joinGroupRoom', { roomId: id });
@@ -800,6 +912,7 @@
 
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (emojiPickerPanel) emojiPickerPanel.classList.add('hidden');
             let text = msgInput.value.trim();
             if(text) {
                 if (selectedOutgoingLang !== 'auto' && /[a-zA-Z0-9]/.test(text)) {

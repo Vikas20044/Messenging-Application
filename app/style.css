@@ -1015,3 +1015,219 @@ body {
         font-size: 0.9rem;
     }
 }
+
+/* ==========================================================================
+   REAL-TIME SPA VIEW SUBSYSTEMS & INLINE REFRACTORS (ADDED)
+   ========================================================================== */
+
+/* --- SPA Content Layout Container handles --- */
+.spa-inner-scroller {
+    max-width: 800px; 
+    margin: 0 auto; 
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.spa-back-btn {
+    align-self: flex-start; 
+    margin-bottom: 2rem; 
+    padding: 0.5rem 1rem; 
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* --- Inline SPA Accordion Handles --- */
+.spa-inline-faq-item {
+    background: #ffffff; 
+    border: 1px solid var(--bg-tertiary); 
+    border-radius: 12px; 
+    overflow: hidden; 
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.01);
+}
+
+.spa-inline-faq-item:hover {
+    border-color: var(--accent);
+}
+
+.spa-inline-faq-question {
+    padding: 1.25rem 1.5rem; 
+    font-weight: 600; 
+    color: var(--text-main); 
+    cursor: pointer; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    user-select: none;
+    background: #ffffff;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.spa-inline-faq-question:hover {
+    background-color: var(--bg-secondary);
+}
+
+.spa-inline-faq-item.active .spa-inline-faq-question {
+    color: var(--accent);
+    background: var(--bg-secondary);
+}
+
+.spa-inline-faq-answer {
+    max-height: 0; 
+    overflow: hidden; 
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    background: var(--bg-primary); 
+    color: var(--text-muted); 
+    font-size: 0.92rem; 
+    line-height: 1.55;
+}
+
+.spa-inline-faq-item.active .spa-inline-faq-answer {
+    max-height: 300px;
+}
+
+.spa-inline-faq-icon {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.spa-inline-faq-item.active .spa-inline-faq-icon {
+    transform: rotate(45deg);
+    color: var(--accent);
+}
+
+/* --- Navigation & Dropdown Structural Refactors --- */
+.navbar-item-container {
+    position: relative; 
+    display: inline-block; 
+    margin-left: 0.5rem;
+}
+
+#navbar-about-trigger {
+    padding: 0.4rem 0.8rem; 
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    display: flex; 
+    align-items: center; 
+    gap: 4px;
+}
+
+#navbar-about-dropdown {
+    top: 42px; 
+    left: 0; 
+    width: 160px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+    z-index: 2200;
+}
+
+.navbar-about-item {
+    cursor: pointer; 
+    padding: 10px 14px; 
+    font-size: 0.85rem;
+}
+
+/* --- Community Sidebar Panel Elements --- */
+.community-box-container {
+    padding: 1rem; 
+    border-bottom: 1px solid var(--bg-tertiary); 
+    display: flex; 
+    flex-direction: column; 
+    gap: 0.5rem;
+}
+
+.sidebar-panel-header-text {
+    font-size: 0.75rem; 
+    text-transform: uppercase; 
+    color: var(--text-muted); 
+    letter-spacing: 0.5px; 
+    font-weight: 700;
+}
+
+.community-action-split-btn {
+    flex: 1; 
+    padding: 0.5rem; 
+    font-size: 0.85rem;
+}
+
+#community-threads-target {
+    max-height: 160px; 
+    overflow-y: auto; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 2px; 
+    margin-top: 0.3rem;
+}
+
+/* --- Inline Developer Subsystem Components --- */
+.dev-view-grid {
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
+    gap: 2rem; 
+    text-align: left; 
+    width: 100%;
+}
+
+.dev-view-card {
+    background: #ffffff; 
+    border: 1px solid var(--bg-tertiary); 
+    border-radius: 16px; 
+    padding: 2.5rem 1.5rem; 
+    box-shadow: 0 4px 20px rgba(54, 42, 33, 0.02); 
+    text-align: center; 
+    transition: transform 0.2s ease; 
+    border-top: 4px solid var(--accent);
+}
+
+.dev-view-avatar {
+    width: 100px; 
+    height: 100px; 
+    border-radius: 50%; 
+    object-fit: cover; 
+    border: 3px solid var(--accent); 
+    margin-bottom: 1.25rem;
+}
+
+.dev-view-name {
+    font-size: 1.35rem; 
+    color: var(--text-main); 
+    margin-bottom: 0.25rem; 
+    font-weight: 700;
+}
+
+.dev-view-role {
+    font-size: 0.85rem; 
+    color: var(--accent); 
+    font-weight: 700; 
+    letter-spacing: 1px; 
+    text-transform: uppercase; 
+    margin-bottom: 1rem;
+}
+
+.dev-view-bio {
+    font-size: 0.92rem; 
+    color: var(--text-muted); 
+    line-height: 1.55; 
+    margin-bottom: 1.5rem; 
+    min-height: 65px;
+}
+
+.dev-view-social-wrapper {
+    display: flex; 
+    justify-content: center; 
+    gap: 0.75rem;
+}
+
+.dev-view-social-btn {
+    background: var(--bg-secondary); 
+    border: 1px solid var(--bg-tertiary); 
+    padding: 0.5rem 1rem; 
+    border-radius: 8px; 
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    text-decoration: none; 
+    color: var(--text-main);
+}

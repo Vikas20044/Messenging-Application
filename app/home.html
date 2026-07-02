@@ -13,15 +13,15 @@
             <div class="navbar-brand">Real Time Messaging Application</div>
             <div class="navbar-status" id="navbar-status-tag">Status: Connected</div>
             
-            <!-- NEW: High UI/UX About Navigation Dropdown Menu -->
-            <div class="navbar-item-container" style="position: relative; display: inline-block; margin-left: 0.5rem;">
-                <button type="button" id="navbar-about-trigger" class="nav-action-btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 4px;" title="Learn more about the application">
+            <!-- High UI/UX About Navigation Dropdown Menu -->
+            <div class="navbar-item-container">
+                <button type="button" id="navbar-about-trigger" class="nav-action-btn" title="Learn more about the application">
                     <span>About</span>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </button>
                 <div id="navbar-about-dropdown" class="msg-dropdown hidden" style="top: 42px; left: 0; width: 160px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); z-index: 2200;">
-                    <div onclick="switchMainView('developer')" style="cursor: pointer; padding: 10px 14px; font-size: 0.85rem;">👨‍💻 Developers</div>
-                    <div onclick="switchMainView('faq')" style="cursor: pointer; padding: 10px 14px; font-size: 0.85rem;">❓ Help & FAQ</div>
+                    <div onclick="switchMainView('developer')" class="navbar-about-item">👨‍💻 Developers</div>
+                    <div onclick="switchMainView('faq')" class="navbar-about-item">❓ Help & FAQ</div>
                 </div>
             </div>
         </div>
@@ -66,17 +66,17 @@
         
         <aside class="sidebar-panel" id="sidebar-panel">
             <header class="sidebar-header">
-                <h3 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; font-weight:700;">Conversations</h3>
+                <h3 class="sidebar-panel-header-text">Conversations</h3>
                 <button id="close-sidebar-mobile" class="action-btn secondary mobile-only">&times;</button>
             </header>
 
-            <div class="community-box-container" style="padding: 1rem; border-bottom: 1px solid var(--bg-tertiary); display: flex; flex-direction: column; gap: 0.5rem;">
-                <h3 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; font-weight:700;">Communities</h3>
+            <div class="community-box-container">
+                <h3 class="sidebar-panel-header-text">Communities</h3>
                 <div style="display: flex; gap: 0.4rem;">
-                    <button id="btn-create-room" class="action-btn secondary" style="flex: 1; padding: 0.5rem; font-size: 0.85rem;">+ Create</button>
-                    <button id="btn-join-room" class="action-btn secondary" style="flex: 1; padding: 0.5rem; font-size: 0.85rem;">🔑 Join Room</button>
+                    <button id="btn-create-room" class="action-btn secondary community-action-split-btn">+ Create</button>
+                    <button id="btn-join-room" class="action-btn secondary community-action-split-btn">🔑 Join Room</button>
                 </div>
-                <div id="community-threads-target" style="max-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; margin-top: 0.3rem;"></div>
+                <div id="community-threads-target"></div>
             </div>
 
             <div class="active-chats-list">
@@ -153,67 +153,10 @@
                 </div>
             </div>
 
-            <!-- DEVELOPER INLINE SPA VIEW SUBSYSTEM -->
-            <div id="developer-view-subsystem" class="hidden-layout hidden" style="overflow-y: auto; padding: 2.5rem 1.5rem; background: var(--bg-primary); width: 100%; height: 100%;">
-                <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-                    <h1 style="font-size: 2rem; color: var(--text-main); font-weight: 800; margin-bottom: 0.5rem;">Meet the Architects</h1>
-                    <p style="color: var(--text-muted); margin-bottom: 2.5rem;">The team behind this Real Time AI-Transliterating Application.</p>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; text-align: left;">
-                        <!-- Developer Card 1 -->
-                        <div style="background: #ffffff; border: 1px solid var(--bg-tertiary); border-radius: 12px; padding: 2rem 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.01); text-align: center; border-top: 4px solid var(--accent);">
-                            <img src="/uploads/default-avatar.png" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); margin-bottom: 1rem;">
-                            <h2 style="font-size: 1.25rem; color: var(--text-main); margin-bottom: 0.2rem;">VIKAS KR</h2>
-                            <div style="font-size: 0.8rem; color: var(--accent); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 0.75rem;">Lead System Engineer</div>
-                            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 1.2rem; min-height: 60px;">Specialized in fullstack infrastructure layout, multi-threaded socket networks, and live database migrations.</p>
-                            <div style="display: flex; justify-content: center; gap: 0.5rem;">
-                                <a href="https://github.com" target="_blank" style="background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none; color: var(--text-main);">📦 GitHub</a>
-                                <a href="https://instagram.com" target="_blank" style="background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none; color: var(--text-main);">📸 Instagram</a>
-                            </div>
-                        </div>
-                        <!-- Developer Card 2 -->
-                        <div style="background: #ffffff; border: 1px solid var(--bg-tertiary); border-radius: 12px; padding: 2rem 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.01); text-align: center; border-top: 4px solid var(--accent);">
-                            <img src="/uploads/default-avatar.png" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); margin-bottom: 1rem;">
-                            <h2 style="font-size: 1.25rem; color: var(--text-main); margin-bottom: 0.2rem;">Partner Developer</h2>
-                            <div style="font-size: 0.8rem; color: var(--accent); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 0.75rem;">UI/UX Designer</div>
-                            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 1.2rem; min-height: 60px;">Focused on creative frontend typography rules, responsive component views, and localization workflows.</p>
-                            <div style="display: flex; justify-content: center; gap: 0.5rem;">
-                                <a href="https://github.com" target="_blank" style="background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none; color: var(--text-main);">📦 GitHub</a>
-                                <a href="https://instagram.com" target="_blank" style="background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none; color: var(--text-main);">📸 Instagram</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FAQ INLINE SPA VIEW SUBSYSTEM -->
-            <div id="faq-view-subsystem" class="hidden-layout hidden" style="overflow-y: auto; padding: 2.5rem 1.5rem; background: var(--bg-primary); width: 100%; height: 100%;">
-                <div style="max-width: 700px; margin: 0 auto;">
-                    <div style="text-align: center; margin-bottom: 2rem;">
-                        <h1 style="font-size: 2rem; color: var(--text-main); font-weight: 800; margin-bottom: 0.5rem;">Frequently Asked Questions</h1>
-                        <p style="color: var(--text-muted);">Quick-reference guides to master the ecosystem capabilities.</p>
-                    </div>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                        <div style="background: #ffffff; border: 1px solid var(--bg-tertiary); border-radius: 8px; padding: 1.2rem; border-left: 4px solid var(--accent);">
-                            <h4 style="color: var(--accent); margin-bottom: 0.3rem; font-weight: 600; font-size: 1rem;">How do I use Transliteration?</h4>
-                            <p style="font-size: 0.9rem; color: var(--text-main); line-height: 1.45;">Click the globe (🌐) icon, choose your target regional language, and type phonetically using English characters. Pressing the <b>Spacebar</b> instantly shifts the phonetics into your selected script style.</p>
-                        </div>
-                        <div style="background: #ffffff; border: 1px solid var(--bg-tertiary); border-radius: 8px; padding: 1.2rem; border-left: 4px solid var(--accent);">
-                            <h4 style="color: var(--accent); margin-bottom: 0.3rem; font-weight: 600; font-size: 1rem;">How do Seen Receipts work inside Communities?</h4>
-                            <p style="font-size: 0.9rem; color: var(--text-main); line-height: 1.45;">Every message you send within a community room possesses an interactive <b>✓ Checked</b> timestamp label. Click directly on it to toggle an explicit reading matrix ledger detailing which users saw the delivery.</p>
-                        </div>
-                        <div style="background: #ffffff; border: 1px solid var(--bg-tertiary); border-radius: 8px; padding: 1.2rem; border-left: 4px solid var(--accent);">
-                            <h4 style="color: var(--accent); margin-bottom: 0.3rem; font-weight: 600; font-size: 1rem;">What file constraints are active?</h4>
-                            <p style="font-size: 0.9rem; color: var(--text-main); line-height: 1.45;">You can share images, video chunks, audio segments, or structural PDF file objects. Transfers are explicitly bound to a maximum size ceiling of 15MB and capped at 10 items per batch transaction.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </main>
     </div>
 
+    <!-- CREATE ROOM MODAL -->
     <div id="create-group-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -236,6 +179,7 @@
         </div>
     </div>
 
+    <!-- ROOM ONLINE ROSTER MODAL -->
     <div id="group-online-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -247,6 +191,7 @@
         </div>
     </div>
 
+    <!-- SEEN RECEIPTS AUDIT MODAL -->
     <div id="receipts-audit-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -258,6 +203,7 @@
         </div>
     </div>
 
+    <!-- PROFILE MANAGEMENT MODAL -->
     <div id="profile-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -301,6 +247,7 @@
         </div>
     </div>
 
+    <!-- PUBLIC DETAILS INSPECTOR MODAL -->
     <div id="public-view-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -431,20 +378,17 @@
         function switchMainView(targetView) {
             const emptyNotice = document.getElementById('empty-view-notice');
             const chatSubsystem = document.getElementById('active-chat-subsystem');
-            const devSubsystem = document.getElementById('developer-view-subsystem');
-            const faqSubsystem = document.getElementById('faq-view-subsystem');
 
-            emptyNotice.classList.add('hidden');
-            chatSubsystem.classList.add('hidden');
-            devSubsystem.classList.add('hidden');
-            faqSubsystem.classList.add('hidden');
-
-            document.querySelectorAll('.thread-item').forEach(el => el.classList.remove('active-selected'));
-
+            // Handle direct page routing redirects to standalone files
             if (targetView === 'developer') {
-                devSubsystem.classList.remove('hidden');
+                window.location.href = '/developer';
+                return;
             } else if (targetView === 'faq') {
-                faqSubsystem.classList.remove('hidden');
+                window.location.href = '/faq';
+                return;
+            } else if (targetView === 'workspace') {
+                chatSubsystem.classList.add('hidden');
+                emptyNotice.classList.remove('hidden');
             }
             
             navbarAboutDropdown.classList.add('hidden');
@@ -556,7 +500,7 @@
                 
                 item.innerHTML = `
                     <div style="position: relative; display: inline-block; flex-shrink: 0;">
-                        <img id="thread-avatar-${user.id}" src="${user.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary);">
+                        <img id="thread-avatar-${user.id}" src="${user.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary); margin-bottom: 0;">
                         <div id="status-badge-${user.id}" class="global-presence-badge offline"></div>
                     </div>
                     <span id="thread-name-${user.id}" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${user.username}</span>
@@ -608,10 +552,6 @@
         });
 
         function selectActiveTargetUser(id, name, picUrl) {
-            // Safely clear embedded SPA views from viewports
-            document.getElementById('developer-view-subsystem').classList.add('hidden');
-            document.getElementById('faq-view-subsystem').classList.add('hidden');
-
             targetRoomId = null; 
             targetUserId = id;
             checkRoomOnlineBtn.classList.add('hidden');
@@ -800,10 +740,6 @@
         }
 
         function selectActiveRoom(id, name, code, desc, icon) {
-            // Safely clear embedded SPA views from viewports
-            document.getElementById('developer-view-subsystem').classList.add('hidden');
-            document.getElementById('faq-view-subsystem').classList.add('hidden');
-
             targetUserId = null; 
             targetRoomId = id;
             checkRoomOnlineBtn.classList.remove('hidden');

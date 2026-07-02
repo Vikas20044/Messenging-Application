@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application FAQ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .faq-container {
+            max-width: 760px;
+            margin: 4rem auto;
+            padding: 0 1.5rem;
+        }
+        .faq-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .faq-header h1 {
+            font-size: 2.2rem;
+            color: var(--text-main);
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .faq-header p {
+            color: var(--text-muted);
+        }
+        .faq-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .faq-item {
+            background: #ffffff;
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        .faq-item:hover {
+            border-color: var(--accent);
+        }
+        .faq-question {
+            padding: 1.2rem 1.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            background: #ffffff;
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s cubic-bezier(0, 1, 0, 1);
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+        .faq-answer-inner {
+            padding: 1.2rem 1.5rem;
+            border-top: 1px solid var(--bg-tertiary);
+        }
+        .faq-item.active .faq-answer {
+            max-height: 1000px;
+            transition: max-height 0.25s cubic-bezier(1, 0, 1, 0);
+        }
+        .faq-item.active .faq-question {
+            color: var(--accent);
+        }
+        .faq-icon {
+            transition: transform 0.2s ease;
+            font-weight: 700;
+        }
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+        }
+        .back-block {
+            text-align: center;
+            margin-top: 3.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="faq-container">
+        <div class="faq-header">
+            <h1>Frequently Asked Questions</h1>
+            <p>Everything you need to know about navigating the application interfaces smoothly.</p>
+        </div>
+
+        <div class="faq-wrapper">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I use the typing Transliteration engine?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        Click on the globe icon (🌐) next to the conversation input stream, choose your target native language, and type phonetically using your English keyboard. Pressing the **Spacebar** will instantly convert the phonetics to script characters.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How can I view message-seen metrics in community pools?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        For any group context message you broadcast, an active interactive timestamp flag labeled "✓ Checked" appears underneath. Click directly on that token check link to spin up a granular dynamic tracking audit modal revealing who saw it and when.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What file transfer limitations are configured on disk?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        You can upload images, micro-videos, audio records, or structural PDF data documents. The platform limits file processing batches to a maximum of 10 media elements per upload operation with an explicit size constraint ceiling of 15MB.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="back-block">
+            <button class="action-btn secondary" onclick="window.location.href='/chat'">← Return to Workspace</button>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const item = question.parentElement;
+                item.classList.toggle('active');
+            });
+        });
+    </script>
+</body>
+</html>

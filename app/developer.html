@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meet the Developers</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .about-container {
+            max-width: 900px;
+            margin: 4rem auto;
+            padding: 0 1.5rem;
+            text-align: center;
+        }
+        .about-header h1 {
+            font-size: 2.2rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+        }
+        .about-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            margin-bottom: 3rem;
+        }
+        .dev-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        .dev-card {
+            background: #ffffff;
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 16px;
+            padding: 2.5rem 1.5rem;
+            box-shadow: 0 4px 20px rgba(54, 42, 33, 0.02);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+        }
+        .dev-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(203, 110, 50, 0.08);
+            border-color: var(--accent);
+        }
+        .dev-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent);
+            margin-bottom: 1.25rem;
+            background: var(--bg-secondary);
+        }
+        .dev-card h2 {
+            font-size: 1.35rem;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+        .dev-card .role {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--accent);
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .dev-card .bio {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+            min-height: 70px;
+        }
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-tertiary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .social-btn:hover {
+            background: var(--accent);
+            color: #ffffff;
+            border-color: var(--accent);
+        }
+        .back-home-btn {
+            margin-top: 3.5rem;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="about-container">
+        <header class="about-header">
+            <h1>Meet the Architects</h1>
+            <p>The engineering power behind the Real Time AI-Transliterating Messaging Ecosystem.</p>
+        </header>
+
+        <div class="dev-grid">
+            <!-- Developer Card 1 -->
+            <div class="dev-card">
+                <img src="/uploads/default-avatar.png" class="dev-avatar" alt="Developer Core Pic">
+                <h2>VIKAS KR</h2>
+                <div class="role">Lead System Engineer</div>
+                <p class="bio">Specialized in setting up multi-threaded operational network logic pipelines, fullstack socket integrations, and architecture layouts.</p>
+                <div class="social-links">
+                    <a href="https://github.com/your-username" target="_blank" class="social-btn">📦 GitHub</a>
+                    <a href="https://instagram.com/your-username" target="_blank" class="social-btn">📸 Instagram</a>
+                </div>
+            </div>
+
+            <!-- Developer Card 2 -->
+            <div class="dev-card">
+                <img src="/uploads/default-avatar.png" class="dev-avatar" alt="Developer Core Pic">
+                <h2>Co-Developer Name</h2>
+                <div class="role">UI/UX & Database Engineer</div>
+                <p class="bio">Focused on designing clean responsive typography frameworks, optimization indices, and language parsing transliteration modules.</p>
+                <div class="social-links">
+                    <a href="https://github.com/co-username" target="_blank" class="social-btn">📦 GitHub</a>
+                    <a href="https://instagram.com/co-username" target="_blank" class="social-btn">📸 Instagram</a>
+                </div>
+            </div>
+        </div>
+
+        <button class="action-btn secondary back-home-btn" onclick="window.location.href='/chat'">← Return to Workspace</button>
+    </div>
+</body>
+</html>

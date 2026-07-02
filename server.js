@@ -683,6 +683,14 @@ app.post('/api/admin/users/:id/flag', async (req, res) => {
     }
 });
 
+// Add these stubs alongside your existing standalone routing views in server.js
+app.get('/developer', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'developer.html'));
+});
+
+app.get('/faq', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'faq.html'));
+});
 
 server.listen(PORT, () => {
     console.log(`Application running dynamically at http://localhost:${PORT}`);

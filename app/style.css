@@ -1,15 +1,15 @@
 :root {
-    --bg-primary: #f8fafc;       /* Ultra-clean modern light canvas background */
-    --bg-secondary: #ffffff;     /* Pure white for functional containers */
-    --bg-tertiary: #f1f5f9;      /* Smooth modern slate grey borders and offsets */
-    --accent: #2563eb;           /* Professional royal corporate blue */
-    --accent-hover: #1d4ed8;
+    --bg-primary: #ffffff;       /* Pure clean premium white background canvas */
+    --bg-secondary: #fafbfc;     /* Sophisticated soft-white variant highlights */
+    --bg-tertiary: #f1f5f9;      /* Ultra-smooth crisp modern slate grey outline borders */
+    --accent: #0284c7;           /* Vibrant modern Oceanic Blue/Teal signature brand color */
+    --accent-hover: #0369a1;
     --danger: #ef4444;
     --danger-hover: #dc2626;
-    --text-main: #0f172a;        /* Deep high-contrast slate text */
-    --text-muted: #64748b;       /* Balanced slate-grey muted description text */
+    --text-main: #1e293b;        /* High-contrast deep slate grey readability text */
+    --text-muted: #64748b;       /* Balanced slate muted description subtext entries */
     --tick-unread: #cbd5e1;
-    --tick-read: #3b82f6;
+    --tick-read: #0284c7;
     --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
@@ -31,19 +31,19 @@ body {
     overflow: hidden;
 }
 
-/* --- REFINED PREMIUM FLAT NAVIGATION DECK LAYER --- */
+/* --- REFINED LIGHT MINIMALIST NAVIGATION DECK LAYER --- */
 .top-navbar {
     height: 64px;
-    background-color: #0f172a; /* Deep elegant navy slate foundation */
-    border-bottom: 1px solid #1e293b;
+    background-color: #ffffff; 
+    border-bottom: 1px solid #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 1.5rem;
     z-index: 1100;
     flex-shrink: 0;
-    color: #f8fafc;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    color: var(--text-main);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .navbar-left {
@@ -55,24 +55,24 @@ body {
 .navbar-brand {
     font-weight: 700;
     font-size: 1.25rem;
-    color: #ffffff;
+    color: var(--text-main);
     letter-spacing: -0.5px;
     white-space: nowrap;
 }
 
 .navbar-status {
     font-size: 0.7rem;
-    color: #38bdf8;
+    color: var(--accent);
     font-weight: 700;
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid rgba(56, 189, 248, 0.2);
+    background: rgba(2, 132, 199, 0.08);
+    border: 1px solid rgba(2, 132, 199, 0.15);
     padding: 0.2rem 0.6rem;
     border-radius: 6px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-/* --- NAV CENTRALIZED OPTIMIZED SEARCH FRAMEWORK --- */
+/* --- LIGHT INTERACTIVE CENTRALIZED SEARCH DECK --- */
 .navbar-search-container {
     flex: 0 1 460px;
     position: relative;
@@ -98,9 +98,9 @@ body {
 
 .navbar-search-container input {
     width: 100%;
-    background-color: #1e293b;
-    border: 1px solid #334155;
-    color: #f8fafc;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: var(--text-main);
     padding: 0.55rem 1rem 0.55rem 2.5rem;
     border-radius: 8px;
     outline: none;
@@ -109,13 +109,13 @@ body {
 }
 
 .navbar-search-container input:focus {
-    border-color: #38bdf8;
-    background-color: #0f172a;
-    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    border-color: var(--accent);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
 }
 
 .navbar-search-container input:focus + .search-icon-svg {
-    color: #38bdf8;
+    color: var(--accent);
 }
 
 .navbar-search-container .search-dropdown {
@@ -123,18 +123,18 @@ body {
     top: 115%;
     left: 0;
     right: 0;
-    background-color: #1e293b;
-    border: 1px solid #334155;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
     max-height: 280px;
     overflow-y: auto;
     z-index: 2100;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
 }
 
 .navbar-search-container .dropdown-item {
-    color: #e2e8f0;
-    border-bottom: 1px solid #334155;
+    color: var(--text-main);
+    border-bottom: 1px solid #f1f5f9;
     transition: background-color 0.15s ease;
 }
 
@@ -143,11 +143,11 @@ body {
 }
 
 .navbar-search-container .dropdown-item:hover {
-    background-color: #2563eb;
+    background-color: var(--accent);
     color: #ffffff;
 }
 
-/* --- NAV CONTROL HUB CONTROLS --- */
+/* --- NAV HUB CONTROLS --- */
 .navbar-right {
     display: flex;
     align-items: center;
@@ -160,8 +160,8 @@ body {
     gap: 0.5rem;
     padding: 0.3rem 0.7rem;
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .navbar-user-profile #sidebar-user-avatar {
@@ -169,13 +169,13 @@ body {
     height: 26px;
     border-radius: 50%;
     object-fit: cover;
-    border: 1.5px solid #38bdf8;
+    border: 1.5px solid var(--accent);
 }
 
 .navbar-user-profile #user-display-tag {
     font-size: 0.85rem;
     font-weight: 500;
-    color: #f1f5f9;
+    color: var(--text-main);
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -183,9 +183,9 @@ body {
 }
 
 .nav-action-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid #334155;
-    color: #94a3b8;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid #e2e8f0;
+    color: #64748b;
     padding: 0.5rem;
     border-radius: 8px;
     cursor: pointer;
@@ -196,9 +196,9 @@ body {
 }
 
 .nav-action-btn:hover {
-    background: rgba(56, 189, 248, 0.1);
-    color: #38bdf8;
-    border-color: #38bdf8;
+    background: rgba(2, 132, 199, 0.08);
+    color: var(--accent);
+    border-color: var(--accent);
 }
 
 .nav-action-btn.danger:hover {
@@ -212,7 +212,7 @@ body {
     height: 16px;
 }
 
-/* --- AUTHENTICATION BOX STYLING --- */
+/* --- AUTHENTICATION STYLING --- */
 .auth-box {
     background-color: var(--bg-secondary);
     border: 1px solid var(--bg-tertiary);
@@ -247,7 +247,7 @@ body {
 .auth-box input:focus {
     border-color: var(--accent);
     background-color: var(--bg-secondary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
 }
 
 .auth-box button {
@@ -283,7 +283,7 @@ body {
     text-decoration: underline;
 }
 
-/* --- DASHBOARD & DRAGGABLE SIDEBAR LAYER --- */
+/* --- DASHBOARD LAYER --- */
 .dashboard-wrapper {
     display: flex;
     flex: 1;
@@ -295,7 +295,7 @@ body {
 
 .sidebar-panel {
     width: 300px; 
-    background-color: var(--bg-secondary);
+    background-color: #ffffff;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -380,8 +380,8 @@ body {
 }
 
 .thread-item.active-selected {
-    background-color: rgba(37, 99, 235, 0.06);
-    border-color: rgba(37, 99, 235, 0.12);
+    background-color: rgba(2, 132, 199, 0.06);
+    border-color: rgba(2, 132, 199, 0.12);
 }
 
 .empty-text {
@@ -391,7 +391,7 @@ body {
     margin-top: 1rem;
 }
 
-/* --- RIGHT VIEWPORT: MESSAGING CANVAS --- */
+/* --- MESSAGING CANVAS --- */
 .chat-wrapper {
     flex: 1;
     height: 100%;
@@ -413,7 +413,7 @@ body {
 }
 
 .chat-header {
-    background-color: var(--bg-secondary);
+    background-color: #ffffff;
     border-bottom: 1px solid var(--bg-tertiary);
     padding: 0 1.2rem;
     height: 60px;
@@ -439,7 +439,7 @@ body {
     max-width: 450px;
 }
 
-/* SCROLLABLE CONVERSATION CANVAS */
+/* SCROLLABLE SCENE CANVAS */
 .message-pane {
     flex: 1;
     padding: 1.5rem;
@@ -450,10 +450,10 @@ body {
     flex-direction: column;
     justify-content: flex-start; 
     gap: 1rem;
-    background-color: var(--bg-primary);
+    background-color: #ffffff; 
 }
 
-/* MESSAGE ROWS CONFIGURATION */
+/* SPEECH BUBBLES PLATFORM SETUP */
 .message-row {
     display: flex;
     max-width: 75%;
@@ -501,7 +501,7 @@ body {
 }
 
 .incoming .message-bubble {
-    background-color: var(--bg-secondary);
+    background-color: #f1f5f9; /* Adjusted theme offset for better visual depth */
     color: var(--text-main);
     border-top-left-radius: 2px;
     border: 1px solid #e2e8f0;
@@ -532,10 +532,10 @@ body {
     color: var(--tick-read);
 }
 
-/* --- FIXED CHAT INPUT BAR --- */
+/* --- FIXED CHAT INPUT FRAME --- */
 .input-bar {
-    background-color: var(--bg-secondary);
-    padding: 0.75rem 1.2rem;
+    background-color: #ffffff;
+    padding: 0.75rem 12rem;
     flex-shrink: 0;
     border-top: 1px solid var(--bg-tertiary);
     width: 100%;
@@ -555,9 +555,9 @@ body {
 }
 
 #chat-form:focus-within {
-    background-color: var(--bg-secondary);
+    background-color: #ffffff;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.08);
 }
 
 #msg-input {
@@ -567,7 +567,7 @@ body {
     outline: none;
     color: var(--text-main);
     padding: 0.55rem;
-    font-size: 16px; /* 16px prevents automatic browser layouts from zoom-shifting inputs on phone entry fields */
+    font-size: 16px; 
     min-width: 0;
 }
 
@@ -587,7 +587,7 @@ body {
     background-color: var(--accent-hover);
 }
 
-/* --- UI ACTIONS & UTILITIES --- */
+/* --- UI UTILITIES --- */
 .action-btn {
     border: none;
     padding: 0.4rem 0.75rem;
@@ -650,7 +650,7 @@ body {
     display: none !important;
 }
 
-/* --- CHAT MULTIMEDIA EMBED ELEMENTS --- */
+/* --- MULTIMEDIA EMBEDS --- */
 .chat-rendered-image {
     max-width: 100%;
     max-height: 220px;
@@ -693,7 +693,7 @@ body {
     text-decoration: underline;
 }
 
-/* --- DROPDOWN WORKSPACE STYLES --- */
+/* --- TRANSLATION LAYER OVERLAYS --- */
 .three-dots-icon {
     cursor: pointer;
     color: var(--text-muted);
@@ -709,12 +709,12 @@ body {
 .msg-dropdown {
     position: absolute;
     top: 24px;
-    background-color: var(--bg-secondary);
+    background-color: #ffffff;
     border: 1px solid var(--bg-tertiary);
     border-radius: 8px;
     z-index: 500;
     width: 165px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
     overflow: hidden;
 }
 .incoming .msg-dropdown {
@@ -745,11 +745,11 @@ body {
     margin-top: 4px;
 }
 
-/* --- MODAL DIALOGS STYLES --- */
+/* --- MODAL DIALOGUES --- */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(15, 23, 42, 0.3);
+    background: rgba(15, 23, 42, 0.15);
     backdrop-filter: blur(4px);
     display: flex; justify-content: center; align-items: center;
     z-index: 2000;
@@ -757,7 +757,7 @@ body {
 }
 
 .modal-card {
-    background: var(--bg-secondary);
+    background: #ffffff;
     border-radius: 12px;
     width: 100%;
     max-width: 440px;
@@ -773,7 +773,7 @@ body {
 }
 
 .modal-header {
-    background: var(--bg-secondary);
+    background: #ffffff;
     padding: 1.2rem 1.5rem;
     display: flex;
     justify-content: space-between;
@@ -854,8 +854,8 @@ body {
 
 .form-group input:focus, .form-group textarea:focus {
     border-color: var(--accent);
-    background: var(--bg-secondary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.08);
 }
 
 .form-group textarea {
@@ -871,7 +871,7 @@ body {
     background-color: var(--accent-hover);
 }
 
-/* --- WHATSAPP-STYLE LIVE COMPACT STATUS OVERLAYS --- */
+/* --- LIVE TRACKING OVERLAYS --- */
 .global-presence-badge {
     position: absolute;
     bottom: -1px;
@@ -879,7 +879,7 @@ body {
     width: 11px;
     height: 11px;
     border-radius: 50%;
-    border: 2px solid var(--bg-secondary);
+    border: 2px solid #ffffff;
     transition: background-color 0.25s linear;
 }
 .global-presence-badge.online {
@@ -889,7 +889,7 @@ body {
     background-color: #94a3b8;
 }
 
-/* --- MOBILE TRANSITION LAYOUT OVERRIDES --- */
+/* --- MOBILE LAYOUT TRANSLATIONS --- */
 .mobile-only {
     display: none;
 }
@@ -900,7 +900,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(15, 23, 42, 0.15);
+    background: rgba(15, 23, 42, 0.08);
     z-index: 90;
     opacity: 0;
     visibility: hidden;
@@ -912,7 +912,7 @@ body {
     visibility: visible;
 }
 
-/* --- RESPONSIVE DEVICE VIEWPORT ADAPTERS --- */
+/* --- RESPONSIVE DEVICE VIEWPORTS --- */
 @media (max-width: 960px) {
     .navbar-user-profile #user-display-tag {
         display: none; 
@@ -928,7 +928,6 @@ body {
         display: none !important; 
     }
 
-    /* --- FIXED AND COMPRESSED SINGLE-ROW MOBILE NAVBAR --- */
     .top-navbar {
         flex-wrap: nowrap;
         height: 54px;
@@ -941,12 +940,10 @@ body {
         letter-spacing: -0.3px;
     }
 
-    /* Hide text presence tags on small phones to gain spacing metrics */
     .navbar-status {
         display: none !important;
     }
 
-    /* Inline row optimization parameters for the central input search component */
     .navbar-search-container {
         order: unset;
         flex: 1;
@@ -981,7 +978,6 @@ body {
         border-radius: 6px;
     }
 
-    /* Anchors slide panel seamlessly right beneath the 54px mobile line frame */
     .sidebar-panel {
         position: fixed;
         top: 54px; 
@@ -989,7 +985,7 @@ body {
         bottom: 0;
         width: 280px !important; 
         z-index: 1000;
-        box-shadow: 5px 0 15px rgba(0,0,0,0.05);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.02);
         transform: translate3d(-100%, 0, 0);
         will-change: transform;
         transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);

@@ -93,7 +93,7 @@
                         </div>
                     </div>
                     <div id="header-action-panel" style="display: flex; align-items: center; gap: 0.5rem;">
-                        <button id="check-room-online-btn" class="action-btn secondary hidden" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;">🟢 Who's Online</button>
+                        <button id="check-room-online-btn" class="action-btn secondary hidden" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;">👥 Community Directory</button>
                     </div>
                 </header>
 
@@ -123,7 +123,7 @@
                                 <div data-lang="te">Telugu (తెలుగు)</div>
                                 <div data-lang="ml">Malayalam (മലയാളം)</div>
                                 <div data-lang="bn">Bengali (বাংলা)</div>
-                                <div data-lang="hi">Hindi (हिन्दी)</div>
+                                <div data-lang="hi">Hindi (ಹಿन्दी)</div>
                             </div>
                         </div>
 
@@ -165,10 +165,11 @@
         </div>
     </div>
 
+    <!-- MODAL BUG FIX: Renders all permanent members with relative online layout tracks safely -->
     <div id="group-online-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
-                <h3>Active Room Members</h3>
+                <h3>Community Members & Status</h3>
                 <button id="close-group-online-modal" class="close-modal-x">&times;</button>
             </header>
             <div class="modal-body" id="group-online-list-target" style="display: flex; flex-direction: column; gap: 0.75rem;">
@@ -265,7 +266,6 @@
         let activeRoomDesc = '';
         let activeRoomIcon = '';
 
-        // RUNTIME TRACKER FOR OUTGOING TRANSLITERATION CHOICE
         let selectedOutgoingLang = 'auto';
 
         const sidebarPanel = document.getElementById('sidebar-panel');
@@ -291,7 +291,6 @@
         const attachDropdownMenu = document.getElementById('attach-dropdown-menu');
         const chatMediaInput = document.getElementById('chat-media-input');
 
-        // TARGET HANDLERS FOR THE INPUT LANGUAGE SELECTOR
         const chatLangTrigger = document.getElementById('chat-lang-trigger');
         const inputLangDropdown = document.getElementById('input-lang-dropdown');
 
@@ -532,7 +531,6 @@
             attachDropdownMenu.classList.toggle('hidden');
         });
 
-        // TOGGLE LANGUAGE DROPDOWN AND PREVENT DOCUMENT COLLISION
         chatLangTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
             const isHidden = inputLangDropdown.classList.contains('hidden');
@@ -542,7 +540,6 @@
             }
         });
 
-        // HANDLE DYNAMIC SELECTION METRICS FOR PHONETIC INPUT
         inputLangDropdown.querySelectorAll('div').forEach(item => {
             item.addEventListener('click', (e) => {
                 selectedOutgoingLang = e.target.getAttribute('data-lang');
@@ -558,22 +555,19 @@
             });
         });
 
-        // --- REAL-TIME AS-YOU-TYPE PHONETIC TRANSLITERATION ENGINE ---
         msgInput.addEventListener('keydown', async (e) => {
             if (selectedOutgoingLang === 'auto') return;
 
-            // Trigger mapping replacement whenever the spacebar is pressed
             if (e.key === ' ') {
                 const value = msgInput.value;
                 const selectionStart = msgInput.selectionStart;
                 const textBeforeCursor = value.substring(0, selectionStart);
 
-                // Isolate the immediate untranslated English alphanumeric string preceding the cursor
                 const lastWordMatch = textBeforeCursor.match(/([a-zA-Z0-9]+)$/);
                 if (!lastWordMatch) return;
 
                 const lastWord = lastWordMatch[1];
-                e.preventDefault(); // Temporarily halt layout updates to safely calculate text indexes
+                e.preventDefault(); 
 
                 const itcMap = {
                     kn: 'kn-t-i0-und',
@@ -594,7 +588,6 @@
                             const startPos = selectionStart - lastWord.length;
                             const textAfterCursor = value.substring(selectionStart);
 
-                            // Rewrite internal text state seamlessly without moving field bounds
                             msgInput.value = value.substring(0, startPos) + transliteratedWord + ' ' + textAfterCursor;
                             
                             const newCursorPos = startPos + transliteratedWord.length + 1;
@@ -606,7 +599,6 @@
                     console.error("Transliteration engine connection timeout.", err);
                 }
 
-                // Safe structural fallback: Append space normally if API encounters network loss
                 const textAfterCursor = value.substring(selectionStart);
                 msgInput.value = textBeforeCursor + ' ' + textAfterCursor;
                 msgInput.setSelectionRange(selectionStart + 1, selectionStart + 1);
@@ -723,24 +715,29 @@
             socket.emit('joinGroupRoom', { roomId: id });
         }
 
+        // BUG FIXED: Renders all joined members with precise status mapping metrics
         checkRoomOnlineBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (!targetRoomId) return;
             socket.emit('fetchGroupOnlineRoster', { roomId: targetRoomId }, (roster) => {
                 groupOnlineListTarget.innerHTML = '';
                 if (roster.length === 0) {
-                    groupOnlineListTarget.innerHTML = '<p class="empty-text">No active connections found.</p>';
+                    groupOnlineListTarget.innerHTML = '<p class="empty-text">No active records available.</p>';
                 } else {
                     roster.forEach(m => {
                         const row = document.createElement('div');
                         row.style.display = 'flex';
                         row.style.alignItems = 'center';
-                        row.style.gap = '10px';
-                        row.style.padding = '0.4rem 0';
+                        row.style.justifyContent = 'space-between';
+                        row.style.padding = '0.5rem 0';
+                        row.style.borderBottom = '1px solid var(--bg-tertiary)';
                         row.innerHTML = `
-                            <span style="color: #22c55e; font-size: 1.1rem;">●</span>
-                            <span style="font-weight: 600; color: var(--text-main); font-size: 0.95rem;">${m.username}</span>
-                            ${m.id === currentUserId ? '<span style="font-size:0.75rem; color: var(--text-muted);">(You)</span>' : ''}
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <img src="${m.profile_pic_url}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--bg-tertiary);">
+                                <span style="font-weight: 600; color: var(--text-main); font-size: 0.95rem;">${m.username}</span>
+                                ${m.id === currentUserId ? '<span style="font-size:0.75rem; color: var(--text-muted);">(You)</span>' : ''}
+                            </div>
+                            <span class="global-presence-badge ${m.status}" style="position: static; width: 10px; height: 10px; display: inline-block;"></span>
                         `;
                         groupOnlineListTarget.appendChild(row);
                     });
@@ -751,12 +748,10 @@
 
         closeGroupOnlineModal.addEventListener('click', () => groupOnlineModal.classList.add('hidden'));
 
-        // PROCESS SUBMISSIONS WITH FINAL STRING CLEANUP FOR ANY UNTRANSFORMED TRAILING WORDS
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             let text = msgInput.value.trim();
             if(text) {
-                // If the user presses enter before typing space on their last word, convert it instantly
                 if (selectedOutgoingLang !== 'auto' && /[a-zA-Z0-9]/.test(text)) {
                     try {
                         msgInput.disabled = true;

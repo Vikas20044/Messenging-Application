@@ -535,29 +535,33 @@ body {
 /* --- FIXED CHAT INPUT FRAME --- */
 .input-bar {
     background-color: #ffffff;
-    padding: 0.75rem 12rem;
+    padding: 0.6rem 1.5rem;
     flex-shrink: 0;
     border-top: 1px solid var(--bg-tertiary);
     width: 100%;
     position: relative; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #chat-form {
     display: flex;
-    background-color: var(--bg-tertiary);
-    border: 1px solid transparent;
-    border-radius: 8px;
-    padding: 0.25rem;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 0.3rem 0.5rem;
     width: 100%;
+    max-width: 950px;
     align-items: center;
     gap: 0.4rem;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #chat-form:focus-within {
     background-color: #ffffff;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.08);
+    box-shadow: 0 0 0 3px rgba(203, 110, 50, 0.08);
 }
 
 #msg-input {
@@ -566,8 +570,8 @@ body {
     border: none;
     outline: none;
     color: var(--text-main);
-    padding: 0.55rem;
-    font-size: 16px; 
+    padding: 0.4rem 0.6rem;
+    font-size: 15px; 
     min-width: 0;
 }
 
@@ -575,16 +579,22 @@ body {
     background-color: var(--accent);
     color: #ffffff;
     border: none;
-    padding: 0.55rem 1.25rem;
-    border-radius: 6px;
-    font-weight: 600;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     cursor: pointer;
     flex-shrink: 0;
-    transition: background-color 0.15s ease;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    padding: 0;
 }
 
 #chat-form button[type="submit"]:hover {
     background-color: var(--accent-hover);
+    transform: scale(1.05);
 }
 
 /* --- UI UTILITIES --- */
@@ -1512,4 +1522,114 @@ body {
     .hero-visual-element {
         display: none;
     }
+}
+
+/* ==========================================================================
+   ADVANCED CHAT FEATURES: SEARCH CHIPS, REACTIONS, QUOTING & LIGHTBOX
+   ========================================================================== */
+
+#advanced-search-panel {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid var(--bg-tertiary);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    width: 310px;
+    max-width: calc(100vw - 32px);
+    padding: 1rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    text-align: left;
+}
+
+.search-chip {
+    cursor: pointer;
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    user-select: none;
+    border: 1px solid var(--bg-tertiary);
+}
+.search-chip:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-main);
+}
+.search-chip.active {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    font-weight: bold;
+    border-color: var(--accent);
+    box-shadow: 0 2px 6px rgba(203, 110, 50, 0.2);
+}
+
+.reaction-badge {
+    transition: transform 0.1s ease, background-color 0.1s ease;
+}
+.reaction-badge:hover {
+    transform: scale(1.06);
+    background-color: var(--bg-tertiary) !important;
+}
+
+.reactions-picker span {
+    transition: transform 0.1s ease;
+    display: inline-block;
+}
+.reactions-picker span:hover {
+    transform: scale(1.28) !important;
+}
+
+/* Quote/Reply Color Adaptations */
+.quoted-message-bubble {
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    font-size: 0.78rem;
+    text-align: left;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+}
+
+.incoming .quoted-message-bubble {
+    background: rgba(0, 0, 0, 0.05) !important;
+    border-left: 3px solid var(--accent) !important;
+    padding: 6px 10px;
+}
+.incoming .quoted-message-bubble div {
+    color: var(--text-main) !important;
+}
+.incoming .quoted-message-bubble .reply-text-context {
+    color: var(--text-muted) !important;
+}
+
+.outgoing .quoted-message-bubble {
+    background: rgba(255, 255, 255, 0.18) !important;
+    border-left: 3px solid #ffffff !important;
+    padding: 6px 10px;
+}
+.outgoing .quoted-message-bubble div {
+    color: #ffffff !important;
+}
+.outgoing .quoted-message-bubble .reply-text-context {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.quoted-message-bubble:hover {
+    opacity: 0.9;
+}
+
+.toast-card {
+    animation: slideInToast 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes slideInToast {
+    from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }

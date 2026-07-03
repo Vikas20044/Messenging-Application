@@ -198,10 +198,10 @@ app.post('/api/rooms/create', checkAuthSession, async (req, res) => {
             [room_name, roomCode, room_desc || '', '/uploads/default-group.png', req.session.userId]
         );
         
-        // Auto-link creator to room member persistence registry
+        // Auto-link creator to room member persistence registry with admin flag set to TRUE
         const dynamicRoom = result.rows[0];
         await pool.query(
-            'INSERT INTO room_members (room_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            'INSERT INTO room_members (room_id, user_id, is_admin) VALUES ($1, $2, TRUE) ON CONFLICT DO NOTHING',
             [dynamicRoom.id, req.session.userId]
         );
 
@@ -233,6 +233,89 @@ app.get('/api/rooms/lookup/:code', checkAuthSession, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Failed to query database room registries.' });
+    }
+});
+
+app.get('/api/rooms/joined', checkAuthSession, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT r.id, r.room_name, r.room_code, r.room_desc, r.room_icon, r.created_by, rm.is_admin
+            FROM rooms r
+            JOIN room_members rm ON r.id = rm.room_id
+            WHERE rm.user_id = $1
+            ORDER BY r.room_name ASC
+        `, [req.session.userId]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch joined rooms.' });
+    }
+});
+
+app.post('/api/rooms/leave', checkAuthSession, async (req, res) => {
+    const { roomId } = req.body;
+    if (!roomId) return res.status(400).json({ error: 'Room ID parameter is missing.' });
+    try {
+        await pool.query('DELETE FROM room_members WHERE room_id = $1 AND user_id = $2', [roomId, req.session.userId]);
+        
+        // Notify socket clients in the room that the user left
+        io.to(`group_room_${roomId}`).emit('broadcastGroupReadsSynchronized', { roomId });
+        
+        res.json({ success: true, message: 'Successfully left the group room.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database conflict occurred leaving group.' });
+    }
+});
+
+app.post('/api/rooms/members/remove', checkAuthSession, async (req, res) => {
+    const { roomId, targetUserId } = req.body;
+    if (!roomId || !targetUserId) {
+        return res.status(400).json({ error: 'Missing parameters (roomId, targetUserId).' });
+    }
+    try {
+        // Verify current user is an admin of the room
+        const adminCheck = await pool.query('SELECT is_admin FROM room_members WHERE room_id = $1 AND user_id = $2', [roomId, req.session.userId]);
+        if (adminCheck.rows.length === 0 || !adminCheck.rows[0].is_admin) {
+            return res.status(403).json({ error: 'Forbidden: Only administrators can remove group members.' });
+        }
+
+        await pool.query('DELETE FROM room_members WHERE room_id = $1 AND user_id = $2', [roomId, targetUserId]);
+
+        // Emit dynamic kick socket notification to force front-end reload
+        io.emit('userKickedFromRoom', { roomId: parseInt(roomId), userId: parseInt(targetUserId) });
+
+        res.json({ success: true, message: 'Successfully kicked user from group.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to execute removal.' });
+    }
+});
+
+app.post('/api/rooms/members/toggle-admin', checkAuthSession, async (req, res) => {
+    const { roomId, targetUserId, isAdmin } = req.body;
+    if (!roomId || !targetUserId || isAdmin === undefined) {
+        return res.status(400).json({ error: 'Missing parameters (roomId, targetUserId, isAdmin).' });
+    }
+    try {
+        // Verify current user is an admin of the room
+        const adminCheck = await pool.query('SELECT is_admin FROM room_members WHERE room_id = $1 AND user_id = $2', [roomId, req.session.userId]);
+        if (adminCheck.rows.length === 0 || !adminCheck.rows[0].is_admin) {
+            return res.status(403).json({ error: 'Forbidden: Only administrators can adjust credentials.' });
+        }
+
+        await pool.query(
+            'UPDATE room_members SET is_admin = $3 WHERE room_id = $1 AND user_id = $2', 
+            [roomId, targetUserId, isAdmin]
+        );
+
+        // Notify room members of updated details roster
+        io.to(`group_room_${roomId}`).emit('broadcastGroupReadsSynchronized', { roomId });
+
+        res.json({ success: true, message: 'Admin state toggled successfully.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to toggle admin status.' });
     }
 });
 
@@ -416,7 +499,7 @@ io.on('connection', (socket) => {
     socket.on('fetchGroupOnlineRoster', async ({ roomId }, callback) => {
         try {
             const result = await pool.query(`
-                SELECT u.id, u.username, COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url
+                SELECT u.id, u.username, COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url, rm.is_admin
                 FROM room_members rm
                 JOIN users u ON rm.user_id = u.id
                 WHERE rm.room_id = $1
@@ -429,7 +512,8 @@ io.on('connection', (socket) => {
                     id: user.id,
                     username: user.username,
                     profile_pic_url: user.profile_pic_url,
-                    status: isOnline ? 'online' : 'offline'
+                    status: isOnline ? 'online' : 'offline',
+                    is_admin: user.is_admin
                 };
             });
 
@@ -451,10 +535,26 @@ io.on('connection', (socket) => {
         try {
             const result = await pool.query(`
                 SELECT m.id as _id, m.text, m.timestamp, m.isread as "isRead", 
-                       u.username as username, m.sender_id, m.message_type, m.file_url,
-                       COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url
+                       u.username as username, m.sender_id, m.message_type, m.file_url, m.is_deleted,
+                       COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url,
+                       m.reply_to_message_id,
+                       p.text as reply_to_text,
+                       pu.username as reply_to_username,
+                       p.is_deleted as reply_to_is_deleted,
+                       (
+                           SELECT COALESCE(json_object_agg(eg.emoji, eg.users), '{}'::json)
+                           FROM (
+                               SELECT mr.emoji, json_agg(u2.username) as users
+                               FROM message_reactions mr
+                               JOIN users u2 ON mr.user_id = u2.id
+                               WHERE mr.message_id = m.id
+                               GROUP BY mr.emoji
+                           ) eg
+                       ) as reactions
                 FROM messages m
                 JOIN users u ON m.sender_id = u.id
+                LEFT JOIN messages p ON m.reply_to_message_id = p.id
+                LEFT JOIN users pu ON p.sender_id = pu.id
                 WHERE ((m.sender_id = $1 AND m.receiver_id = $2) 
                    OR (m.sender_id = $2 AND m.receiver_id = $1)) AND m.room_id IS NULL
                 ORDER BY m.timestamp ASC LIMIT 100
@@ -466,24 +566,40 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('privateMessage', async ({ sender_id, receiver_id, text, message_type, file_url }) => {
+    socket.on('privateMessage', async ({ sender_id, receiver_id, text, message_type, file_url, reply_to_message_id }) => {
         const roomName = `chat_${Math.min(sender_id, receiver_id)}_${Math.max(sender_id, receiver_id)}`;
         const type = message_type || 'text';
         const url = file_url || null;
+        const parentId = reply_to_message_id || null;
         try {
             const result = await pool.query(`
-                INSERT INTO messages (sender_id, receiver_id, text, message_type, file_url) 
-                VALUES ($1, $2, $3, $4, $5) 
-                RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url
-            `, [sender_id, receiver_id, text, type, url]);
+                INSERT INTO messages (sender_id, receiver_id, text, message_type, file_url, reply_to_message_id) 
+                VALUES ($1, $2, $3, $4, $5, $6) 
+                RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url, is_deleted, reply_to_message_id
+            `, [sender_id, receiver_id, text, type, url, parentId]);
 
             const userResult = await pool.query("SELECT username, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", [sender_id]);
+
+            let parentMsg = null;
+            if (parentId) {
+                const parentRes = await pool.query(
+                    "SELECT m.text, u.username, m.is_deleted FROM messages m JOIN users u ON m.sender_id = u.id WHERE m.id = $1", 
+                    [parentId]
+                );
+                if (parentRes.rows.length > 0) {
+                    parentMsg = parentRes.rows[0];
+                }
+            }
 
             const payload = {
                 ...result.rows[0],
                 sender_id,
                 username: userResult.rows[0].username,
-                profile_pic_url: userResult.rows[0].profile_pic_url
+                profile_pic_url: userResult.rows[0].profile_pic_url,
+                reply_to_text: parentMsg ? parentMsg.text : null,
+                reply_to_username: parentMsg ? parentMsg.username : null,
+                reply_to_is_deleted: parentMsg ? parentMsg.is_deleted : false,
+                reactions: {}
             };
 
             io.to(roomName).emit('message', payload);
@@ -503,10 +619,26 @@ io.on('connection', (socket) => {
         try {
             const result = await pool.query(`
                 SELECT m.id as _id, m.text, m.timestamp, m.isread as "isRead", 
-                       u.username as username, m.sender_id, m.message_type, m.file_url,
-                       COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url
+                       u.username as username, m.sender_id, m.message_type, m.file_url, m.is_deleted,
+                       COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url,
+                       m.reply_to_message_id,
+                       p.text as reply_to_text,
+                       pu.username as reply_to_username,
+                       p.is_deleted as reply_to_is_deleted,
+                       (
+                           SELECT COALESCE(json_object_agg(eg.emoji, eg.users), '{}'::json)
+                           FROM (
+                               SELECT mr.emoji, json_agg(u2.username) as users
+                               FROM message_reactions mr
+                               JOIN users u2 ON mr.user_id = u2.id
+                               WHERE mr.message_id = m.id
+                               GROUP BY mr.emoji
+                           ) eg
+                       ) as reactions
                 FROM messages m
                 JOIN users u ON m.sender_id = u.id
+                LEFT JOIN messages p ON m.reply_to_message_id = p.id
+                LEFT JOIN users pu ON p.sender_id = pu.id
                 WHERE m.room_id = $1
                 ORDER BY m.timestamp ASC LIMIT 100
             `, [roomId]);
@@ -528,16 +660,17 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('groupMessage', async ({ sender_id, room_id, text, message_type, file_url }) => {
+    socket.on('groupMessage', async ({ sender_id, room_id, text, message_type, file_url, reply_to_message_id }) => {
         const roomName = `group_room_${room_id}`;
         const type = message_type || 'text';
         const url = file_url || null;
+        const parentId = reply_to_message_id || null;
         try {
             const result = await pool.query(`
-                INSERT INTO messages (sender_id, room_id, text, message_type, file_url) 
-                VALUES ($1, $2, $3, $4, $5) 
-                RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url, room_id
-            `, [sender_id, room_id, text, type, url]);
+                INSERT INTO messages (sender_id, room_id, text, message_type, file_url, reply_to_message_id) 
+                VALUES ($1, $2, $3, $4, $5, $6) 
+                RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url, room_id, is_deleted, reply_to_message_id
+            `, [sender_id, room_id, text, type, url, parentId]);
 
             const targetMessageId = result.rows[0]._id;
             const userResult = await pool.query("SELECT username, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", [sender_id]);
@@ -554,11 +687,26 @@ io.on('connection', (socket) => {
                 }
             }
 
+            let parentMsg = null;
+            if (parentId) {
+                const parentRes = await pool.query(
+                    "SELECT m.text, u.username, m.is_deleted FROM messages m JOIN users u ON m.sender_id = u.id WHERE m.id = $1", 
+                    [parentId]
+                );
+                if (parentRes.rows.length > 0) {
+                    parentMsg = parentRes.rows[0];
+                }
+            }
+
             const payload = {
                 ...result.rows[0],
                 sender_id,
                 username: userResult.rows[0].username,
-                profile_pic_url: userResult.rows[0].profile_pic_url
+                profile_pic_url: userResult.rows[0].profile_pic_url,
+                reply_to_text: parentMsg ? parentMsg.text : null,
+                reply_to_username: parentMsg ? parentMsg.username : null,
+                reply_to_is_deleted: parentMsg ? parentMsg.is_deleted : false,
+                reactions: {}
             };
 
             io.to(roomName).emit('message', payload);
@@ -601,6 +749,63 @@ socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }
             if (callback) callback(result.rows);
         } catch (err) {
             if (callback) callback([]);
+        }
+    });
+
+    socket.on('typing', ({ sender_id, receiver_id, room_id, isTyping }) => {
+        if (room_id) {
+            socket.to(`group_room_${room_id}`).emit('userTyping', { userId: sender_id, roomId: room_id, isTyping });
+        } else if (receiver_id) {
+            const chatRoomName = `chat_${Math.min(sender_id, receiver_id)}_${Math.max(sender_id, receiver_id)}`;
+            socket.to(chatRoomName).emit('userTyping', { userId: sender_id, isTyping });
+        }
+    });
+
+
+    socket.on('messageReaction', async ({ messageId, emoji, roomId, receiverId }) => {
+        try {
+            const userId = socket.userId;
+            if (!userId) return;
+
+            // Check if reaction already exists
+            const checkRes = await pool.query('SELECT emoji FROM message_reactions WHERE message_id = $1 AND user_id = $2', [messageId, userId]);
+            
+            if (checkRes.rows.length > 0) {
+                if (checkRes.rows[0].emoji === emoji) {
+                    // Toggle off
+                    await pool.query('DELETE FROM message_reactions WHERE message_id = $1 AND user_id = $2', [messageId, userId]);
+                } else {
+                    // Update reaction
+                    await pool.query('UPDATE message_reactions SET emoji = $3 WHERE message_id = $1 AND user_id = $2', [messageId, userId, emoji]);
+                }
+            } else {
+                // Add new reaction
+                await pool.query('INSERT INTO message_reactions (message_id, user_id, emoji) VALUES ($1, $2, $3)', [messageId, userId, emoji]);
+            }
+
+            // Compile updated reaction map for this message
+            const reactionMapRes = await pool.query(`
+                SELECT mr.emoji, json_agg(u.username) as users
+                FROM message_reactions mr
+                JOIN users u ON mr.user_id = u.id
+                WHERE mr.message_id = $1
+                GROUP BY mr.emoji
+            `, [messageId]);
+
+            const reactions = {};
+            reactionMapRes.rows.forEach(row => {
+                reactions[row.emoji] = row.users;
+            });
+
+            // Emit the updated reactions
+            if (roomId) {
+                io.to(`group_room_${roomId}`).emit('reactionUpdated', { messageId, reactions });
+            } else if (receiverId) {
+                const chatRoomName = `chat_${Math.min(userId, receiverId)}_${Math.max(userId, receiverId)}`;
+                io.to(chatRoomName).emit('reactionUpdated', { messageId, reactions });
+            }
+        } catch (err) {
+            console.error('Failed to handle reaction event:', err);
         }
     });
 

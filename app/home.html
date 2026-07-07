@@ -1857,14 +1857,15 @@
                     displayTextBox.innerText = `Translating to ${langName}...`;
                 }
                 
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${langCode}&dt=t&q=${encodeURIComponent(rawText)}`);
+                const res = await fetch('/api/ai/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: rawText, targetLang: langCode })
+                });
                 if (!res.ok) throw new Error();
                 
-                const responseData = await res.json();
-                let translatedOutput = "";
-                if(responseData && responseData[0]) {
-                    responseData[0].forEach(item => { if(item[0]) translatedOutput += item[0]; });
-                }
+                const data = await res.json();
+                const translatedOutput = data.translatedText;
 
                 if (langCode === 'en') {
                     displayTextBox.innerHTML = translatedOutput;
@@ -1873,7 +1874,7 @@
                 }
             } catch (err) {
                 displayTextBox.innerHTML = originalContent;
-                alert("Translation endpoint network timeout.");
+                alert("Translation endpoint error.");
             }
         }
 
@@ -1886,7 +1887,7 @@
             const originalBtnText = btn ? btn.innerHTML : '🎙️ Transcribe Message';
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = '⏳ Loading AI model...';
+                btn.innerHTML = '⏳ Downloading audio...';
             }
 
             try {
@@ -1901,31 +1902,28 @@
                 const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
                 const float32Samples = audioBuffer.getChannelData(0);
 
-                // Dynamically import Hugging Face Transformers
-                if (btn) btn.innerHTML = '⏳ Initializing Whisper Tiny...';
-                const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
-                env.allowLocalModels = false;
-
-                // Load whisper-tiny model pipeline
-                const transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en');
+                if (btn) btn.innerHTML = '⏳ Transcribing server-side...';
                 
-                if (btn) btn.innerHTML = '⚡ Transcribing speech...';
-                const output = await transcriber(float32Samples);
+                const res = await fetch('/api/ai/transcribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        audioSamples: Array.from(float32Samples),
+                        messageId,
+                        roomId: targetRoomId,
+                        receiverId: targetUserId
+                    })
+                });
+                if (!res.ok) throw new Error("Server transcription failed.");
                 
-                const transcription = output.text || '[No speech detected]';
+                const data = await res.json();
+                const transcription = data.transcription;
+                
                 textDiv.innerText = transcription;
                 textDiv.style.borderLeft = '2px solid var(--accent)';
                 textDiv.style.paddingLeft = '6px';
 
                 if (btn) btn.remove();
-
-                // Save transcription to database via sockets
-                socket.emit('saveMessageTranscription', {
-                    messageId,
-                    roomId: targetRoomId,
-                    receiverId: targetUserId,
-                    transcription
-                });
             } catch (err) {
                 console.error(err);
                 if (btn) {

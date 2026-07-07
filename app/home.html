@@ -1550,6 +1550,8 @@
             });
         }
 
+
+
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (emojiPickerPanel) emojiPickerPanel.classList.add('hidden');
@@ -1785,6 +1787,67 @@
             }
         }
 
+        async function transcribeAudioMessage(e, messageId, fileUrl) {
+            if (e) e.stopPropagation();
+            const btn = e ? e.target : null;
+            const textDiv = document.getElementById(`transcription-text-${messageId}`);
+            if (!textDiv) return;
+
+            const originalBtnText = btn ? btn.innerHTML : '🎙️ Transcribe Message';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ Loading AI model...';
+            }
+
+            try {
+                // Fetch the audio file
+                const audioResponse = await fetch(fileUrl);
+                if (!audioResponse.ok) throw new Error("Audio download failed.");
+                const arrayBuffer = await audioResponse.arrayBuffer();
+
+                // Decode using AudioContext
+                if (btn) btn.innerHTML = '⏳ Decoding audio...';
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                const float32Samples = audioBuffer.getChannelData(0);
+
+                // Dynamically import Hugging Face Transformers
+                if (btn) btn.innerHTML = '⏳ Initializing Whisper Tiny...';
+                const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+                env.allowLocalModels = false;
+
+                // Load whisper-tiny model pipeline
+                const transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en');
+                
+                if (btn) btn.innerHTML = '⚡ Transcribing speech...';
+                const output = await transcriber(float32Samples);
+                
+                const transcription = output.text || '[No speech detected]';
+                textDiv.innerText = transcription;
+                textDiv.style.borderLeft = '2px solid var(--accent)';
+                textDiv.style.paddingLeft = '6px';
+
+                if (btn) btn.remove();
+
+                // Save transcription to database via sockets
+                socket.emit('saveMessageTranscription', {
+                    messageId,
+                    roomId: targetRoomId,
+                    receiverId: targetUserId,
+                    transcription
+                });
+            } catch (err) {
+                console.error(err);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnText;
+                }
+                textDiv.innerText = '❌ Failed to transcribe. Please try again.';
+            }
+        }
+
+
+
         function toggleDropdown(e, dropdownId) {
             e.stopPropagation();
             const targetMenu = document.getElementById(dropdownId);
@@ -1819,6 +1882,36 @@
                         `;
                         receiptsListTarget.appendChild(block);
                     });
+                }
+                receiptsAuditModal.classList.remove('hidden');
+            });
+        }
+
+        function triggerPrivateReceiptsAudit(msgId) {
+            socket.emit('fetchPrivateMessageReadReceipt', { messageId: msgId }, (receipt) => {
+                receiptsListTarget.innerHTML = '';
+                if (!receipt) {
+                    receiptsListTarget.innerHTML = '<p class="empty-text">No data records available yet.</p>';
+                } else {
+                    const sentDate = new Date(receipt.sent_at);
+                    const sentTime = `${sentDate.toLocaleDateString()} at ${sentDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                    
+                    let readTimeStr = 'Unread (Pending/Offline)';
+                    if (receipt.isread && receipt.read_at) {
+                        const readDate = new Date(receipt.read_at);
+                        readTimeStr = `${readDate.toLocaleDateString()} at ${readDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                    }
+
+                    receiptsListTarget.innerHTML = `
+                        <div style="border-bottom: 1px solid var(--bg-tertiary); padding: 0.5rem 0; display: flex; justify-content: space-between;">
+                            <span style="font-weight:600; color:var(--text-main); font-size:0.9rem;">Sent</span>
+                            <span style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">✓ ${sentTime}</span>
+                        </div>
+                        <div style="padding: 0.5rem 0; display: flex; justify-content: space-between;">
+                            <span style="font-weight:600; color:var(--text-main); font-size:0.9rem;">Read</span>
+                            <span style="font-size:0.75rem; color:${receipt.isread ? 'var(--tick-read)' : 'var(--text-muted)'}; font-style:italic;">${receipt.isread ? '👁️ ' + readTimeStr : '✓ Sent only'}</span>
+                        </div>
+                    `;
                 }
                 receiptsAuditModal.classList.remove('hidden');
             });
@@ -1892,7 +1985,24 @@
                 const imgHtml = `<img src="${msg.file_url}" class="chat-rendered-image" onclick="window.openLightbox(this.src, 'image')" title="Zoom media preview" style="cursor: pointer;">`;
                 inlineRenderBody = wrapMediaWithMenu(msg, imgHtml);
             } else if (msg.message_type === 'audio') {
-                const audHtml = `<audio controls src="${msg.file_url}" class="chat-rendered-audio"></audio>`;
+                let transcriptionBody = '';
+                if (msg.transcription) {
+                    transcriptionBody = `<div id="transcription-text-${msg._id}" class="transcription-text-body" style="font-size: 0.82rem; margin-top: 6px; color: var(--text-main); font-style: italic; border-left: 2px solid var(--accent); padding-left: 6px; white-space: pre-wrap;">${msg.transcription}</div>`;
+                } else {
+                    const safeUrl = msg.file_url.replace(/'/g, "\\'");
+                    transcriptionBody = `
+                        <div class="transcription-container" style="margin-top: 6px;">
+                            <button onclick="transcribeAudioMessage(event, '${msg._id}', '${safeUrl}')" class="transcribe-btn" style="background: var(--bg-tertiary); color: var(--text-main); border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 4px;">🎙️ Transcribe Message</button>
+                            <div id="transcription-text-${msg._id}" class="transcription-text-body" style="font-size: 0.82rem; margin-top: 4px; color: var(--text-main); font-style: italic; white-space: pre-wrap;"></div>
+                        </div>
+                    `;
+                }
+                const audHtml = `
+                    <div style="display: flex; flex-direction: column; width: 100%;">
+                        <audio controls src="${msg.file_url}" class="chat-rendered-audio" style="width: 100%;"></audio>
+                        ${transcriptionBody}
+                    </div>
+                `;
                 inlineRenderBody = wrapMediaWithMenu(msg, audHtml);
             } else if (msg.message_type === 'video') {
                 const vidHtml = `<video src="${msg.file_url}" class="chat-rendered-video" onclick="window.openLightbox(this.src, 'video')" title="Zoom media preview" style="cursor: pointer;"></video>`;
@@ -1953,7 +2063,7 @@
             } else {
                 let contextualTicks = '';
                 if (!targetRoomId) {
-                    contextualTicks = `<span id="ticks-${msg._id}" class="ticks ${msg.isRead ? 'read' : ''}">&check;&check;</span>`;
+                    contextualTicks = `<span id="ticks-${msg._id}" class="ticks ${msg.isRead ? 'read' : ''}" onclick="triggerPrivateReceiptsAudit(${msg._id})" style="cursor:pointer;">&check;&check;</span>`;
                 } else {
                     contextualTicks = `<span class="group-ticks-tracker ticks" data-msg-id="${msg._id}" onclick="triggerReceiptsAudit(${msg._id})" style="cursor:pointer; font-size:0.7rem; font-weight:700;">✓ Checked</span>`;
                     
@@ -1987,6 +2097,21 @@
         socket.on('messageReadUpdate', (messageId) => {
             const ticks = document.getElementById('ticks-' + messageId);
             if (ticks) ticks.classList.add('read');
+        });
+
+        socket.on('transcriptionUpdated', ({ messageId, transcription }) => {
+            const textDiv = document.getElementById(`transcription-text-${messageId}`);
+            if (textDiv) {
+                textDiv.innerText = transcription;
+                textDiv.style.borderLeft = '2px solid var(--accent)';
+                textDiv.style.paddingLeft = '6px';
+                
+                // If there's a transcribe button, remove it
+                const btn = textDiv.previousElementSibling;
+                if (btn && btn.classList.contains('transcribe-btn')) {
+                    btn.remove();
+                }
+            }
         });
 
         document.getElementById('exit-chat-btn').addEventListener('click', async () => {

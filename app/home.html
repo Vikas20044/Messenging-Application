@@ -10,7 +10,7 @@
 
     <nav class="top-navbar">
         <div class="navbar-left">
-            <div class="navbar-brand">Real Time Messaging Application</div>
+            <div class="navbar-brand" onclick="resetToDashboard()" style="cursor: pointer;" title="Return to Dashboard Welcome Screen">Real Time Messaging Application</div>
             <div class="navbar-status" id="navbar-status-tag">Status: Connected</div>
             
             <!-- High UI/UX About Navigation Dropdown Menu -->
@@ -89,13 +89,14 @@
 
         <main id="chat-viewport" class="chat-wrapper">
             <!-- RECONSTRUCTED HIGH UI/UX DASHBOARD LANDING SCREEN CONTAINER -->
+            <!-- RECONSTRUCTED HIGH UI/UX DASHBOARD LANDING SCREEN CONTAINER -->
 <div id="empty-view-notice" class="dashboard-landing-container">
     
     <!-- Hero Welcome Banner Section -->
     <header class="dashboard-hero">
         <div class="hero-content">
             <span class="hero-badge">✨ Connected & Secure</span>
-            <h1>Welcome Back to Workspace Hub</h1>
+            <h1 id="dashboard-welcome-title">Welcome Back to Workspace Hub</h1>
             <p>Experience real-time contextual interactions powered by native AI translation pipelines and secure cloud synchronization hooks.</p>
         </div>
         <div class="hero-visual-element">
@@ -103,13 +104,44 @@
         </div>
     </header>
 
+    <!-- Quick System Analytics Row -->
+    <div class="dashboard-stats-row">
+        <div class="stat-glass-card">
+            <div class="stat-icon-circle bento-orange-light">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            </div>
+            <div class="stat-text">
+                <span class="stat-value" id="stats-joined-rooms">0</span>
+                <span class="stat-label">Joined Communities</span>
+            </div>
+        </div>
+        <div class="stat-glass-card">
+            <div class="stat-icon-circle bento-blue-light">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="stat-text">
+                <span class="stat-value" id="stats-recent-chats">0</span>
+                <span class="stat-label">Active Conversations</span>
+            </div>
+        </div>
+        <div class="stat-glass-card">
+            <div class="stat-icon-circle bento-green-light">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <div class="stat-text">
+                <span class="stat-value" id="stats-latency">--ms</span>
+                <span class="stat-label">Server Latency</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Quick Action Launchpad Grid Layout -->
     <section class="dashboard-grid">
         
         <!-- Action Card 1: Explore Communities -->
         <div class="dashboard-card" onclick="document.getElementById('btn-join-room').click()">
             <div class="card-icon-wrapper bento-orange">
-                <span>🔑</span>
+                <svg class="bento-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
             <h3>Join Rooms & Communities</h3>
             <p>Enter a 5-character group pass code to synchronize with dedicated team community channels instantly.</p>
@@ -119,27 +151,27 @@
         <!-- Action Card 2: AI Multi-Language Transliterator -->
         <div class="dashboard-card" onclick="document.getElementById('chat-lang-trigger').click()">
             <div class="card-icon-wrapper bento-blue">
-                <span>🌐</span>
+                <svg class="bento-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6M4 14l6-6M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>
             </div>
-            <h3>AI Phonetic Input Engine</h3>
-            <p>Type phonetically in English to generate real-time local scripts including Kannada, Hindi, Tamil, and Telugu.</p>
-         
+            <h3>AI Translation Engine</h3>
+            <p>Translate received audio or text message scripts seamlessly into regional local dialects at a single click.</p>
+            <span class="card-action-link">Learn More &rarr;</span>
         </div>
 
         <!-- Action Card 3: Secure Document Vault -->
-        <div class="dashboard-card" onclick="userSearchInput.focus()">
+        <div class="dashboard-card" onclick="document.getElementById('user-search-input').focus()">
             <div class="card-icon-wrapper bento-green">
-                <span>📎</span>
+                <svg class="bento-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             </div>
             <h3>Bulk Attachment Delivery</h3>
             <p>Transmit up to 10 compressed media files, audio blocks, or vector PDFs safely in parallel pipelines (Max 15MB).</p>
-            
+            <span class="card-action-link">Search Users &rarr;</span>
         </div>
 
         <!-- Action Card 4: Edit System Credentials -->
         <div class="dashboard-card" onclick="document.getElementById('open-profile-btn').click()">
             <div class="card-icon-wrapper bento-purple">
-                <span>👨‍💻</span>
+                <svg class="bento-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             </div>
             <h3>Account Customization</h3>
             <p>Synchronize your avatar photos, update biometric display names, and maintain custom tracking bios.</p>
@@ -858,6 +890,38 @@
             closeMobileSidebar();
         }
 
+        function resetToDashboard() {
+            targetUserId = null;
+            targetRoomId = null;
+            
+            const emptyNotice = document.getElementById('empty-view-notice');
+            const chatSubsystem = document.getElementById('active-chat-subsystem');
+            
+            if (chatSubsystem) {
+                chatSubsystem.classList.add('hidden');
+                chatSubsystem.classList.add('hidden-layout');
+            }
+            if (emptyNotice) {
+                emptyNotice.classList.remove('hidden');
+                emptyNotice.classList.remove('hidden-layout');
+            }
+            
+            // Clear selections in sidebar threads
+            document.querySelectorAll('.thread-item, .community-item').forEach(item => {
+                item.classList.remove('active-selected');
+            });
+            
+            // Re-compute latency and refresh stats
+            loadActiveThreads();
+            loadJoinedRooms();
+            const startPing = Date.now();
+            socket.emit('requestUserOnlineStatus', { targetUserId: currentUserId }, () => {
+                const latency = Date.now() - startPing;
+                const statsLatency = document.getElementById('stats-latency');
+                if (statsLatency) statsLatency.innerText = `${latency}ms`;
+            });
+        }
+
         let isResizing = false;
         resizeHandle.addEventListener('mousedown', (e) => {
             isResizing = true;
@@ -926,7 +990,26 @@
             currentUsername = data.username;
             document.getElementById('user-display-tag').innerText = `${currentUsername}`;
             
+            // Set dynamic time-of-day greeting on the landing panel
+            const welcomeTitle = document.getElementById('dashboard-welcome-title');
+            if (welcomeTitle) {
+                const hours = new Date().getHours();
+                let greeting = "Welcome back";
+                if (hours < 12) greeting = "Good morning";
+                else if (hours < 18) greeting = "Good afternoon";
+                else greeting = "Good evening";
+                welcomeTitle.innerText = `${greeting}, ${currentUsername}! ✨`;
+            }
+
             socket.emit('declareIdentity', { userId: currentUserId });
+
+            // Compute connection latency to Neon cloud server / backend
+            const startPing = Date.now();
+            socket.emit('requestUserOnlineStatus', { targetUserId: currentUserId }, () => {
+                const latency = Date.now() - startPing;
+                const statsLatency = document.getElementById('stats-latency');
+                if (statsLatency) statsLatency.innerText = `${latency}ms`;
+            });
 
             loadActiveThreads();
             loadJoinedRooms();
@@ -951,6 +1034,9 @@
             const threads = await res.json();
             activeThreadsTarget.innerHTML = '';
             
+            const statsChats = document.getElementById('stats-recent-chats');
+            if (statsChats) statsChats.innerText = threads.length;
+
             if(threads.length === 0) {
                 activeThreadsTarget.innerHTML = '<p class="empty-text">No recent conversations</p>';
                 return;
@@ -988,6 +1074,10 @@
                 const rooms = await res.json();
                 communityThreadsTarget.innerHTML = '';
                 joinedRoomsMap.clear();
+                
+                const statsJoined = document.getElementById('stats-joined-rooms');
+                if (statsJoined) statsJoined.innerText = rooms.length;
+
                 if(rooms.length === 0) {
                     communityThreadsTarget.innerHTML = '<p class="empty-text">No joined communities yet.</p>';
                     return;

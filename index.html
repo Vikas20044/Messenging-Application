@@ -3,56 +3,842 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real Time Messaging App - BY VIKAS KR</title>
+    <title>Workspace Hub - Creative Real-Time Messaging Platform</title>
+    <!-- Modern Premium Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* --- PREMIUM DESIGN SYSTEM & THEME TOKENS --- */
+        :root {
+            --bg-color: #080b11;
+            --accent: #cb6e32;
+            --accent-hover: #b2531a;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-family: 'Outfit', sans-serif;
+            --glass-bg: rgba(17, 24, 39, 0.7);
+            --glow-orange: rgba(203, 110, 50, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            background-color: #0f111a;
-            color: #f2f3f5;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- BACKGROUND DECORATIVE GLOWS --- */
+        .ambient-glow-1 {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, var(--glow-orange) 0%, transparent 70%);
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .ambient-glow-2 {
+            position: absolute;
+            bottom: 5%;
+            right: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 75%);
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* --- HEADER NAVIGATION --- */
+        header.nav-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 76px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5rem;
+            z-index: 1000;
+            background-color: rgba(8, 11, 17, 0.75);
+        }
+
+        .nav-logo {
+            font-weight: 800;
+            font-size: 1.35rem;
+            letter-spacing: -0.75px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .nav-logo span {
+            color: var(--accent);
+            animation: pulse-icon 2s infinite;
+        }
+
+        @keyframes pulse-icon {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); text-shadow: 0 0 10px var(--accent); }
+            100% { transform: scale(1); }
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-main);
+        }
+
+        .nav-cta {
+            background-color: var(--accent);
+            color: #ffffff !important;
+            padding: 0.6rem 1.4rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.25s ease !important;
+            box-shadow: 0 4px 15px rgba(203, 110, 50, 0.2);
+        }
+
+        .nav-cta:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(203, 110, 50, 0.35);
+        }
+
+        /* --- HERO SECTOR --- */
+        section.hero-section {
+            padding: 10rem 5rem 6rem 5rem;
+            max-width: 1300px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-left {
+            text-align: left;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(203, 110, 50, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(203, 110, 50, 0.2);
+            padding: 0.45rem 1.15rem;
+            border-radius: 50px;
+            margin-bottom: 2rem;
+        }
+
+        .hero-left h1 {
+            font-size: 3.8rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -1.8px;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 40%, rgba(255,255,255,0.75) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-left p {
+            font-size: 1.18rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            font-weight: 300;
+            max-width: 580px;
+        }
+
+        .hero-btn {
+            display: inline-block;
+            background-color: var(--accent);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 1rem 2.25rem;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 20px rgba(203, 110, 50, 0.25);
+        }
+
+        .hero-btn:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(203, 110, 50, 0.4);
+        }
+
+        /* --- INTERACTIVE SIMULATOR (PC STATIONS) --- */
+        .hero-right {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
         }
-        .loading-container {
-            text-align: center;
+
+        .chat-simulator-card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--glass-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s;
         }
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            width: 36px;
-            height: 36px;
+
+        .chat-simulator-card:hover {
+            border-color: rgba(203, 110, 50, 0.2);
+            box-shadow: 0 30px 60px -10px rgba(203, 110, 50, 0.12);
+        }
+
+        .simulator-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .simulator-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            border-left-color: #5865f2;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px auto;
+            background-color: var(--accent);
+            animation: pulse-dot 1.5s infinite;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        @keyframes pulse-dot {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+
+        .simulator-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-main);
+        }
+
+        .simulator-pane {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            min-height: 280px;
+            background-color: rgba(0,0,0,0.2);
+        }
+
+        .sim-msg {
+            max-width: 85%;
+            padding: 0.8rem 1rem;
+            border-radius: 16px;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            animation: slideInMsg 0.3s ease;
+        }
+
+        @keyframes slideInMsg {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sim-msg.incoming {
+            background-color: rgba(255, 255, 255, 0.06);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--card-border);
+        }
+
+        .sim-msg.outgoing {
+            background-color: var(--accent);
+            color: #ffffff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .sim-meta {
+            font-size: 0.72rem;
+            opacity: 0.6;
+            margin-top: 2px;
+        }
+
+        /* Interactive Voice Note */
+        .audio-sim-block {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 8px 12px;
+            border-radius: 12px;
+            margin-top: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .audio-play-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .audio-timeline {
+            flex: 1;
+            height: 3px;
+            background-color: rgba(255,255,255,0.15);
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .audio-progress {
+            width: 35%;
+            height: 100%;
+            background-color: var(--accent);
+            border-radius: 2px;
+        }
+
+        .sim-transcribe-btn {
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-top: 4px;
+            align-self: flex-start;
+        }
+
+        .sim-transcribe-btn:hover {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .transcription-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-left: 2px solid var(--accent);
+            padding-left: 8px;
+            margin-top: 6px;
+            font-style: italic;
+            display: none;
+        }
+
+        /* Language chip switches */
+        .sim-lang-chips {
+            display: flex;
+            gap: 4px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+
+        .sim-chip {
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sim-chip:hover, .sim-chip.active {
+            background-color: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .sim-msg-text {
+            transition: opacity 0.2s;
+        }
+
+        /* Reactions Widget */
+        .sim-reactions {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .sim-reaction-badge {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--card-border);
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .sim-reaction-badge:hover {
+            transform: scale(1.1);
+            background: rgba(203, 110, 50, 0.08);
+        }
+
+        /* --- BENTO GRID FEATURE SHOWCASE --- */
+        section.features-section {
+            padding: 5rem 5rem 9rem 5rem;
+            max-width: 1300px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .features-bento-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .features-bento-grid .bento-card-large {
+            grid-column: span 2;
+        }
+
+        .bento-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bento-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(203, 110, 50, 0.04) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .bento-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(203, 110, 50, 0.25);
+            box-shadow: 0 15px 35px -10px rgba(203, 110, 50, 0.08);
+        }
+
+        .bento-card:hover::before {
+            opacity: 1;
+        }
+
+        .bento-card-content {
+            position: relative;
+            z-index: 5;
+        }
+
+        .bento-icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            color: var(--accent);
+            margin-bottom: 2rem;
+            transition: all 0.3s;
+        }
+
+        .bento-card:hover .bento-icon-box {
+            transform: scale(1.08) rotate(3deg);
+            background: rgba(203, 110, 50, 0.1);
+            border-color: rgba(203, 110, 50, 0.2);
+        }
+
+        .bento-icon-box svg {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2.2;
+        }
+
+        .bento-card h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.4px;
+        }
+
+        .bento-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 300;
+            line-height: 1.6;
+        }
+
+        /* --- FOOTER --- */
+        footer.landing-footer {
+            border-top: 1px solid var(--card-border);
+            padding: 3rem 5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1300px;
+            margin: 0 auto;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- RESPONSIVENESS OVERRIDES --- */
+        @media (max-width: 992px) {
+            header.nav-header {
+                padding: 0 2rem;
+            }
+            section.hero-section {
+                padding: 8rem 2rem 4rem 2rem;
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+            .hero-left {
+                text-align: center;
+            }
+            .hero-left h1 {
+                font-size: 2.85rem;
+                letter-spacing: -1px;
+            }
+            .hero-left p {
+                max-width: 100%;
+            }
+            .chat-simulator-card {
+                max-width: 100%;
+            }
+            section.features-section {
+                padding: 3rem 2rem 6rem 2rem;
+            }
+            .features-bento-grid {
+                grid-template-columns: 1fr;
+            }
+            .features-bento-grid .bento-card-large {
+                grid-column: span 1;
+            }
+            footer.landing-footer {
+                padding: 2.5rem 2rem;
+                flex-direction: column;
+                gap: 1.5rem;
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="loading-container">
-        <div class="spinner"></div>
-        <p>Securing connection...</p>
-    </div>
+
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+
+    <!-- HEADER NAVIGATION -->
+    <header class="nav-header">
+        <a href="/" class="nav-logo">
+            <span>⚡</span> Workspace Hub
+        </a>
+        <nav class="nav-links">
+            <a href="#features">Features</a>
+            <a href="/login" id="nav-cta-btn" class="nav-cta">Log In</a>
+        </nav>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+        
+        <!-- Left Side Copy -->
+        <div class="hero-left">
+            <span class="hero-badge">✨ Connected & Secure</span>
+            <h1>Real-Time Chat. Native AI Pipes.</h1>
+            <p>Experience low-latency team messaging synced instantly on Neon PostgreSQL database structures. Decouple local scripts with dynamic language translation and Whisper-Tiny speech decoder tools built directly into the client.</p>
+            <a href="/login" id="hero-cta-btn" class="hero-btn">Launch Workspace Hub &rarr;</a>
+        </div>
+
+        <!-- Right Side Interactive Simulator -->
+        <div class="hero-right">
+            <div class="chat-simulator-card">
+                
+                <header class="simulator-header">
+                    <div class="simulator-dot"></div>
+                    <span class="simulator-title">AI Pipeline Simulator</span>
+                </header>
+
+                <div class="simulator-pane">
+                    
+                    <!-- Sim Msg 1: Audio note -->
+                    <div class="sim-msg incoming">
+                        <div style="font-weight: 700; font-size: 0.75rem; color: var(--accent);">Vikas (Dev Team)</div>
+                        <div>Sent a voice note:</div>
+                        <div class="audio-sim-block">
+                            <div class="audio-play-btn" id="play-sim-audio">▶</div>
+                            <div class="audio-timeline">
+                                <div class="audio-progress" id="audio-sim-progress"></div>
+                            </div>
+                            <span style="font-size: 0.7rem; opacity: 0.7;">0:04</span>
+                        </div>
+                        <button class="sim-transcribe-btn" id="sim-transcribe-btn">🎙️ Transcribe Speech</button>
+                        <div class="transcription-text" id="sim-transcription">
+                            "Hey team, the cloud database tables are successfully initialized!"
+                        </div>
+                        <div class="sim-meta">3:14 PM</div>
+                    </div>
+
+                    <!-- Sim Msg 2: Translating text -->
+                    <div class="sim-msg outgoing" style="align-self: flex-end;">
+                        <div style="font-weight: 700; font-size: 0.75rem; color: #ffffff; opacity:0.9;">You (Owner)</div>
+                        <div class="sim-msg-text" id="sim-trans-target">
+                            Welcome to Workspace Hub! We have native AI translation pipelines working inside our messaging loops. Try changing the language below!
+                        </div>
+                        <div class="sim-lang-chips">
+                            <span class="sim-chip active" onclick="simulateTranslation(this, 'en', 'Welcome to Workspace Hub! We have native AI translation pipelines working inside our messaging loops. Try changing the language below!')">English</span>
+                            <span class="sim-chip" onclick="simulateTranslation(this, 'kn', 'ವರ್ಕ್‌ಸ್ಪೇಸ್ ಹಬ್‌ಗೆ ಸುಸ್ವಾಗತ! ನಮ್ಮ ಮೆಸೇಜಿಂಗ್ ಲೂಪ್‌ಗಳಲ್ಲಿ ಸ್ಥಳೀಯ AI ಅನುವಾದ ಪೈಪ್‌ಲೈನ್‌ಗಳು ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಿವೆ.')">ಕನ್ನಡ</span>
+                            <span class="sim-chip" onclick="simulateTranslation(this, 'es', '¡Bienvenido a Workspace Hub! Tenemos canalizaciones de traducción de IA nativas que funcionan dentro de nuestros bucles de mensajería.')">Español</span>
+                            <span class="sim-chip" onclick="simulateTranslation(this, 'hi', 'वर्कस्पेस हब में आपका स्वागत है! हमारे मैसेजिंग लूप्स में मूल AI अनुवाद पाइपलाइन काम कर रहे हैं।')">हिन्दी</span>
+                        </div>
+                        <div class="sim-meta" style="color: #ffffff; opacity: 0.7;">3:15 PM</div>
+                    </div>
+
+                    <!-- Sim Msg Reactions -->
+                    <div class="sim-reactions" style="align-self: flex-end; margin-top: -6px;">
+                        <span class="sim-reaction-badge" onclick="reactSim(this)">👍 <span>2</span></span>
+                        <span class="sim-reaction-badge" onclick="reactSim(this)">🔥 <span>4</span></span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- BENTO FEATURE GRIDS -->
+    <section class="features-section" id="features">
+        <header class="section-header">
+            <h2>Under the Hood Stack</h2>
+            <p>Every layout layer is fully integrated, responsive, and working</p>
+        </header>
+
+        <div class="features-bento-grid">
+            
+            <!-- Bento Card 1: Sockets -->
+            <div class="bento-card">
+                <div class="bento-icon-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </div>
+                <div>
+                    <h3>Lag-Free WebSockets</h3>
+                    <p>Powered by Socket.io for instantaneous message delivery, typing alerts, read receipts, and online status switches.</p>
+                </div>
+            </div>
+
+            <!-- Bento Card 2: AI Translate (Large) -->
+            <div class="bento-card bento-card-large">
+                <div class="bento-icon-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6M4 14l6-6M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>
+                </div>
+                <div>
+                    <h3>Contextual AI Translation</h3>
+                    <p>Integrates dynamic, click-to-translate scripts for all received dialogs into Kannada, Tamil, Telugu, Malayalam, Spanish, and Bengali, with instant fallback restores to original English formats.</p>
+                </div>
+            </div>
+
+            <!-- Bento Card 3: Whisper transcription (Large) -->
+            <div class="bento-card bento-card-large">
+                <div class="bento-icon-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 19v4M8 23h8"/></svg>
+                </div>
+                <div>
+                    <h3>On-Demand Speech Decoding</h3>
+                    <p>Runs local Whisper speech-recognition pipelines using Hugging Face Transformers.js to decode voice uploads in the client browser, writing raw transcripts straight to your Cloud PostgreSQL ledger.</p>
+                </div>
+            </div>
+
+            <!-- Bento Card 4: Neon Database -->
+            <div class="bento-card">
+                <div class="bento-icon-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
+                </div>
+                <div>
+                    <h3>Neon PostgreSQL Cloud</h3>
+                    <p>Maintains persistent user directories, community memberships, emoji libraries, and message lists over cloud hosted database schemas.</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="landing-footer">
+        <div>&copy; 2026 Workspace Hub. All rights reserved.</div>
+        <div style="font-weight:600; color:var(--text-main);">Built for Creative Real-Time Collaboration</div>
+    </footer>
 
     <script>
-        async function routeTraffic() {
+        // Check dynamic login session state
+        async function checkSession() {
             try {
                 const res = await fetch('/api/session-user');
+                const ctaBtn = document.getElementById('hero-cta-btn');
+                const navCtaBtn = document.getElementById('nav-cta-btn');
                 if (res.ok) {
-                    window.location.href = '/chat';
-                } else {
-                    window.location.href = '/login';
+                    const data = await res.json();
+                    if (ctaBtn) {
+                        ctaBtn.href = '/chat';
+                        ctaBtn.innerText = 'Go to Chat Workspace ⚡';
+                    }
+                    if (navCtaBtn) {
+                        navCtaBtn.href = '/chat';
+                        navCtaBtn.innerText = 'Workspace';
+                    }
                 }
             } catch (err) {
-                window.location.href = '/login';
+                console.error('Session audit failed:', err);
             }
         }
-        routeTraffic();
+        window.addEventListener('DOMContentLoaded', checkSession);
+
+        // --- INTERACTIVE SIMULATOR SCRIPTS ---
+        
+        // 1. Transcription Simulator
+        const transcribeBtn = document.getElementById('sim-transcribe-btn');
+        const transcription = document.getElementById('sim-transcription');
+        const playBtn = document.getElementById('play-sim-audio');
+        const audioProgress = document.getElementById('audio-sim-progress');
+
+        transcribeBtn.addEventListener('click', () => {
+            transcribeBtn.disabled = true;
+            transcribeBtn.innerText = "⏳ Running Whisper...";
+            
+            // Sim play audio timeline
+            let progress = 35;
+            playBtn.innerText = "⏸";
+            const interval = setInterval(() => {
+                progress += 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    playBtn.innerText = "▶";
+                }
+                audioProgress.style.width = `${progress}%`;
+            }, 100);
+
+            setTimeout(() => {
+                transcribeBtn.style.display = "none";
+                transcription.style.display = "block";
+                triggerTypingEffect(transcription, transcription.innerText);
+            }, 1500);
+        });
+
+        function triggerTypingEffect(element, text) {
+            element.innerText = "";
+            let i = 0;
+            const timer = setInterval(() => {
+                element.innerText += text[i];
+                i++;
+                if (i >= text.length) clearInterval(timer);
+            }, 25);
+        }
+
+        // 2. Translation Simulator
+        function simulateTranslation(chip, lang, translatedText) {
+            const chips = chip.parentElement.querySelectorAll('.sim-chip');
+            chips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+
+            const target = document.getElementById('sim-trans-target');
+            target.style.opacity = "0.2";
+            
+            setTimeout(() => {
+                target.innerText = translatedText;
+                target.style.opacity = "1";
+            }, 200);
+        }
+
+        // 3. Reactions Simulator
+        function reactSim(badge) {
+            const span = badge.querySelector('span');
+            let count = parseInt(span.innerText);
+            span.innerText = count + 1;
+            badge.style.transform = "scale(1.2)";
+            setTimeout(() => badge.style.transform = "scale(1)", 150);
+        }
     </script>
 </body>
 </html>

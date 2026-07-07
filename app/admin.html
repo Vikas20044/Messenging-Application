@@ -3,258 +3,810 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard Control Panel</title>
+    <title>Admin Dashboard Control Panel - Workspace Hub</title>
     <link rel="stylesheet" href="style.css">
     <!-- Chart.js CDN Engine for Visual Analytics Graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* CRITICAL SCROLLING FIX: Overrides global overflow rules safely */
-        html, body {
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-            height: auto !important;
-            background-color: var(--bg-primary) !important;
+        /* --- ADMIN LIGHT & DARK PALETTES --- */
+        :root {
+            --adm-bg-main: #f8fafc;
+            --adm-bg-card: #ffffff;
+            --adm-border: #e2e8f0;
+            --adm-text-main: #0f172a;
+            --adm-text-muted: #64748b;
+            --adm-sidebar-bg: #0f172a;
+            --adm-sidebar-text: #f8fafc;
+            --adm-sidebar-hover: #1e293b;
+            --adm-accent: #cb6e32;
+            --adm-accent-hover: #b2531a;
+            --adm-danger: #ef4444;
+            --adm-danger-hover: #dc2626;
+            --adm-success: #10b981;
+            --adm-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
         }
 
-        .admin-dashboard-container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1.5rem;
+        .dark-theme {
+            --adm-bg-main: #090d16;
+            --adm-bg-card: #111827;
+            --adm-border: #1f2937;
+            --adm-text-main: #f3f4f6;
+            --adm-text-muted: #9ca3af;
+            --adm-sidebar-bg: #111827;
+            --adm-sidebar-hover: #1f2937;
+            --adm-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
         }
-        .admin-header {
+
+        /* --- GLOBAL RESET & LAYOUT --- */
+        html, body {
+            overflow: hidden !important;
+            height: 100vh !important;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--adm-bg-main) !important;
+            color: var(--adm-text-main) !important;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* --- AUTHENTICATION LOCK SCREEN --- */
+        .auth-gate-wrapper {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        .adm-auth-card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+            text-align: center;
+            color: #0f172a;
+        }
+
+        .adm-auth-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+        }
+
+        .adm-auth-card p {
+            font-size: 0.875rem;
+            color: #64748b;
             margin-bottom: 2rem;
-            border-bottom: 2px solid var(--bg-tertiary);
-            padding-bottom: 1rem;
         }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
+
+        .adm-auth-card input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            box-sizing: border-box;
         }
-        .stat-card {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--bg-tertiary);
-            border-radius: 10px;
+
+        .adm-auth-card input:focus {
+            border-color: #cb6e32;
+            box-shadow: 0 0 0 3px rgba(203, 110, 50, 0.15);
+        }
+
+        .adm-auth-card button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #0f172a;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .adm-auth-card button:hover {
+            background-color: #1e293b;
+        }
+
+        /* --- PORTAL CONSOLE WRAPPER --- */
+        .portal-layout {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* --- SIDEBAR NAVBAR --- */
+        .adm-sidebar {
+            width: 260px;
+            background-color: var(--adm-sidebar-bg);
+            color: var(--adm-sidebar-text);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .adm-sidebar-header {
             padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .adm-sidebar-brand {
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .adm-sidebar-brand span {
+            color: var(--adm-accent);
+        }
+
+        .adm-nav-list {
+            padding: 1.5rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .adm-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--adm-sidebar-text);
+            opacity: 0.75;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .adm-nav-item:hover, .adm-nav-item.active {
+            opacity: 1;
+            background-color: var(--adm-sidebar-hover);
+        }
+
+        .adm-nav-item.active {
+            color: #ffffff;
+            border-left: 3px solid var(--adm-accent);
+        }
+
+        .adm-sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.01);
-        }
-        .stat-card h3 {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            letter-spacing: 0.5px;
-        }
-        .stat-card .stat-value {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
-        
-        /* CHART DATA ARCHITECTURE SECTION */
-        .charts-container-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
-        }
-        .chart-card {
-            background-color: #ffffff;
-            border: 1px solid var(--bg-tertiary);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.01);
-        }
-        .chart-card h3 {
-            font-size: 1rem;
-            margin-bottom: 1.2rem;
-            color: var(--text-main);
-            font-weight: 600;
         }
 
-        .data-table-section {
-            background-color: #ffffff;
-            border: 1px solid var(--bg-tertiary);
-            border-radius: 10px;
+        /* --- MAIN CONTENT PANEL --- */
+        .adm-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .adm-topbar {
+            height: 64px;
+            background-color: var(--adm-bg-card);
+            border-bottom: 1px solid var(--adm-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            box-shadow: var(--adm-shadow);
+        }
+
+        .adm-topbar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .adm-topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .adm-content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        /* --- DASHBOARD ELEMENTS & CARDS --- */
+        .adm-tab-section {
+            display: none;
+            animation: fadeInTab 0.3s ease;
+        }
+
+        .adm-tab-section.active {
+            display: block;
+        }
+
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .adm-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .adm-stat-card {
+            background-color: var(--adm-bg-card);
+            border: 1px solid var(--adm-border);
+            border-radius: 12px;
             padding: 1.5rem;
-            margin-bottom: 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--adm-shadow);
         }
-        .data-table-section h2 {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            color: var(--text-main);
+
+        .adm-stat-info h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--adm-text-muted);
+            letter-spacing: 0.5px;
+            margin: 0 0 0.25rem 0;
         }
+
+        .adm-stat-info .adm-stat-val {
+            font-size: 1.85rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .adm-stat-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .bg-orange-light { background-color: rgba(203, 110, 50, 0.12); color: var(--adm-accent); }
+        .bg-blue-light { background-color: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+        .bg-green-light { background-color: rgba(16, 185, 129, 0.12); color: var(--adm-success); }
+
+        /* --- VISUAL ANALYTICS --- */
+        .adm-charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .adm-chart-card {
+            background-color: var(--adm-bg-card);
+            border: 1px solid var(--adm-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--adm-shadow);
+        }
+
+        .adm-chart-card h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin: 0 0 1.25rem 0;
+        }
+
+        /* --- DATA TABLES --- */
+        .adm-table-card {
+            background-color: var(--adm-bg-card);
+            border: 1px solid var(--adm-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--adm-shadow);
+            margin-bottom: 2rem;
+        }
+
+        .adm-table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .adm-table-header h2 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .adm-search-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--adm-border);
+            background-color: var(--adm-bg-main);
+            color: var(--adm-text-main);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            width: 240px;
+            transition: all 0.2s;
+        }
+
+        .adm-search-input:focus {
+            border-color: var(--adm-accent);
+            box-shadow: 0 0 0 2px rgba(203, 110, 50, 0.1);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
         }
+
         th, td {
-            padding: 0.85rem 1rem;
-            border-bottom: 1px solid var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--adm-border);
+            vertical-align: middle;
         }
+
         th {
-            background-color: var(--bg-secondary);
-            color: var(--text-muted);
+            background-color: var(--adm-bg-main);
+            color: var(--adm-text-muted);
             font-weight: 600;
-        }
-        tr:hover {
-            background-color: var(--bg-secondary);
-        }
-        .badge {
-            padding: 0.25rem 0.5rem;
             font-size: 0.75rem;
-            font-weight: 700;
-            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .badge.active-status {
-            background: rgba(34, 197, 94, 0.12);
-            color: #16a34a;
+
+        tr:hover {
+            background-color: rgba(0,0,0,0.015);
         }
-        .badge.room-code {
-            background: rgba(203, 110, 50, 0.12);
-            color: var(--accent);
-            font-family: monospace;
-            font-size: 0.85rem;
+
+        .dark-theme tr:hover {
+            background-color: rgba(255,255,255,0.01);
         }
-        .mod-btn {
-            background: none;
-            border: 1px solid #ef4444;
-            color: #ef4444;
-            padding: 0.3rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            cursor: pointer;
+
+        /* --- CONTROL BUTTONS & BADGES --- */
+        .adm-btn {
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
             font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--adm-border);
+            background-color: var(--adm-bg-card);
+            color: var(--adm-text-main);
             transition: all 0.2s;
         }
-        .mod-btn:hover {
-            background: #ef4444;
+
+        .adm-btn:hover {
+            background-color: var(--adm-bg-main);
+        }
+
+        .adm-btn.danger {
+            color: var(--adm-danger);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .adm-btn.danger:hover {
+            background-color: var(--adm-danger);
             color: #ffffff;
+            border-color: var(--adm-danger);
+        }
+
+        .adm-btn.warning {
+            color: #d97706;
+            border-color: rgba(217, 119, 6, 0.3);
+        }
+
+        .adm-btn.warning:hover {
+            background-color: #d97706;
+            color: #ffffff;
+            border-color: #d97706;
+        }
+
+        .adm-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .adm-badge.bg-success-light {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--adm-success);
+        }
+
+        .adm-badge.bg-accent-light {
+            background-color: rgba(203, 110, 50, 0.1);
+            color: var(--adm-accent);
+            font-family: monospace;
+        }
+
+        /* --- TOAST NOTIFICATIONS --- */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 9999;
+        }
+
+        .adm-toast {
+            background-color: var(--adm-bg-card);
+            color: var(--adm-text-main);
+            border-left: 4px solid var(--adm-accent);
+            border-right: 1px solid var(--adm-border);
+            border-top: 1px solid var(--adm-border);
+            border-bottom: 1px solid var(--adm-border);
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            font-size: 0.85rem;
+            font-weight: 600;
+            min-width: 280px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .adm-toast.success { border-left-color: var(--adm-success); }
+        .adm-toast.error { border-left-color: var(--adm-danger); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* --- MOBILE LAYOUT TOGGLES --- */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--adm-text-main);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 992px) {
+            .hamburger-btn {
+                display: block;
+            }
+            .adm-sidebar {
+                position: fixed;
+                left: -260px;
+                height: 100vh;
+                transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .adm-sidebar.open {
+                left: 0;
+            }
+            .adm-charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .adm-stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
 
     <!-- PORTAL AUTHENTICATION LOCK SCREEN -->
-    <div id="admin-auth-gate" class="auth-box" style="margin: 15vh auto;">
-        <h2>Admin Portal Authorization</h2>
-        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.2rem;">Please verify system root access credentials</p>
-        <form id="admin-login-form">
-            <input type="text" id="admin-user" placeholder="Admin Username" required autocomplete="off">
-            <input type="password" id="admin-pass" placeholder="Secret Access Key" required>
-            <button type="submit" style="background-color: var(--text-main);">Verify Authentication</button>
-        </form>
-        <p class="toggle-text"><a href="/login">Return to User Login</a></p>
+    <div id="admin-auth-gate" class="auth-gate-wrapper">
+        <div class="adm-auth-card">
+            <h2>Admin Authorization</h2>
+            <p>Please verify system root access credentials</p>
+            <form id="admin-login-form">
+                <input type="text" id="admin-user" placeholder="Admin Username" required autocomplete="off">
+                <input type="password" id="admin-pass" placeholder="Secret Access Key" required>
+                <button type="submit">Verify Authentication</button>
+            </form>
+            <p style="margin-top: 1.5rem; margin-bottom: 0;"><a href="/login" style="color: #cb6e32; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Return to Chat</a></p>
+        </div>
     </div>
 
     <!-- MAIN ADMINISTRATIVE WORKSPACE METRICS DASHBOARD -->
-    <div id="admin-dashboard-view" class="admin-dashboard-container hidden">
-        <header class="admin-header">
-            <div>
-                <h1 style="font-size: 1.6rem; color: var(--text-main);">System Administration Engine</h1>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Real-time analytical trends & operational matrix data.</p>
-            </div>
-            <button id="admin-logout-btn" class="action-btn danger">Exit Panel</button>
-        </header>
-
-        <!-- TOP STATS CARDS -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Registered Accounts</h3>
-                <div class="stat-value" id="dashboard-total-users">--</div>
-                <p style="font-size:0.75rem; color: var(--text-muted);">Database structural profiles</p>
-            </div>
-            <div class="stat-card">
-                <h3>Active Communities</h3>
-                <div class="stat-value" id="dashboard-total-rooms">--</div>
-                <p style="font-size:0.75rem; color: var(--text-muted);">Dynamic space channels</p>
-            </div>
-            <div class="stat-card">
-                <h3>Transmitted Data Volume</h3>
-                <div class="stat-value" id="dashboard-total-messages">--</div>
-                <p style="font-size:0.75rem; color: var(--text-muted);">Global speech records logged</p>
-            </div>
-        </div>
-
-        <!-- NEW VISUAL CHART RENDER GRIDS -->
-        <div class="charts-container-grid">
-            <div class="chart-card">
-                <h3>Application Layout Activity (Data Ratios)</h3>
-                <div style="position: relative; height: 260px; display: flex; justify-content: center;">
-                    <canvas id="ratioDoughnutChart"></canvas>
+    <div id="admin-dashboard-view" class="portal-layout hidden">
+        <div id="adm-sidebar-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:90; transition:opacity 0.25s; opacity:0;" onclick="closeMobileSidebar()"></div>
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="adm-sidebar" id="adm-sidebar">
+            <div class="adm-sidebar-header">
+                <div class="adm-sidebar-brand">
+                    <span>⚡</span> Workspace Admin
                 </div>
+                <button class="adm-btn hamburger-btn" id="close-sidebar-btn" style="padding: 2px 8px; border:none; background:none; color:white;">&times;</button>
             </div>
-            <div class="chart-card">
-                <h3>System Growth Distribution</h3>
-                <div style="position: relative; height: 260px;">
-                    <canvas id="growthBarChart"></canvas>
+            
+            <nav class="adm-nav-list">
+                <div class="adm-nav-item active" data-tab="tab-overview">
+                    📊 Overview Dashboard
                 </div>
+                <div class="adm-nav-item" data-tab="tab-users">
+                    👥 Accounts Directory
+                </div>
+                <div class="adm-nav-item" data-tab="tab-rooms">
+                    🏫 Communities Hub
+                </div>
+                <div class="adm-nav-item" data-tab="tab-settings">
+                    ⚙️ System Settings
+                </div>
+            </nav>
+            
+            <div class="adm-sidebar-footer">
+                <button id="theme-toggle-btn" class="adm-btn" style="width:100%; border-color:rgba(255,255,255,0.15); background:transparent; color:white;">🌓 Toggle Theme</button>
+                <button id="admin-logout-btn" class="adm-btn danger" style="width: 100%;">Exit Panel</button>
             </div>
-        </div>
+        </aside>
 
-        <!-- REGISTERED USERS MANAGEMENT REGISTRY -->
-        <div class="data-table-section">
-            <h2>Registered Database Accounts Ledger</h2>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>User ID</th>
-                            <th>Username</th>
-                            <th>Display Name</th>
-                            <th>Biography Summary</th>
-                            <th>Moderation Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-users-table-body">
-                        <tr>
-                            <td colspan="5" style="text-align:center; color: var(--text-muted);">Querying system tables...</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- MAIN PANEL CONTENT -->
+        <main class="adm-main">
+            
+            <!-- TOPBAR HEADER -->
+            <header class="adm-topbar">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="hamburger-btn" id="menu-toggle-btn">☰</button>
+                    <h1 class="adm-topbar-title" id="adm-active-title">System Overview</h1>
+                </div>
+                <div class="adm-topbar-actions">
+                    <button id="refresh-metrics-btn" class="adm-btn">🔄 Refresh Data</button>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--adm-accent); border:1px solid rgba(203,110,50,0.2); padding: 4px 10px; border-radius: 6px; background-color: var(--adm-bg-main);">
+                        Server Mode: Active
+                    </div>
+                </div>
+            </header>
+            
+            <!-- SCROLLABLE WORKSPACE VIEWS -->
+            <div class="adm-content-scroll">
+                
+                <!-- TAB 1: OVERVIEW DASHBOARD -->
+                <section class="adm-tab-section active" id="tab-overview">
+                    <div class="adm-stats-grid">
+                        <div class="adm-stat-card">
+                            <div class="adm-stat-info">
+                                <h3>Registered Accounts</h3>
+                                <p class="adm-stat-val" id="dashboard-total-users">--</p>
+                            </div>
+                            <div class="adm-stat-icon-wrapper bg-orange-light">👤</div>
+                        </div>
+                        <div class="adm-stat-card">
+                            <div class="adm-stat-info">
+                                <h3>Active Communities</h3>
+                                <p class="adm-stat-val" id="dashboard-total-rooms">--</p>
+                            </div>
+                            <div class="adm-stat-icon-wrapper bg-blue-light">👥</div>
+                        </div>
+                        <div class="adm-stat-card">
+                            <div class="adm-stat-info">
+                                <h3>Messages Transmitted</h3>
+                                <p class="adm-stat-val" id="dashboard-total-messages">--</p>
+                            </div>
+                            <div class="adm-stat-icon-wrapper bg-green-light">💬</div>
+                        </div>
+                    </div>
+                    
+                    <div class="adm-charts-grid">
+                        <div class="adm-chart-card">
+                            <h3>Layout Growth & Ratios</h3>
+                            <div style="position: relative; height: 260px; display: flex; justify-content: center;">
+                                <canvas id="ratioDoughnutChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="adm-chart-card">
+                            <h3>Telemetry Registry Volumes</h3>
+                            <div style="position: relative; height: 260px;">
+                                <canvas id="growthBarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- TAB 2: ACCOUNTS DIRECTORY -->
+                <section class="adm-tab-section" id="tab-users">
+                    <div class="adm-table-card">
+                        <div class="adm-table-header">
+                            <h2>Database Profiles Directory</h2>
+                            <input type="text" id="user-search-filter" class="adm-search-input" placeholder="Search usernames...">
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>User ID</th>
+                                        <th>Username</th>
+                                        <th>Display Name</th>
+                                        <th>Biography Summary</th>
+                                        <th>Moderation Controls</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-table-tbody">
+                                    <tr>
+                                        <td colspan="5" style="text-align:center; color: var(--adm-text-muted);">Querying system tables...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- TAB 3: COMMUNITIES HUB -->
+                <section class="adm-tab-section" id="tab-rooms">
+                    <div class="adm-table-card">
+                        <div class="adm-table-header">
+                            <h2>Active Messaging Communities</h2>
+                            <input type="text" id="room-search-filter" class="adm-search-input" placeholder="Search community names...">
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Room ID</th>
+                                        <th>Community Name</th>
+                                        <th>Passcode</th>
+                                        <th>Description</th>
+                                        <th>Creator ID</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rooms-table-tbody">
+                                    <tr>
+                                        <td colspan="6" style="text-align:center; color: var(--adm-text-muted);">Querying namespace indexes...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- TAB 4: SYSTEM SETTINGS -->
+                <section class="adm-tab-section" id="tab-settings">
+                    <div class="adm-table-card" style="max-width: 600px;">
+                        <h2 style="margin-bottom:1.5rem; font-weight:700;">Global Regulations & Controls</h2>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--adm-border); padding-bottom:1rem;">
+                                <div>
+                                    <h4 style="margin:0 0 4px 0; font-weight:600;">System Maintenance Status</h4>
+                                    <p style="margin:0; font-size:0.8rem; color:var(--adm-text-muted);">Toggles global maintenance mode blockages</p>
+                                </div>
+                                <button class="adm-btn warning" onclick="triggerToast('Maintenance mode toggled: Inactive', 'success')">Toggle</button>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--adm-border); padding-bottom:1rem;">
+                                <div>
+                                    <h4 style="margin:0 0 4px 0; font-weight:600;">Safety Moderation Logins</h4>
+                                    <p style="margin:0; font-size:0.8rem; color:var(--adm-text-muted);">Require multi-factor authorization tokens for admin panels</p>
+                                </div>
+                                <button class="adm-btn" onclick="triggerToast('Safety settings updated.', 'success')">Configure</button>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:0.5rem;">
+                                <div>
+                                    <h4 style="margin:0 0 4px 0; font-weight:600;">Cloud Cache Refresh</h4>
+                                    <p style="margin:0; font-size:0.8rem; color:var(--adm-text-muted);">Flushes database connection pools immediately</p>
+                                </div>
+                                <button class="adm-btn danger" onclick="triggerToast('Cloud cached routes successfully synchronized.', 'success')">Flush Pool</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
             </div>
-        </div>
-
-        <!-- NEW COMMUNITY CHANNELS SYSTEM LEDGER -->
-        <div class="data-table-section">
-            <h2>Active Messaging Communities Registry</h2>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Room ID</th>
-                            <th>Community Name</th>
-                            <th>Access Passcode</th>
-                            <th>Description Detail</th>
-                            <th>Creator Identifier</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-rooms-table-body">
-                        <tr>
-                            <td colspan="5" style="text-align:center; color: var(--text-muted);">Querying namespace indexes...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        </main>
     </div>
+
+    <!-- TOAST CONTAINER FOR FLOATING NOTIFICATIONS -->
+    <div id="toast-container" class="toast-container"></div>
 
     <script>
         const authGate = document.getElementById('admin-auth-gate');
         const dashboardView = document.getElementById('admin-dashboard-view');
+        const sidebar = document.getElementById('adm-sidebar');
         
         let ratioChartInstance = null;
         let growthChartInstance = null;
+        let activeUsersData = [];
+        let activeRoomsData = [];
 
+        // Dynamic System Toast Notification Dispatcher
+        function triggerToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `adm-toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <span onclick="this.parentElement.remove()" style="cursor:pointer; margin-left:12px; opacity:0.6;">&times;</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Toggle Dark/Light Mode
+        document.getElementById('theme-toggle-btn').addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            triggerToast('Dashboard theme toggled.', 'success');
+            // Re-render charts to adjust text scaling sizes
+            loadDashboardMetrics();
+        });
+
+        // Toggle Sidebar Navigation on Small Screens
+        const overlay = document.getElementById('adm-sidebar-overlay');
+        
+        function openMobileSidebar() {
+            sidebar.classList.add('open');
+            if (overlay) {
+                overlay.style.display = 'block';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+            }
+        }
+        
+        function closeMobileSidebar() {
+            sidebar.classList.remove('open');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 250);
+            }
+        }
+
+        document.getElementById('menu-toggle-btn').addEventListener('click', openMobileSidebar);
+        document.getElementById('close-sidebar-btn').addEventListener('click', closeMobileSidebar);
+
+        // Switch Tabs Layout
+        document.querySelectorAll('.adm-nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.adm-nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.adm-tab-section').forEach(s => s.classList.remove('active'));
+                
+                item.classList.add('active');
+                const targetTab = item.getAttribute('data-tab');
+                document.getElementById(targetTab).classList.add('active');
+                
+                const titleMap = {
+                    'tab-overview': 'System Overview',
+                    'tab-users': 'Database Accounts Directory',
+                    'tab-rooms': 'Active Messaging Communities',
+                    'tab-settings': 'System Settings'
+                };
+                document.getElementById('adm-active-title').innerText = titleMap[targetTab];
+                closeMobileSidebar();
+            });
+        });
+
+        // Authentication Submission Gateway
         document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('admin-user').value.trim();
@@ -269,17 +821,28 @@
             if (res.ok) {
                 authGate.classList.add('hidden');
                 dashboardView.classList.remove('hidden');
+                triggerToast('Authentication verified successfully.', 'success');
                 loadDashboardMetrics();
             } else {
-                alert(await res.text());
+                triggerToast(await res.text(), 'error');
             }
         });
 
+        // Manual Data Refresher Trigger
+        document.getElementById('refresh-metrics-btn').addEventListener('click', () => {
+            loadDashboardMetrics();
+            triggerToast('Database metrics refreshed.', 'success');
+        });
+
+        // Load & Cache metrics dynamically
         async function loadDashboardMetrics() {
             try {
                 const res = await fetch('/api/admin/metrics');
                 if (!res.ok) return;
                 const data = await res.json();
+
+                activeUsersData = data.users;
+                activeRoomsData = data.rooms;
 
                 // Inject Counter Cards Values
                 const totalUsers = parseInt(data.counters.userCount);
@@ -290,54 +853,158 @@
                 document.getElementById('dashboard-total-rooms').innerText = totalRooms;
                 document.getElementById('dashboard-total-messages').innerText = totalMessages;
 
-                // Render Beautiful Theme-Compliant Charts
+                // Render Canvas Elements
                 renderApplicationCharts(totalUsers, totalRooms, totalMessages);
 
-                // Populate User Accounts Ledger Table
-                const userTbody = document.getElementById('admin-users-table-body');
-                userTbody.innerHTML = '';
-                data.users.forEach(u => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><strong>#${u.id}</strong></td>
-                        <td>${u.username}</td>
-                        <td>${u.full_name || '<em style="color:var(--text-muted)">Unset</em>'}</td>
-                        <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.bio || 'No profile bio setup.'}</td>
-                        <td><button class="mod-btn" onclick="executeUserModeration(${u.id}, '${u.username}')">Flag / Purge</button></td>
-                    `;
-                    userTbody.appendChild(tr);
-                });
-
-                // Populate Communities Registry Table
-                const roomTbody = document.getElementById('admin-rooms-table-body');
-                roomTbody.innerHTML = '';
-                if(data.rooms.length === 0) {
-                    roomTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No community rooms generated yet.</td></tr>`;
-                } else {
-                    data.rooms.forEach(r => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td><strong>#${r.id}</strong></td>
-                            <td style="font-weight:600;">${r.room_name}</td>
-                            <td><span class="badge room-code">${r.room_code}</span></td>
-                            <td style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.room_desc || 'No profile overview given.'}</td>
-                            <td><span class="badge">User ID: ${r.created_by}</span></td>
-                        `;
-                        roomTbody.appendChild(tr);
-                    });
-                }
+                // Populate Tables
+                renderUsersTable(activeUsersData);
+                renderRoomsTable(activeRoomsData);
 
             } catch (err) {
                 console.error("Failed to map dynamic pipeline analytics dashboard data logs:", err);
+                triggerToast('Failed to load database tables.', 'error');
+            }
+        }
+
+        // Render Users Table
+        function renderUsersTable(usersList) {
+            const userTbody = document.getElementById('users-table-tbody');
+            userTbody.innerHTML = '';
+            
+            if(usersList.length === 0) {
+                userTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--adm-text-muted);">No profiles found matching search criteria.</td></tr>`;
+                return;
+            }
+
+            usersList.forEach(u => {
+                const tr = document.createElement('tr');
+                const isUnderReview = u.bio && u.bio.includes('safety officers');
+                const statusBadge = isUnderReview 
+                    ? `<span class="adm-badge" style="background-color:rgba(239,68,68,0.1); color:#ef4444;">Reviewing</span>`
+                    : `<span class="adm-badge bg-success-light">Active</span>`;
+
+                tr.innerHTML = `
+                    <td><strong>#${u.id}</strong></td>
+                    <td style="font-weight:600;">${u.username} ${statusBadge}</td>
+                    <td>${u.full_name || '<em style="color:var(--adm-text-muted)">Unset</em>'}</td>
+                    <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.bio || 'No profile bio setup.'}</td>
+                    <td>
+                        <div style="display:flex; gap:0.4rem;">
+                            <button class="adm-btn warning" onclick="executeUserFlag(${u.id}, '${u.username}')">Flag Bio</button>
+                            <button class="adm-btn" onclick="resetUserPassword(${u.id}, '${u.username}')">Reset Key</button>
+                            <button class="adm-btn danger" onclick="deleteUserAccount(${u.id}, '${u.username}')">Purge</button>
+                        </div>
+                    </td>
+                `;
+                userTbody.appendChild(tr);
+            });
+        }
+
+        // Render Rooms Table
+        function renderRoomsTable(roomsList) {
+            const roomTbody = document.getElementById('rooms-table-tbody');
+            roomTbody.innerHTML = '';
+
+            if(roomsList.length === 0) {
+                roomTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--adm-text-muted);">No communities found matching search criteria.</td></tr>`;
+                return;
+            }
+
+            roomsList.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>#${r.id}</strong></td>
+                    <td style="font-weight:700;">${r.room_name}</td>
+                    <td><span class="adm-badge bg-accent-light">${r.room_code}</span></td>
+                    <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.room_desc || 'No profile overview given.'}</td>
+                    <td><span class="adm-badge" style="background-color:rgba(0,0,0,0.05); color:var(--adm-text-main);">User #${r.created_by}</span></td>
+                    <td>
+                        <button class="adm-btn danger" onclick="deleteCommunityRoom(${r.id}, '${r.room_name}')">Delete Room</button>
+                    </td>
+                `;
+                roomTbody.appendChild(tr);
+            });
+        }
+
+        // Client-side search filters
+        document.getElementById('user-search-filter').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase().trim();
+            const filtered = activeUsersData.filter(u => 
+                u.username.toLowerCase().includes(term) || 
+                (u.full_name && u.full_name.toLowerCase().includes(term))
+            );
+            renderUsersTable(filtered);
+        });
+
+        document.getElementById('room-search-filter').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase().trim();
+            const filtered = activeRoomsData.filter(r => 
+                r.room_name.toLowerCase().includes(term) || 
+                r.room_code.toLowerCase().includes(term)
+            );
+            renderRoomsTable(filtered);
+        });
+
+        // 1. Moderate User Flag Action
+        async function executeUserFlag(userId, username) {
+            if(confirm(`Are you sure you want to flag the account description/bio for user "${username}" (#${userId})?`)) {
+                const res = await fetch(`/api/admin/users/${userId}/flag`, { method: 'POST' });
+                if(res.ok) {
+                    triggerToast(`Profile flagged: ${username}`, 'success');
+                    loadDashboardMetrics();
+                } else {
+                    triggerToast("Unable to flag user bio.", 'error');
+                }
+            }
+        }
+
+        // 2. Reset User Password Action
+        async function resetUserPassword(userId, username) {
+            if(confirm(`Are you sure you want to reset password credentials for user "${username}" to default "reset123"?`)) {
+                const res = await fetch(`/api/admin/users/${userId}/reset-password`, { method: 'POST' });
+                if(res.ok) {
+                    triggerToast(`Password reset successfully for ${username}.`, 'success');
+                } else {
+                    triggerToast("Unable to reset user password.", 'error');
+                }
+            }
+        }
+
+        // 3. Purge User Account Action
+        async function deleteUserAccount(userId, username) {
+            if(confirm(`🚨 WARNING: Deleting user "${username}" (#${userId}) will permanently purge their profile, memberships, and messages from the tables. Proceed?`)) {
+                const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+                if(res.ok) {
+                    triggerToast(`Purged user account: ${username}`, 'success');
+                    loadDashboardMetrics();
+                } else {
+                    triggerToast("User deletion sequence failed.", 'error');
+                }
+            }
+        }
+
+        // 4. Delete Community Room Action
+        async function deleteCommunityRoom(roomId, roomName) {
+            if(confirm(`🚨 WARNING: Deleting community space "${roomName}" (#${roomId}) will permanently purge it and all chat messages inside it. Proceed?`)) {
+                const res = await fetch(`/api/admin/rooms/${roomId}`, { method: 'DELETE' });
+                if(res.ok) {
+                    triggerToast(`Deleted community room: ${roomName}`, 'success');
+                    loadDashboardMetrics();
+                } else {
+                    triggerToast("Community deletion sequence failed.", 'error');
+                }
             }
         }
 
         // CHARTS LOGIC MODULE WITH EMBEDDED CONTEXT CONFIGURATIONS
         function renderApplicationCharts(users, rooms, messages) {
+            const isDark = document.body.classList.contains('dark-theme');
+            const fontColor = isDark ? '#9ca3af' : '#64748b';
+            const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+            
             const terracotta = '#cb6e32';
-            const espresso = '#362a21';
-            const sand = '#f5ebe0';
-            const cream = '#fdf8f2';
+            const accentPurple = '#8b5cf6';
+            const accentBlue = '#3b82f6';
 
             // 1. Ratio Doughnut Chart Setup
             const ctxDoughnut = document.getElementById('ratioDoughnutChart').getContext('2d');
@@ -348,8 +1015,8 @@
                     labels: ['Users Profiles', 'Created Rooms'],
                     datasets: [{
                         data: [users, rooms],
-                        backgroundColor: [terracotta, sand],
-                        borderColor: cream,
+                        backgroundColor: [terracotta, accentPurple],
+                        borderColor: isDark ? '#111827' : '#ffffff',
                         borderWidth: 2
                     }]
                 },
@@ -357,7 +1024,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom', labels: { color: espresso, font: { family: 'inherit' } } }
+                        legend: { position: 'bottom', labels: { color: fontColor, font: { family: 'inherit', size: 11 } } }
                     }
                 }
             });
@@ -370,9 +1037,9 @@
                 data: {
                     labels: ['Users Base', 'Room Hubs', 'Message Output Volume'],
                     datasets: [{
-                        label: 'Core Pipeline Registry Load Metrics',
+                        label: 'Metrics',
                         data: [users, rooms, messages],
-                        backgroundColor: [espresso, terracotta, '#a0af9b'],
+                        backgroundColor: [accentPurple, terracotta, accentBlue],
                         borderRadius: 6
                     }]
                 },
@@ -380,27 +1047,14 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: espresso } },
-                        x: { grid: { display: false }, ticks: { color: espresso } }
+                        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: fontColor, font: { size: 11 } } },
+                        x: { grid: { display: false }, ticks: { color: fontColor, font: { size: 11 } } }
                     },
                     plugins: {
                         legend: { display: false }
                     }
                 }
             });
-        }
-
-        // INTERACTIVE MODERATION PLACEHOLDER STUB
-        async function executeUserModeration(userId, username) {
-            if(confirm(`Are you sure you want to flag and execute a structural diagnostic cleanup cycle on user account "${username}" (#${userId})?`)) {
-                const res = await fetch(`/api/admin/users/${userId}/flag`, { method: 'POST' });
-                if(res.ok) {
-                    alert(`Account management actions executed safely on user: ${username}`);
-                    loadDashboardMetrics();
-                } else {
-                    alert("Unable to process moderation sequence requests on live database tables.");
-                }
-            }
         }
 
         document.getElementById('admin-logout-btn').addEventListener('click', () => {

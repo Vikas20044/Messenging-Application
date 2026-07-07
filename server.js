@@ -923,6 +923,45 @@ app.post('/api/admin/users/:id/flag', async (req, res) => {
     }
 });
 
+// 5. NEW FUNCTIONALITY: Operational Moderation Route for User Deletion
+app.delete('/api/admin/users/:id', async (req, res) => {
+    const targetedUserId = req.params.id;
+    try {
+        await pool.query('DELETE FROM users WHERE id = $1', [targetedUserId]);
+        io.emit('userModerated', { userId: targetedUserId, action: 'deleted' });
+        res.sendStatus(200);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Database mutation action sequence conflict: User deletion failed.');
+    }
+});
+
+// 6. NEW FUNCTIONALITY: Operational Moderation Route for Room Deletion
+app.delete('/api/admin/rooms/:id', async (req, res) => {
+    const targetedRoomId = req.params.id;
+    try {
+        await pool.query('DELETE FROM rooms WHERE id = $1', [targetedRoomId]);
+        io.emit('userKickedFromRoom', { roomId: parseInt(targetedRoomId), userId: null });
+        res.sendStatus(200);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Database mutation action sequence conflict: Room deletion failed.');
+    }
+});
+
+// 7. NEW FUNCTIONALITY: Operational Moderation Route for Resetting User Password
+app.post('/api/admin/users/:id/reset-password', async (req, res) => {
+    const targetedUserId = req.params.id;
+    try {
+        const defaultHashedPassword = await bcrypt.hash('reset123', 10);
+        await pool.query('UPDATE users SET password = $1 WHERE id = $2', [defaultHashedPassword, targetedUserId]);
+        res.status(200).send('Password reset to default "reset123" successfully.');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Database mutation action sequence conflict: Password reset failed.');
+    }
+});
+
 // Add these stubs alongside your existing standalone routing views in server.js
 app.get('/developer', (req, res) => {
     res.sendFile(path.join(__dirname, 'app', 'developer.html'));

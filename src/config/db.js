@@ -86,6 +86,7 @@ const initDB = async () => {
             ALTER TABLE messages ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
             ALTER TABLE messages ADD COLUMN IF NOT EXISTS reply_to_message_id INT REFERENCES messages(id) ON DELETE SET NULL;
             ALTER TABLE messages ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
+            ALTER TABLE messages ADD COLUMN IF NOT EXISTS is_edited BOOLEAN DEFAULT FALSE;
         `);
 
         // Group Message Reads

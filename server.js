@@ -91,6 +91,7 @@ async function checkSchemaMigration() {
 
             -- Add read_at to messages table if not existing
             ALTER TABLE messages ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
+            ALTER TABLE messages ADD COLUMN IF NOT EXISTS is_edited BOOLEAN DEFAULT FALSE;
         `);
         console.log('PostgreSQL database room details, members registry & reads status schema synchronized successfully.');
     } catch (err) {
@@ -541,7 +542,7 @@ io.on('connection', (socket) => {
         try {
             const result = await pool.query(`
                 SELECT m.id as _id, m.text, m.timestamp, m.isread as "isRead", 
-                       u.username as username, m.sender_id, m.message_type, m.file_url, m.is_deleted,
+                       u.username as username, m.sender_id, m.message_type, m.file_url, m.is_deleted, m.is_edited,
                        COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url,
                        m.reply_to_message_id,
                        p.text as reply_to_text,
@@ -626,7 +627,7 @@ io.on('connection', (socket) => {
         try {
             const result = await pool.query(`
                 SELECT m.id as _id, m.text, m.timestamp, m.isread as "isRead", 
-                       u.username as username, m.sender_id, m.message_type, m.file_url, m.is_deleted,
+                       u.username as username, m.sender_id, m.message_type, m.file_url, m.is_deleted, m.is_edited,
                        COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url,
                        m.reply_to_message_id,
                        p.text as reply_to_text,
@@ -824,6 +825,84 @@ socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }
             }
         } catch (err) {
             console.error('Failed to handle reaction event:', err);
+        }
+    });
+
+    socket.on('editMessage', async ({ messageId, text }) => {
+        try {
+            const userId = socket.userId;
+            if (!userId) return;
+
+            // Fetch message to verify ownership
+            const messageRes = await pool.query(
+                'SELECT sender_id, receiver_id, room_id, is_deleted FROM messages WHERE id = $1',
+                [messageId]
+            );
+
+            if (messageRes.rows.length === 0) return;
+            const message = messageRes.rows[0];
+
+            if (parseInt(userId) !== message.sender_id) {
+                console.error(`Unauthorized edit attempt by user ${userId} on message ${messageId}`);
+                return;
+            }
+
+            if (message.is_deleted) return;
+
+            // Update database
+            await pool.query(
+                'UPDATE messages SET text = $1, is_edited = TRUE WHERE id = $2',
+                [text, messageId]
+            );
+
+            // Emit the edited message event
+            const payload = { messageId, newText: text };
+            if (message.room_id) {
+                io.to(`group_room_${message.room_id}`).emit('messageEdited', payload);
+            } else {
+                const chatRoomName = `chat_${Math.min(userId, message.receiver_id)}_${Math.max(userId, message.receiver_id)}`;
+                io.to(chatRoomName).emit('messageEdited', payload);
+            }
+        } catch (err) {
+            console.error('Failed to handle editMessage event:', err);
+        }
+    });
+
+    socket.on('deleteMessage', async ({ messageId }) => {
+        try {
+            const userId = socket.userId;
+            if (!userId) return;
+
+            // Fetch message to verify ownership
+            const messageRes = await pool.query(
+                'SELECT sender_id, receiver_id, room_id FROM messages WHERE id = $1',
+                [messageId]
+            );
+
+            if (messageRes.rows.length === 0) return;
+            const message = messageRes.rows[0];
+
+            if (parseInt(userId) !== message.sender_id) {
+                console.error(`Unauthorized delete attempt by user ${userId} on message ${messageId}`);
+                return;
+            }
+
+            // Update database to soft delete
+            await pool.query(
+                "UPDATE messages SET is_deleted = TRUE, text = 'This message was deleted' WHERE id = $1",
+                [messageId]
+            );
+
+            // Emit the deleted message event
+            const payload = { messageId };
+            if (message.room_id) {
+                io.to(`group_room_${message.room_id}`).emit('messageDeleted', payload);
+            } else {
+                const chatRoomName = `chat_${Math.min(userId, message.receiver_id)}_${Math.max(userId, message.receiver_id)}`;
+                io.to(chatRoomName).emit('messageDeleted', payload);
+            }
+        } catch (err) {
+            console.error('Failed to handle deleteMessage event:', err);
         }
     });
 

@@ -257,6 +257,15 @@
                         <span id="cancel-reply-btn" style="cursor: pointer; font-size: 1.1rem; font-weight: bold; color: var(--text-muted); line-height: 1;">&times;</span>
                     </div>
                     
+                    <!-- EDIT PREVIEW BAR -->
+                    <div id="edit-preview-bar" class="hidden" style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border-left: 4px solid var(--tick-read); padding: 0.5rem 1rem; border-top-left-radius: 6px; border-top-right-radius: 6px; border-bottom: 1px solid var(--bg-tertiary); margin-bottom: 4px; text-align: left; width: 100%;">
+                        <div style="flex: 1; min-width: 0; padding-right: 12px;">
+                            <div style="font-size: 0.72rem; font-weight: 700; color: var(--tick-read); margin-bottom: 2px;">Editing message</div>
+                            <div id="edit-preview-text" style="font-size: 0.8rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">text snippet</div>
+                        </div>
+                        <span id="cancel-edit-btn" style="cursor: pointer; font-size: 1.1rem; font-weight: bold; color: var(--text-muted); line-height: 1;">&times;</span>
+                    </div>
+                    
                     <form id="chat-form" action="#" onsubmit="return false;">
                         
                         <div style="position: relative; display: inline-block;">
@@ -471,6 +480,7 @@
         let joinedRoomsMap = new Map();
         let chosenMediaType = null;
         let activeReplyMessageId = null;
+        let activeEditMessageId = null;
 
         let activeRoomName = '';
         let activeRoomCode = '';
@@ -579,6 +589,7 @@
         // WhatsApp Reply / Quote Helpers
         window.triggerReplyMessage = function(messageId, username, text, type = 'text') {
             activeReplyMessageId = messageId;
+            cancelEdit();
             const replyPreviewBar = document.getElementById('reply-preview-bar');
             const previewUsername = document.getElementById('reply-preview-username');
             const previewText = document.getElementById('reply-preview-text');
@@ -603,6 +614,39 @@
             if (replyPreviewBar) {
                 replyPreviewBar.classList.add('hidden');
             }
+        };
+
+        window.triggerEditMessage = function(messageId, text) {
+            activeEditMessageId = messageId;
+            cancelReply();
+            
+            const editPreviewBar = document.getElementById('edit-preview-bar');
+            const editPreviewText = document.getElementById('edit-preview-text');
+            if (editPreviewBar && editPreviewText) {
+                editPreviewText.innerText = text;
+                editPreviewBar.classList.remove('hidden');
+            }
+            msgInput.value = text;
+            msgInput.focus();
+        };
+
+        window.cancelEdit = function() {
+            activeEditMessageId = null;
+            const editPreviewBar = document.getElementById('edit-preview-bar');
+            const editPreviewText = document.getElementById('edit-preview-text');
+            if (editPreviewBar) {
+                editPreviewBar.classList.add('hidden');
+            }
+            if (editPreviewText) {
+                editPreviewText.innerText = '';
+            }
+            msgInput.value = '';
+        };
+
+        window.triggerDeleteMessage = function(messageId) {
+            showConfirm("Delete Message", "Are you sure you want to delete this message? This action cannot be undone.", () => {
+                socket.emit('deleteMessage', { messageId });
+            });
         };
 
         window.scrollToMessage = function(messageId) {
@@ -686,6 +730,8 @@
         setTimeout(() => {
             const btn = document.getElementById('cancel-reply-btn');
             if (btn) btn.addEventListener('click', cancelReply);
+            const cancelEditBtn = document.getElementById('cancel-edit-btn');
+            if (cancelEditBtn) cancelEditBtn.addEventListener('click', cancelEdit);
         }, 100);
 
         const sidebarPanel = document.getElementById('sidebar-panel');
@@ -1665,22 +1711,31 @@
                     }
                 }
 
-                const payload = {
-                    sender_id: currentUserId,
-                    text,
-                    message_type: 'text',
-                    file_url: null,
-                    reply_to_message_id: activeReplyMessageId
-                };
-                if(targetUserId) {
-                    payload.receiver_id = targetUserId;
-                    socket.emit('privateMessage', payload);
-                } else if(targetRoomId) {
-                    payload.room_id = targetRoomId;
-                    socket.emit('groupMessage', payload);
+                if (activeEditMessageId) {
+                    const payload = {
+                        messageId: activeEditMessageId,
+                        text
+                    };
+                    socket.emit('editMessage', payload);
+                    cancelEdit();
+                } else {
+                    const payload = {
+                        sender_id: currentUserId,
+                        text,
+                        message_type: 'text',
+                        file_url: null,
+                        reply_to_message_id: activeReplyMessageId
+                    };
+                    if(targetUserId) {
+                        payload.receiver_id = targetUserId;
+                        socket.emit('privateMessage', payload);
+                    } else if(targetRoomId) {
+                        payload.room_id = targetRoomId;
+                        socket.emit('groupMessage', payload);
+                    }
+                    msgInput.value = '';
+                    cancelReply();
                 }
-                msgInput.value = '';
-                cancelReply();
                 msgInput.focus();
             }
         });
@@ -1963,12 +2018,19 @@
                     <span onclick="triggerReaction('${msg._id}', '🙏')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🙏</span>
                 </div>`;
 
+            let deleteOptionHtml = '';
+            const isOutgoing = msg.sender_id === currentUserId;
+            if (isOutgoing) {
+                deleteOptionHtml = `<div onclick="triggerDeleteMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px; color: var(--accent);">Delete</div>`;
+            }
+
             const menuHtml = `
                 <div class="msg-menu-container" style="position: relative; margin-left: auto; align-self: flex-start;">
                     <span class="three-dots-icon" onclick="toggleDropdown(event, 'drop-${msg._id}')">⋮</span>
                     <div id="drop-${msg._id}" class="msg-dropdown hidden" style="right: 0; left: auto; top: 22px; width: 145px; z-index: 50;">
                         ${pickerHtml}
                         <div onclick="triggerReplyMessage('${msg._id}', '${safeUser}', '', '${msg.message_type}')" style="cursor: pointer; padding: 4px 8px;">Reply</div>
+                        ${deleteOptionHtml}
                     </div>
                 </div>`;
 
@@ -2044,10 +2106,21 @@
                         <span onclick="triggerReaction('${msg._id}', '🙏')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🙏</span>
                     </div>`;
 
+                const editedHtml = msg.is_edited ? ` <span style="font-size: 0.72rem; color: var(--text-muted); margin-left: 4px; font-style: italic;">(edited)</span>` : '';
+                
+                let extraOptionsHtml = '';
+                if (isOutgoing) {
+                    extraOptionsHtml = `
+                        <hr style="border: 0; border-top: 1px solid var(--bg-tertiary); margin: 4px 0;">
+                        <div onclick="triggerEditMessage('${msg._id}', '${safeText}')" style="cursor: pointer; padding: 4px 8px; color: var(--tick-read);">Edit</div>
+                        <div onclick="triggerDeleteMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px; color: var(--accent);">Delete</div>
+                    `;
+                }
+
                 inlineRenderBody = `
                     <div class="text-content-wrapper" style="position: relative; display: flex; flex-direction: column; width: 100%;">
                         <div style="display: flex; align-items: flex-start; gap: 8px; width: 100%;">
-                            <span id="text-span-${msg._id}">${msg.text}</span>
+                            <span id="text-span-${msg._id}">${msg.text}${editedHtml}</span>
                             <div class="msg-menu-container" style="position: relative; margin-left: auto; align-self: flex-start;">
                                 <span class="three-dots-icon" onclick="toggleDropdown(event, 'drop-${msg._id}')">⋮</span>
                                 <div id="drop-${msg._id}" class="msg-dropdown hidden" style="width: 145px; z-index: 50;">
@@ -2060,6 +2133,7 @@
                                     <div onclick="translateMessageText('${msg._id}', '${safeText}', 'bn', 'Bengali')">Bengali</div>
                                     <hr style="border: 0; border-top: 1px solid var(--bg-tertiary); margin: 4px 0;">
                                     <div onclick="translateMessageText('${msg._id}', '${safeText}', 'en', 'English')" style="color: var(--tick-read); font-weight: bold;">Translate back</div>
+                                    ${extraOptionsHtml}
                                 </div>
                             </div>
                         </div>
@@ -2116,6 +2190,73 @@
             const ticks = document.getElementById('ticks-' + messageId);
             if (ticks) ticks.classList.add('read');
         });
+
+        socket.on('messageEdited', ({ messageId, newText }) => {
+            const textSpan = document.getElementById(`text-span-${messageId}`);
+            if (textSpan) {
+                textSpan.innerHTML = `${escapeHTML(newText)} <span style="font-size: 0.72rem; color: var(--text-muted); margin-left: 4px; font-style: italic;">(edited)</span>`;
+            }
+            
+            const dropdown = document.getElementById(`drop-${messageId}`);
+            if (dropdown) {
+                const safeText = newText.replace(/"/g, '&quot;').replace(/'/g, "\\'");
+                const divs = dropdown.querySelectorAll('div[onclick^="translateMessageText"], div[onclick^="triggerReplyMessage"], div[onclick^="triggerEditMessage"]');
+                divs.forEach(div => {
+                    const onclick = div.getAttribute('onclick');
+                    if (onclick) {
+                        if (onclick.includes('translateMessageText')) {
+                            const parts = onclick.split("', '");
+                            if (parts.length >= 2) {
+                                parts[1] = safeText;
+                                div.setAttribute('onclick', parts.join("', '"));
+                            }
+                        } else if (onclick.includes('triggerReplyMessage')) {
+                            const parts = onclick.split("', '");
+                            if (parts.length >= 2) {
+                                parts[2] = safeText;
+                                div.setAttribute('onclick', parts.join("', '"));
+                            }
+                        } else if (onclick.includes('triggerEditMessage')) {
+                            const parts = onclick.split("', '");
+                            if (parts.length >= 2) {
+                                parts[1] = safeText + "')";
+                                div.setAttribute('onclick', parts.join("', '"));
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        socket.on('messageDeleted', ({ messageId }) => {
+            const textSpan = document.getElementById(`text-span-${messageId}`);
+            if (textSpan) {
+                textSpan.innerText = "This message was deleted";
+                textSpan.style.fontStyle = "italic";
+                textSpan.style.color = "var(--text-muted)";
+                const label = textSpan.querySelector('.translated-label');
+                if (label) label.remove();
+            }
+            const threeDots = document.querySelector(`#msg-card-${messageId} .three-dots-icon`);
+            if (threeDots) threeDots.remove();
+            const dropdown = document.getElementById(`drop-${messageId}`);
+            if (dropdown) dropdown.remove();
+            
+            if (activeReplyMessageId === messageId) cancelReply();
+            if (activeEditMessageId === messageId) cancelEdit();
+
+            const bubble = document.getElementById(`bubble-${messageId}`);
+            if (bubble) {
+                bubble.innerHTML = `
+                    <div class="text-content-wrapper" style="position: relative; display: flex; align-items: flex-start; gap: 8px; width: 100%;">
+                        <span id="text-span-${messageId}" style="font-style: italic; color: var(--text-muted);">This message was deleted</span>
+                    </div>`;
+            }
+        });
+
+        function escapeHTML(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
 
 
         document.getElementById('exit-chat-btn').addEventListener('click', async () => {

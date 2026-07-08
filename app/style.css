@@ -19,6 +19,13 @@
     padding: 0;
 }
 
+html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
 body {
     font-family: var(--font);
     background-color: var(--bg-primary);
@@ -26,9 +33,12 @@ body {
     display: flex;
     flex-direction: column; 
     width: 100vw;
+    height: 100%;
     height: 100vh;
     height: 100dvh; 
     overflow: hidden;
+    margin: 0;
+    padding: 0;
 }
 
 /* --- REFINED LIGHT MINIMALIST NAVIGATION DECK LAYER --- */
@@ -288,6 +298,8 @@ body {
     display: flex;
     flex: 1;
     width: 100%;
+    height: calc(100vh - 64px);
+    height: calc(100dvh - 64px);
     overflow: hidden;
     background-color: var(--bg-primary);
     position: relative;
@@ -932,6 +944,11 @@ body {
 }
 
 @media (max-width: 768px) {
+    .dashboard-wrapper {
+        height: calc(100vh - 54px);
+        height: calc(100dvh - 54px);
+    }
+
     .mobile-only {
         display: inline-block;
     }
@@ -1395,19 +1412,21 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(135deg, var(--text-main) 0%, #1e1610 100%);
+    background: linear-gradient(135deg, #2a1b10 0%, #1e130c 100%);
+    border: 1px solid rgba(203, 110, 50, 0.12);
     color: #ffffff;
-    padding: 3rem;
+    padding: 2.25rem 2.5rem;
     border-radius: 20px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(54, 42, 33, 0.08);
+    box-shadow: 0 10px 30px rgba(54, 42, 33, 0.04);
 }
 
 .hero-content {
     position: relative;
     z-index: 5;
     max-width: 600px;
+    width: 100%;
 }
 
 .hero-badge {
@@ -1416,27 +1435,33 @@ body {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    background: rgba(203, 110, 50, 0.2);
+    background: rgba(203, 110, 50, 0.15);
     color: var(--accent);
-    border: 1px solid rgba(203, 110, 50, 0.3);
+    border: 1px solid rgba(203, 110, 50, 0.25);
     padding: 0.35rem 0.75rem;
     border-radius: 50px;
-    margin-bottom: 1.2rem;
+    margin-bottom: 1rem;
 }
 
 .dashboard-hero h1 {
-    font-size: 2.25rem;
+    font-size: clamp(1.6rem, 3.2vw, 2.35rem);
     font-weight: 800;
-    letter-spacing: -0.75px;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
     margin-bottom: 0.75rem;
-    color: var(--bg-primary);
+    color: #ffffff;
+    background: linear-gradient(to right, #ffffff 0%, #f5ebe0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .dashboard-hero p {
-    font-size: 1rem;
-    line-height: 1.6;
+    font-size: 0.95rem;
+    line-height: 1.5;
     color: var(--bg-tertiary);
-    opacity: 0.9;
+    opacity: 0.85;
 }
 
 .hero-visual-element {
@@ -1533,16 +1558,16 @@ body {
     }
     
     .dashboard-hero {
-        padding: 1.75rem;
+        padding: 1.5rem;
         text-align: left;
     }
     
     .dashboard-hero h1 {
-        font-size: 1.65rem;
+        font-size: clamp(1.35rem, 5.5vw, 1.7rem);
     }
     
     .dashboard-hero p {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
     
     .hero-visual-element {

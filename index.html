@@ -627,8 +627,8 @@
         <!-- Left Side Copy -->
         <div class="hero-left">
             <span class="hero-badge">✨ Connected & Secure</span>
-            <h1>Real-Time Chat. Native AI Pipes.</h1>
-            <p>Experience low-latency team messaging synced instantly on Neon PostgreSQL database structures. Decouple local scripts with dynamic language translation and Whisper-Tiny speech decoder tools built directly into the client.</p>
+            <h1>Real-Time Chat. Native AI Translation.</h1>
+            <p>Experience low-latency team messaging synced instantly on Neon PostgreSQL database structures. Decouple local scripts with dynamic language translation tools built directly into the client.</p>
             <a href="/login" id="hero-cta-btn" class="hero-btn">Launch Workspace Hub &rarr;</a>
         </div>
 
@@ -638,26 +638,15 @@
                 
                 <header class="simulator-header">
                     <div class="simulator-dot"></div>
-                    <span class="simulator-title">AI Pipeline Simulator</span>
+                    <span class="simulator-title">AI Translation Simulator</span>
                 </header>
 
                 <div class="simulator-pane">
                     
-                    <!-- Sim Msg 1: Audio note -->
+                    <!-- Sim Msg 1: Text message -->
                     <div class="sim-msg incoming">
                         <div style="font-weight: 700; font-size: 0.75rem; color: var(--accent);">Vikas (Dev Team)</div>
-                        <div>Sent a voice note:</div>
-                        <div class="audio-sim-block">
-                            <div class="audio-play-btn" id="play-sim-audio">▶</div>
-                            <div class="audio-timeline">
-                                <div class="audio-progress" id="audio-sim-progress"></div>
-                            </div>
-                            <span style="font-size: 0.7rem; opacity: 0.7;">0:04</span>
-                        </div>
-                        <button class="sim-transcribe-btn" id="sim-transcribe-btn">🎙️ Transcribe Speech</button>
-                        <div class="transcription-text" id="sim-transcription">
-                            "Hey team, the cloud database tables are successfully initialized!"
-                        </div>
+                        <div class="sim-msg-text">Hey team, the cloud database tables are successfully initialized!</div>
                         <div class="sim-meta">3:14 PM</div>
                     </div>
 
@@ -708,25 +697,14 @@
                 </div>
             </div>
 
-            <!-- Bento Card 2: AI Translate (Large) -->
-            <div class="bento-card bento-card-large">
+            <!-- Bento Card 2: AI Translate -->
+            <div class="bento-card">
                 <div class="bento-icon-box">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6M4 14l6-6M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>
                 </div>
                 <div>
                     <h3>Contextual AI Translation</h3>
                     <p>Integrates dynamic, click-to-translate scripts for all received dialogs into Kannada, Tamil, Telugu, Malayalam, Spanish, and Bengali, with instant fallback restores to original English formats.</p>
-                </div>
-            </div>
-
-            <!-- Bento Card 3: Whisper transcription (Large) -->
-            <div class="bento-card bento-card-large">
-                <div class="bento-icon-box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 19v4M8 23h8"/></svg>
-                </div>
-                <div>
-                    <h3>On-Demand Speech Decoding</h3>
-                    <p>Runs local Whisper speech-recognition pipelines using Hugging Face Transformers.js to decode voice uploads in the client browser, writing raw transcripts straight to your Cloud PostgreSQL ledger.</p>
                 </div>
             </div>
 
@@ -776,45 +754,6 @@
 
         // --- INTERACTIVE SIMULATOR SCRIPTS ---
         
-        // 1. Transcription Simulator
-        const transcribeBtn = document.getElementById('sim-transcribe-btn');
-        const transcription = document.getElementById('sim-transcription');
-        const playBtn = document.getElementById('play-sim-audio');
-        const audioProgress = document.getElementById('audio-sim-progress');
-
-        transcribeBtn.addEventListener('click', () => {
-            transcribeBtn.disabled = true;
-            transcribeBtn.innerText = "⏳ Running Whisper...";
-            
-            // Sim play audio timeline
-            let progress = 35;
-            playBtn.innerText = "⏸";
-            const interval = setInterval(() => {
-                progress += 5;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    playBtn.innerText = "▶";
-                }
-                audioProgress.style.width = `${progress}%`;
-            }, 100);
-
-            setTimeout(() => {
-                transcribeBtn.style.display = "none";
-                transcription.style.display = "block";
-                triggerTypingEffect(transcription, transcription.innerText);
-            }, 1500);
-        });
-
-        function triggerTypingEffect(element, text) {
-            element.innerText = "";
-            let i = 0;
-            const timer = setInterval(() => {
-                element.innerText += text[i];
-                i++;
-                if (i >= text.length) clearInterval(timer);
-            }, 25);
-        }
 
         // 2. Translation Simulator
         function simulateTranslation(chip, lang, translatedText) {

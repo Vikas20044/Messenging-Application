@@ -85,7 +85,6 @@ const initDB = async () => {
             ALTER TABLE messages ADD COLUMN IF NOT EXISTS file_url TEXT;
             ALTER TABLE messages ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
             ALTER TABLE messages ADD COLUMN IF NOT EXISTS reply_to_message_id INT REFERENCES messages(id) ON DELETE SET NULL;
-            ALTER TABLE messages ADD COLUMN IF NOT EXISTS transcription TEXT;
             ALTER TABLE messages ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
         `);
 

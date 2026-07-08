@@ -154,7 +154,7 @@
                 <svg class="bento-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6M4 14l6-6M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>
             </div>
             <h3>AI Translation Engine</h3>
-            <p>Translate received audio or text message scripts seamlessly into regional local dialects at a single click.</p>
+            <p>Translate received text message scripts seamlessly into regional local dialects at a single click.</p>
             <span class="card-action-link">Learn More &rarr;</span>
         </div>
 
@@ -1877,65 +1877,6 @@
             }
         }
 
-        async function transcribeAudioMessage(e, messageId, fileUrl) {
-            if (e) e.stopPropagation();
-            const btn = e ? e.target : null;
-            const textDiv = document.getElementById(`transcription-text-${messageId}`);
-            if (!textDiv) return;
-
-            const originalBtnText = btn ? btn.innerHTML : '🎙️ Transcribe Message';
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '⏳ Loading AI model...';
-            }
-
-            try {
-                // Fetch the audio file
-                const audioResponse = await fetch(fileUrl);
-                if (!audioResponse.ok) throw new Error("Audio download failed.");
-                const arrayBuffer = await audioResponse.arrayBuffer();
-
-                // Decode using AudioContext
-                if (btn) btn.innerHTML = '⏳ Decoding audio...';
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-                const float32Samples = audioBuffer.getChannelData(0);
-
-                // Dynamically import Hugging Face Transformers
-                if (btn) btn.innerHTML = '⏳ Initializing Whisper Tiny...';
-                const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
-                env.allowLocalModels = false;
-
-                // Load whisper-tiny model pipeline
-                const transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en');
-                
-                if (btn) btn.innerHTML = '⚡ Transcribing speech...';
-                const output = await transcriber(float32Samples);
-                
-                const transcription = output.text || '[No speech detected]';
-                textDiv.innerText = transcription;
-                textDiv.style.borderLeft = '2px solid var(--accent)';
-                textDiv.style.paddingLeft = '6px';
-
-                if (btn) btn.remove();
-
-                // Save transcription to database via sockets
-                socket.emit('saveMessageTranscription', {
-                    messageId,
-                    roomId: targetRoomId,
-                    receiverId: targetUserId,
-                    transcription
-                });
-            } catch (err) {
-                console.error(err);
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = originalBtnText;
-                }
-                textDiv.innerText = '❌ Failed to transcribe. Please try again.';
-            }
-        }
-
 
 
         function toggleDropdown(e, dropdownId) {
@@ -2075,22 +2016,9 @@
                 const imgHtml = `<img src="${msg.file_url}" class="chat-rendered-image" onclick="window.openLightbox(this.src, 'image')" title="Zoom media preview" style="cursor: pointer;">`;
                 inlineRenderBody = wrapMediaWithMenu(msg, imgHtml);
             } else if (msg.message_type === 'audio') {
-                let transcriptionBody = '';
-                if (msg.transcription) {
-                    transcriptionBody = `<div id="transcription-text-${msg._id}" class="transcription-text-body" style="font-size: 0.82rem; margin-top: 6px; color: var(--text-main); font-style: italic; border-left: 2px solid var(--accent); padding-left: 6px; white-space: pre-wrap;">${msg.transcription}</div>`;
-                } else {
-                    const safeUrl = msg.file_url.replace(/'/g, "\\'");
-                    transcriptionBody = `
-                        <div class="transcription-container" style="margin-top: 6px;">
-                            <button onclick="transcribeAudioMessage(event, '${msg._id}', '${safeUrl}')" class="transcribe-btn" style="background: var(--bg-tertiary); color: var(--text-main); border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 4px;">🎙️ Transcribe Message</button>
-                            <div id="transcription-text-${msg._id}" class="transcription-text-body" style="font-size: 0.82rem; margin-top: 4px; color: var(--text-main); font-style: italic; white-space: pre-wrap;"></div>
-                        </div>
-                    `;
-                }
                 const audHtml = `
                     <div style="display: flex; flex-direction: column; width: 100%;">
                         <audio controls src="${msg.file_url}" class="chat-rendered-audio" style="width: 100%;"></audio>
-                        ${transcriptionBody}
                     </div>
                 `;
                 inlineRenderBody = wrapMediaWithMenu(msg, audHtml);
@@ -2189,20 +2117,6 @@
             if (ticks) ticks.classList.add('read');
         });
 
-        socket.on('transcriptionUpdated', ({ messageId, transcription }) => {
-            const textDiv = document.getElementById(`transcription-text-${messageId}`);
-            if (textDiv) {
-                textDiv.innerText = transcription;
-                textDiv.style.borderLeft = '2px solid var(--accent)';
-                textDiv.style.paddingLeft = '6px';
-                
-                // If there's a transcribe button, remove it
-                const btn = textDiv.previousElementSibling;
-                if (btn && btn.classList.contains('transcribe-btn')) {
-                    btn.remove();
-                }
-            }
-        });
 
         document.getElementById('exit-chat-btn').addEventListener('click', async () => {
             await fetch('/api/logout');

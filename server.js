@@ -89,8 +89,7 @@ async function checkSchemaMigration() {
                 UNIQUE(room_id, user_id)
             );
 
-            -- Add transcription and read_at to messages table if not existing
-            ALTER TABLE messages ADD COLUMN IF NOT EXISTS transcription TEXT;
+            -- Add read_at to messages table if not existing
             ALTER TABLE messages ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
         `);
         console.log('PostgreSQL database room details, members registry & reads status schema synchronized successfully.');
@@ -548,7 +547,7 @@ io.on('connection', (socket) => {
                        p.text as reply_to_text,
                        pu.username as reply_to_username,
                        p.is_deleted as reply_to_is_deleted,
-                       m.transcription, m.read_at,
+                       m.read_at,
                        (
                            SELECT COALESCE(json_object_agg(eg.emoji, eg.users), '{}'::json)
                            FROM (
@@ -583,7 +582,7 @@ io.on('connection', (socket) => {
             const result = await pool.query(`
                 INSERT INTO messages (sender_id, receiver_id, text, message_type, file_url, reply_to_message_id) 
                 VALUES ($1, $2, $3, $4, $5, $6) 
-                RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url, is_deleted, reply_to_message_id, transcription, read_at
+                RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url, is_deleted, reply_to_message_id, read_at
             `, [sender_id, receiver_id, text, type, url, parentId]);
 
             const userResult = await pool.query("SELECT username, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", [sender_id]);
@@ -633,7 +632,7 @@ io.on('connection', (socket) => {
                        p.text as reply_to_text,
                        pu.username as reply_to_username,
                        p.is_deleted as reply_to_is_deleted,
-                       m.transcription, m.read_at,
+                       m.read_at,
                        (
                            SELECT COALESCE(json_object_agg(eg.emoji, eg.users), '{}'::json)
                            FROM (
@@ -678,7 +677,7 @@ io.on('connection', (socket) => {
             const result = await pool.query(`
                 INSERT INTO messages (sender_id, room_id, text, message_type, file_url, reply_to_message_id) 
                 VALUES ($1, $2, $3, $4, $5, $6) 
-                RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url, room_id, is_deleted, reply_to_message_id, transcription, read_at
+                RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url, room_id, is_deleted, reply_to_message_id, read_at
             `, [sender_id, room_id, text, type, url, parentId]);
 
             const targetMessageId = result.rows[0]._id;
@@ -740,22 +739,6 @@ io.on('connection', (socket) => {
         } catch (err) {
             console.error('Failed to fetch private message receipt:', err);
             if (callback) callback(null);
-        }
-    });
-
-    socket.on('saveMessageTranscription', async ({ messageId, roomId, receiverId, transcription }) => {
-        try {
-            await pool.query('UPDATE messages SET transcription = $1 WHERE id = $2', [transcription, messageId]);
-            
-            const senderId = socket.userId;
-            if (roomId) {
-                io.to(`group_room_${roomId}`).emit('transcriptionUpdated', { messageId, transcription });
-            } else if (receiverId) {
-                const chatRoomName = `chat_${Math.min(senderId, receiverId)}_${Math.max(senderId, receiverId)}`;
-                io.to(chatRoomName).emit('transcriptionUpdated', { messageId, transcription });
-            }
-        } catch (err) {
-            console.error('Failed to save audio message transcription:', err);
         }
     });
 

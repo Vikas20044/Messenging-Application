@@ -65,7 +65,7 @@ router.get('/users/search', async (req, res) => {
         
         // Search users excluding the logged-in user
         const result = await pool.query(
-            'SELECT id, username FROM users WHERE username ILIKE $1 AND id != $2 LIMIT 10',
+            "SELECT id, username, full_name, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE (username ILIKE $1 OR full_name ILIKE $1) AND id != $2 LIMIT 10",
             [`%${q}%`, req.session.userId]
         );
         res.json(result.rows);

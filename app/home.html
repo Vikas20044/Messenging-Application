@@ -201,43 +201,43 @@
                     </div>
                     <div id="header-action-panel" style="display: flex; align-items: center; gap: 0.5rem; position: relative;">
                         <button id="check-room-online-btn" class="action-btn secondary hidden" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;">👥 Community Directory</button>
-                        <div id="search-bar-container" style="display: flex; align-items: center; gap: 4px; background: var(--bg-secondary); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--bg-tertiary); position: relative;">
+                        <div id="search-bar-container" class="chat-search-bar-container">
                             <span style="cursor: pointer; font-size: 0.9rem; display: flex; align-items: center;" id="toggle-search-input-btn" title="Advanced Search Options">🔍</span>
-                            <input id="chat-message-search-input" type="text" placeholder="Search..." style="background:transparent; border:none; outline:none; font-size:0.8rem; color:var(--text-main); width:0; transition: width 0.3s ease, padding 0.3s ease; padding:0; margin:0;">
+                            <input id="chat-message-search-input" type="text" placeholder="Search..." class="chat-search-input">
                             
                             <!-- ADVANCED SEARCH PANEL DROPDOWN -->
-                            <div id="advanced-search-panel" class="hidden" style="position: absolute; top: 40px; right: 0; background: #ffffff; border: 1px solid var(--bg-tertiary); box-shadow: 0 10px 25px rgba(0,0,0,0.08); border-radius: 8px; width: 310px; padding: 1rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.8rem; text-align: left;">
-                                <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); border-bottom: 1px solid var(--bg-tertiary); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+                            <div id="advanced-search-panel" class="adv-search-panel hidden">
+                                <div class="adv-search-header">
                                     <span>🔍 Advanced Search Options</span>
-                                    <span id="close-search-panel-x" style="cursor: pointer; font-size: 1.1rem; color: var(--text-muted); font-weight: bold;">&times;</span>
+                                    <span id="close-search-panel-x" class="adv-search-close">&times;</span>
                                 </div>
                                 
                                 <!-- Content Input -->
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <label style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Message Content</label>
-                                    <input type="text" id="adv-search-text" placeholder="Search text..." style="width: 100%; border: 1px solid var(--bg-tertiary); padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; outline: none; background: var(--bg-secondary); color: var(--text-main);">
+                                <div class="adv-search-field-group">
+                                    <label class="adv-search-label">Message Content</label>
+                                    <input type="text" id="adv-search-text" placeholder="Search text..." class="adv-search-input">
                                 </div>
                                 
                                 <!-- Chips -->
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <label style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Message Format</label>
-                                    <div id="adv-search-chips" style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px;">
-                                        <span class="search-chip active" data-type="all" style="cursor: pointer; font-size: 0.72rem; padding: 4px 10px; border-radius: 12px; background: var(--accent); color: white; font-weight: bold;">All</span>
-                                        <span class="search-chip" data-type="text" style="cursor: pointer; font-size: 0.72rem; padding: 4px 10px; border-radius: 12px; background: var(--bg-secondary); color: var(--text-muted);">Text</span>
-                                        <span class="search-chip" data-type="image" style="cursor: pointer; font-size: 0.72rem; padding: 4px 10px; border-radius: 12px; background: var(--bg-secondary); color: var(--text-muted);">Images</span>
-                                        <span class="search-chip" data-type="audio" style="cursor: pointer; font-size: 0.72rem; padding: 4px 10px; border-radius: 12px; background: var(--bg-secondary); color: var(--text-muted);">Audio</span>
-                                        <span class="search-chip" data-type="video" style="cursor: pointer; font-size: 0.72rem; padding: 4px 10px; border-radius: 12px; background: var(--bg-secondary); color: var(--text-muted);">Videos</span>
-                                        <span class="search-chip" data-type="pdf" style="cursor: pointer; font-size: 0.72rem; padding: 4px 10px; border-radius: 12px; background: var(--bg-secondary); color: var(--text-muted);">Docs</span>
+                                <div class="adv-search-field-group">
+                                    <label class="adv-search-label">Message Format</label>
+                                    <div id="adv-search-chips" class="search-chips-container">
+                                        <span class="search-chip active" data-type="all">All</span>
+                                        <span class="search-chip" data-type="text">Text</span>
+                                        <span class="search-chip" data-type="image">Images</span>
+                                        <span class="search-chip" data-type="audio">Audio</span>
+                                        <span class="search-chip" data-type="video">Videos</span>
+                                        <span class="search-chip" data-type="pdf">Docs</span>
                                     </div>
                                 </div>
 
                                 <!-- Sender name -->
-                                <div id="adv-search-sender-container" style="display: flex; flex-direction: column; gap: 4px;">
-                                    <label style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Sent By Member</label>
-                                    <input type="text" id="adv-search-sender" placeholder="Username..." style="width: 100%; border: 1px solid var(--bg-tertiary); padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; outline: none; background: var(--bg-secondary); color: var(--text-main);">
+                                <div id="adv-search-sender-container" class="adv-search-field-group">
+                                    <label class="adv-search-label">Sent By Member</label>
+                                    <input type="text" id="adv-search-sender" placeholder="Username..." class="adv-search-input">
                                 </div>
 
-                                <button type="button" id="btn-clear-search-filters" class="action-btn secondary" style="padding: 6px; font-size: 0.75rem; width: 100%; font-weight: 700; border-radius: 6px; margin-top: 4px;">Reset Filters</button>
+                                <button type="button" id="btn-clear-search-filters" class="action-btn secondary btn-search-reset">Reset Filters</button>
                             </div>
                         </div>
                     </div>
@@ -270,10 +270,33 @@
                         
                         <div style="position: relative; display: inline-block;">
                             <button type="button" id="chat-attach-trigger" class="action-btn secondary" style="width: 36px; height: 36px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;" title="Attach File">📎</button>
-                            <div id="attach-dropdown-menu" class="msg-dropdown hidden" style="bottom: 52px; top: auto; right: auto; left: 0; width: 190px;">
-                                <div id="pick-images-btn">🖼️ Upload Images (Max 10)</div>
-                                <div id="pick-videos-btn">🎥 Upload Videos (Max 10)</div>
-                                <div id="pick-docs-btn">📄 Upload Documents (Max 10)</div>
+                            <div id="attach-dropdown-menu" class="attach-popup-panel hidden">
+                                <div class="attach-grid">
+                                    <div class="attach-item" id="pick-images-btn" title="Upload Images (Max 10)">
+                                        <div class="attach-icon-wrapper img-gradient">
+                                            <svg viewBox="0 0 24 24" class="attach-svg-icon"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                                        </div>
+                                        <span class="attach-label">Images</span>
+                                    </div>
+                                    <div class="attach-item" id="pick-videos-btn" title="Upload Videos (Max 10)">
+                                        <div class="attach-icon-wrapper video-gradient">
+                                            <svg viewBox="0 0 24 24" class="attach-svg-icon"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                                        </div>
+                                        <span class="attach-label">Videos</span>
+                                    </div>
+                                    <div class="attach-item" id="pick-music-btn" title="Upload Music/Audio (Max 10)">
+                                        <div class="attach-icon-wrapper music-gradient">
+                                            <svg viewBox="0 0 24 24" class="attach-svg-icon"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                                        </div>
+                                        <span class="attach-label">Music</span>
+                                    </div>
+                                    <div class="attach-item" id="pick-docs-btn" title="Upload Documents (Max 10)">
+                                        <div class="attach-icon-wrapper doc-gradient">
+                                            <svg viewBox="0 0 24 24" class="attach-svg-icon"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                                        </div>
+                                        <span class="attach-label">Docs</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1147,18 +1170,23 @@
 
             searchResultsDropdown.innerHTML = '';
             if(matches.length === 0) {
-                searchResultsDropdown.innerHTML = '<div class="dropdown-item muted">No users found</div>';
+                searchResultsDropdown.innerHTML = '<div class="search-user-item" style="color: var(--text-muted); font-size: 0.85rem; justify-content: center; pointer-events: none;">No users found</div>';
             } else {
                 matches.forEach(u => {
                     const block = document.createElement('div');
-                    block.className = 'dropdown-item';
-                    block.style.display = 'flex';
-                    block.style.alignItems = 'center';
-                    block.style.gap = '10px';
+                    block.className = 'search-user-item';
+                    
+                    const fullName = u.full_name && u.full_name.trim() !== '' ? u.full_name : u.username;
                     
                     block.innerHTML = `
-                        <img src="${u.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" style="width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: var(--bg-secondary); flex-shrink: 0;">
-                        <span>${u.username}</span>
+                        <div class="search-avatar-wrapper">
+                            <img src="${u.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" class="search-avatar">
+                        </div>
+                        <div class="search-user-info">
+                            <span class="search-user-fullname">${escapeHTML(fullName)}</span>
+                            <span class="search-user-username">@${escapeHTML(u.username)}</span>
+                        </div>
+                        <div class="search-chat-badge">Chat</div>
                     `;
                     block.onclick = () => {
                         selectActiveTargetUser(u.id, u.username, u.profile_pic_url);
@@ -1291,6 +1319,12 @@
         document.getElementById('pick-videos-btn').addEventListener('click', () => {
             chatMediaInput.accept = "video/*,video/mp4,video/webm";
             chosenMediaType = "videos";
+            chatMediaInput.click();
+        });
+
+        document.getElementById('pick-music-btn').addEventListener('click', () => {
+            chatMediaInput.accept = "audio/*,audio/mp3,audio/wav,audio/mpeg,audio/ogg";
+            chosenMediaType = "audio";
             chatMediaInput.click();
         });
 

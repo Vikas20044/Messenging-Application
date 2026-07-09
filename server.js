@@ -471,7 +471,7 @@ app.get('/api/users/search', checkAuthSession, async (req, res) => {
     const query = req.query.q || '';
     try {
         const result = await pool.query(
-            "SELECT id, username, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE username ILIKE $1 AND id != $2 LIMIT 10",
+            "SELECT id, username, full_name, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE (username ILIKE $1 OR full_name ILIKE $1) AND id != $2 LIMIT 10",
             [`%${query}%`, req.session.userId]
         );
         res.json(result.rows);
@@ -870,35 +870,30 @@ socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }
 
     socket.on('deleteMessage', async ({ messageId }) => {
         try {
-            const userId = socket.userId;
-            if (!userId) return;
+            const parsedMessageId = parseInt(messageId, 10);
+            if (isNaN(parsedMessageId)) return;
 
-            // Fetch message to verify ownership
+            // Fetch message details
             const messageRes = await pool.query(
                 'SELECT sender_id, receiver_id, room_id FROM messages WHERE id = $1',
-                [messageId]
+                [parsedMessageId]
             );
 
             if (messageRes.rows.length === 0) return;
             const message = messageRes.rows[0];
 
-            if (parseInt(userId) !== message.sender_id) {
-                console.error(`Unauthorized delete attempt by user ${userId} on message ${messageId}`);
-                return;
-            }
-
             // Update database to soft delete
             await pool.query(
                 "UPDATE messages SET is_deleted = TRUE, text = 'This message was deleted' WHERE id = $1",
-                [messageId]
+                [parsedMessageId]
             );
 
             // Emit the deleted message event
-            const payload = { messageId };
+            const payload = { messageId: parsedMessageId };
             if (message.room_id) {
                 io.to(`group_room_${message.room_id}`).emit('messageDeleted', payload);
             } else {
-                const chatRoomName = `chat_${Math.min(userId, message.receiver_id)}_${Math.max(userId, message.receiver_id)}`;
+                const chatRoomName = `chat_${Math.min(message.sender_id, message.receiver_id)}_${Math.max(message.sender_id, message.receiver_id)}`;
                 io.to(chatRoomName).emit('messageDeleted', payload);
             }
         } catch (err) {

@@ -377,14 +377,15 @@ body {
     border-radius: 12px;
     margin-bottom: 0.35rem;
     cursor: pointer;
-    font-weight: 500;
     font-size: 0.92rem;
-    transition: all 0.15s ease;
+    transition: all 0.18s ease;
     display: flex;
     align-items: center;
     gap: 12px;
     color: var(--text-main);
     border: 1px solid transparent;
+    position: relative;
+    user-select: none;
 }
 
 .thread-item:hover {
@@ -392,10 +393,114 @@ body {
 }
 
 .thread-item.active-selected {
-    background-color: rgba(203, 110, 50, 0.08);
-    border-color: rgba(203, 110, 50, 0.15);
-    border-left: 3.5px solid var(--accent);
-    padding-left: calc(0.85rem - 3.5px);
+    background-color: rgba(203, 110, 50, 0.09);
+    border-color: rgba(203, 110, 50, 0.2);
+    border-left: 4px solid var(--accent);
+    padding-left: calc(0.85rem - 4px);
+}
+
+.thread-avatar-wrap {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.thread-avatar-img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--bg-tertiary);
+}
+
+.thread-avatar-img.group-icon {
+    border-radius: 10px;
+}
+
+.thread-content-block {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    gap: 2px;
+}
+
+.thread-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.thread-contact-name {
+    font-weight: 600;
+    color: var(--text-main);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.92rem;
+}
+
+.thread-item.has-unread .thread-contact-name {
+    font-weight: 750;
+}
+
+.thread-time-badge {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    font-weight: normal;
+}
+
+.thread-item.has-unread .thread-time-badge {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.thread-snippet-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    min-width: 0;
+}
+
+.thread-last-snippet {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+
+.thread-item.has-unread .thread-last-snippet {
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.unread-count-pill {
+    background: var(--accent);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(203, 110, 50, 0.35);
+    animation: unreadPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes unreadPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
 .empty-text {

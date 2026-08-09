@@ -3,14 +3,19 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-// Initialize the Connection Pool directly using the Neon connection string
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    // Neon forces SSL encryption over public endpoints; this parameter secures the link
-    ssl: {
+// Determine SSL options safely based on connection string
+const isLocalhost = process.env.DATABASE_URL && (process.env.DATABASE_URL.includes('localhost') || process.env.DATABASE_URL.includes('127.0.0.1'));
+const poolConfig = {
+    connectionString: process.env.DATABASE_URL
+};
+
+if (!isLocalhost && process.env.DATABASE_URL) {
+    poolConfig.ssl = {
         rejectUnauthorized: false
-    }
-});
+    };
+}
+
+const pool = new Pool(poolConfig);
 
 const initDB = async () => {
     try {
@@ -78,7 +83,7 @@ const initDB = async () => {
             );
         `);
 
-        // Perform safe checks/alterations for messaging extensions (rooms support, media, deletions, quoting/replies)
+        // Perform safe checks/alterations for messaging extensions
         await pool.query(`
             ALTER TABLE messages ADD COLUMN IF NOT EXISTS room_id INT REFERENCES rooms(id) ON DELETE CASCADE;
             ALTER TABLE messages ADD COLUMN IF NOT EXISTS message_type VARCHAR(50) DEFAULT 'text';
@@ -147,9 +152,19 @@ const initDB = async () => {
             );
         `);
 
-        console.log('Successfully connected to Neon Cloud Database & Tables Verified!');
+        // Create Performance Indexes
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_messages_private ON messages(sender_id, receiver_id) WHERE room_id IS NULL;
+            CREATE INDEX IF NOT EXISTS idx_messages_room ON messages(room_id) WHERE room_id IS NOT NULL;
+            CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
+            CREATE INDEX IF NOT EXISTS idx_room_members ON room_members(room_id, user_id);
+            CREATE INDEX IF NOT EXISTS idx_group_reads ON group_message_reads(message_id, user_id);
+            CREATE INDEX IF NOT EXISTS idx_starred_messages ON starred_messages(user_id, message_id);
+        `);
+
+        console.log('Successfully connected to Cloud Database & Tables and Indexes Verified!');
     } catch (err) {
-        console.error('Neon Database initialization failed:', err);
+        console.error('Database initialization failed:', err);
         process.exit(1); 
     }
 };

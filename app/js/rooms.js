@@ -6,7 +6,7 @@ async function loadJoinedRooms() {
 
     try {
         const res = await fetch('/api/rooms/joined');
-        if(!res.ok) return;
+        if (!res.ok) return;
         const rooms = await res.json();
         communityThreadsTarget.innerHTML = '';
         joinedRoomsMap.clear();
@@ -14,38 +14,67 @@ async function loadJoinedRooms() {
         const statsJoined = document.getElementById('stats-joined-rooms');
         if (statsJoined) statsJoined.innerText = rooms.length;
 
-        if(rooms.length === 0) {
+        if (rooms.length === 0) {
             communityThreadsTarget.innerHTML = '<p class="empty-text">No joined communities yet.</p>';
             return;
         }
         rooms.forEach(room => {
             joinedRoomsMap.set(room.id, room);
-            renderRoomInSidebar(room.id, room.room_name, room.room_code, room.room_desc, room.room_icon);
+            renderRoomInSidebar(room);
         });
     } catch (err) {
         console.error('Failed to load joined rooms:', err);
     }
 }
 
-function renderRoomInSidebar(id, name, code, desc, icon) {
+function renderRoomInSidebar(room) {
     const communityThreadsTarget = document.getElementById('community-threads-target');
-    if(!communityThreadsTarget || document.getElementById(`thread-room-${id}`)) return;
+    if (!communityThreadsTarget) return;
+
+    const id = room.id;
+    const name = room.room_name;
+    const code = room.room_code;
+    const desc = room.room_desc;
+    const icon = room.room_icon || '/uploads/default-group.png';
+    const unreadCount = parseInt(room.unread_count || 0, 10);
+
+    let snippet = `Code: ${code}`;
+    if (room.last_message) {
+        const sender = room.last_message_sender ? `@${room.last_message_sender}: ` : '';
+        if (room.last_message_type === 'image') snippet = `${sender}📷 Photo`;
+        else if (room.last_message_type === 'audio') snippet = `${sender}🎵 Voice message`;
+        else if (room.last_message_type === 'video') snippet = `${sender}🎥 Video`;
+        else if (room.last_message_type === 'pdf') snippet = `${sender}📄 Document`;
+        else snippet = `${sender}${room.last_message}`;
+    }
+
+    const timeFormatted = typeof formatThreadTime === 'function' ? formatThreadTime(room.last_activity) : '';
+    const unreadPillHtml = (unreadCount > 0 && targetRoomId !== id)
+        ? `<span class="unread-count-pill" id="unread-badge-room-${id}">${unreadCount}</span>`
+        : '';
 
     const item = document.createElement('div');
     item.className = 'thread-item';
     item.id = `thread-room-${id}`;
+    if (unreadCount > 0 && targetRoomId !== id) item.classList.add('has-unread');
     if (targetRoomId === id) item.classList.add('active-selected');
     
-    const groupIcon = icon || '/uploads/default-group.png';
-    
     item.innerHTML = `
-        <img src="${groupIcon}" onerror="this.onerror=null; this.src='/uploads/default-group.png';" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover; background: var(--bg-tertiary); flex-shrink: 0;">
-        <div style="display: flex; flex-direction: column; min-width: 0; flex: 1;">
-            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">${escapeHTML(name)}</span>
-            <span style="font-size: 0.72rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Code: ${escapeHTML(code)}</span>
+        <div class="thread-avatar-wrap">
+            <img src="${icon}" onerror="this.onerror=null; this.src='/uploads/default-group.png';" class="thread-avatar-img group-icon">
+        </div>
+        <div class="thread-content-block">
+            <div class="thread-header-row">
+                <span class="thread-contact-name">${escapeHTML(name)}</span>
+                <span class="thread-time-badge">${timeFormatted}</span>
+            </div>
+            <div class="thread-snippet-row">
+                <span class="thread-last-snippet">${escapeHTML(snippet)}</span>
+                ${unreadPillHtml}
+            </div>
         </div>
     `;
-    item.onclick = () => selectActiveRoom(id, name, code, desc, groupIcon);
+    item.onclick = () => selectActiveRoom(id, name, code, desc, icon);
     communityThreadsTarget.appendChild(item);
 }
 
@@ -53,6 +82,14 @@ function selectActiveRoom(id, name, code, desc, icon) {
     targetUserId = null; 
     targetRoomId = id;
     
+    // Clear unread badge immediately from UI
+    const targetItem = document.getElementById(`thread-room-${id}`);
+    if (targetItem) {
+        targetItem.classList.remove('has-unread');
+        const badge = targetItem.querySelector('.unread-count-pill');
+        if (badge) badge.remove();
+    }
+
     const checkRoomOnlineBtn = document.getElementById('check-room-online-btn');
     const chatWindowTitle = document.getElementById('chat-window-title');
     const chatWindowSubtitle = document.getElementById('chat-window-subtitle');

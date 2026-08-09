@@ -780,7 +780,7 @@
 
     <script>
         function escapeHTML(str) {
-            if (!str) return '';
+            if (str === null || str === undefined) return '';
             return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
@@ -796,10 +796,11 @@
         // Dynamic System Toast Notification Dispatcher
         function triggerToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
+            if (!container) return;
             const toast = document.createElement('div');
             toast.className = `adm-toast ${type}`;
             toast.innerHTML = `
-                <span>${message}</span>
+                <span>${escapeHTML(message)}</span>
                 <span onclick="this.parentElement.remove()" style="cursor:pointer; margin-left:12px; opacity:0.6;">&times;</span>
             `;
             container.appendChild(toast);
@@ -809,11 +810,30 @@
             }, 4000);
         }
 
+        // Check authentication state on page load
+        async function checkAdminAuthentication() {
+            try {
+                const res = await fetch('/api/admin/check-auth');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.isAuthenticated) {
+                        authGate.classList.add('hidden');
+                        dashboardView.classList.remove('hidden');
+                        loadDashboardMetrics();
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error('Auth check error:', e);
+            }
+            authGate.classList.remove('hidden');
+            dashboardView.classList.add('hidden');
+        }
+
         // Toggle Dark/Light Mode
         document.getElementById('theme-toggle-btn').addEventListener('click', () => {
             document.body.classList.toggle('dark-theme');
             triggerToast('Dashboard theme toggled.', 'success');
-            // Re-render charts to adjust text scaling sizes
             loadDashboardMetrics();
         });
 
@@ -856,7 +876,7 @@
                     'tab-rooms': 'Active Messaging Communities',
                     'tab-settings': 'System Settings'
                 };
-                document.getElementById('adm-active-title').innerText = titleMap[targetTab];
+                document.getElementById('adm-active-title').innerText = titleMap[targetTab] || 'Admin Dashboard';
                 
                 if (targetTab === 'tab-reports') {
                     loadAdminReports();
@@ -871,20 +891,32 @@
             const username = document.getElementById('admin-user').value.trim();
             const password = document.getElementById('admin-pass').value;
 
-            const res = await fetch('/api/admin/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
+            try {
+                const res = await fetch('/api/admin/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
 
-            if (res.ok) {
-                authGate.classList.add('hidden');
-                dashboardView.classList.remove('hidden');
-                triggerToast('Authentication verified successfully.', 'success');
-                loadDashboardMetrics();
-            } else {
-                triggerToast(await res.text(), 'error');
+                if (res.ok) {
+                    authGate.classList.add('hidden');
+                    dashboardView.classList.remove('hidden');
+                    triggerToast('Authentication verified successfully.', 'success');
+                    loadDashboardMetrics();
+                } else {
+                    triggerToast(await res.text(), 'error');
+                }
+            } catch (err) {
+                triggerToast('Network error during authentication.', 'error');
             }
+        });
+
+        // Logout
+        document.getElementById('admin-logout-btn').addEventListener('click', async () => {
+            await fetch('/api/admin/logout', { method: 'POST' });
+            authGate.classList.remove('hidden');
+            dashboardView.classList.add('hidden');
+            triggerToast('Logged out of admin panel.', 'success');
         });
 
         // Manual Data Refresher Trigger
@@ -897,11 +929,16 @@
         async function loadDashboardMetrics() {
             try {
                 const res = await fetch('/api/admin/metrics');
-                if (!res.ok) return;
+                if (!res.ok) {
+                    if (res.status === 403 || res.status === 401) {
+                        checkAdminAuthentication();
+                    }
+                    return;
+                }
                 const data = await res.json();
 
-                activeUsersData = data.users;
-                activeRoomsData = data.rooms;
+                activeUsersData = data.users || [];
+                activeRoomsData = data.rooms || [];
 
                 // Inject Counter Cards Values
                 const totalUsers = parseInt(data.counters.userCount || 0);
@@ -935,7 +972,7 @@
                 loadAdminReports();
 
             } catch (err) {
-                console.error("Failed to map dynamic pipeline analytics dashboard data logs:", err);
+                console.error("Failed to load dashboard metrics:", err);
                 triggerToast('Failed to load database tables.', 'error');
             }
         }
@@ -943,9 +980,10 @@
         // Render Users Table
         function renderUsersTable(usersList) {
             const userTbody = document.getElementById('users-table-tbody');
+            if (!userTbody) return;
             userTbody.innerHTML = '';
             
-            if(usersList.length === 0) {
+            if (!usersList || usersList.length === 0) {
                 userTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--adm-text-muted);">No profiles found matching search criteria.</td></tr>`;
                 return;
             }
@@ -959,14 +997,14 @@
 
                 tr.innerHTML = `
                     <td><strong>#${u.id}</strong></td>
-                    <td style="font-weight:600;">${u.username} ${statusBadge}</td>
-                    <td>${u.full_name || '<em style="color:var(--adm-text-muted)">Unset</em>'}</td>
-                    <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.bio || 'No profile bio setup.'}</td>
+                    <td style="font-weight:600;">${escapeHTML(u.username)} ${statusBadge}</td>
+                    <td>${escapeHTML(u.full_name) || '<em style="color:var(--adm-text-muted)">Unset</em>'}</td>
+                    <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHTML(u.bio) || 'No profile bio setup.'}</td>
                     <td>
                         <div style="display:flex; gap:0.4rem;">
-                            <button class="adm-btn warning" onclick="executeUserFlag(${u.id}, '${u.username}')">Flag Bio</button>
-                            <button class="adm-btn" onclick="resetUserPassword(${u.id}, '${u.username}')">Reset Key</button>
-                            <button class="adm-btn danger" onclick="deleteUserAccount(${u.id}, '${u.username}')">Purge</button>
+                            <button class="adm-btn warning" data-id="${u.id}" data-user="${escapeHTML(u.username)}" onclick="executeUserFlag(${u.id}, this.getAttribute('data-user'))">Flag Bio</button>
+                            <button class="adm-btn" data-id="${u.id}" data-user="${escapeHTML(u.username)}" onclick="resetUserPassword(${u.id}, this.getAttribute('data-user'))">Reset Key</button>
+                            <button class="adm-btn danger" data-id="${u.id}" data-user="${escapeHTML(u.username)}" onclick="deleteUserAccount(${u.id}, this.getAttribute('data-user'))">Purge</button>
                         </div>
                     </td>
                 `;
@@ -977,9 +1015,10 @@
         // Render Rooms Table
         function renderRoomsTable(roomsList) {
             const roomTbody = document.getElementById('rooms-table-tbody');
+            if (!roomTbody) return;
             roomTbody.innerHTML = '';
 
-            if(roomsList.length === 0) {
+            if (!roomsList || roomsList.length === 0) {
                 roomTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--adm-text-muted);">No communities found matching search criteria.</td></tr>`;
                 return;
             }
@@ -988,12 +1027,12 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>#${r.id}</strong></td>
-                    <td style="font-weight:700;">${r.room_name}</td>
-                    <td><span class="adm-badge bg-accent-light">${r.room_code}</span></td>
-                    <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.room_desc || 'No profile overview given.'}</td>
-                    <td><span class="adm-badge" style="background-color:rgba(0,0,0,0.05); color:var(--adm-text-main);">User #${r.created_by}</span></td>
+                    <td style="font-weight:700;">${escapeHTML(r.room_name)}</td>
+                    <td><span class="adm-badge bg-accent-light">${escapeHTML(r.room_code)}</span></td>
+                    <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHTML(r.room_desc) || 'No profile overview given.'}</td>
+                    <td><span class="adm-badge" style="background-color:rgba(0,0,0,0.05); color:var(--adm-text-main);">User #${r.created_by || 'System'}</span></td>
                     <td>
-                        <button class="adm-btn danger" onclick="deleteCommunityRoom(${r.id}, '${r.room_name}')">Delete Room</button>
+                        <button class="adm-btn danger" data-id="${r.id}" data-name="${escapeHTML(r.room_name)}" onclick="deleteCommunityRoom(${r.id}, this.getAttribute('data-name'))">Delete Room</button>
                     </td>
                 `;
                 roomTbody.appendChild(tr);
@@ -1004,7 +1043,7 @@
         document.getElementById('user-search-filter').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase().trim();
             const filtered = activeUsersData.filter(u => 
-                u.username.toLowerCase().includes(term) || 
+                (u.username && u.username.toLowerCase().includes(term)) || 
                 (u.full_name && u.full_name.toLowerCase().includes(term))
             );
             renderUsersTable(filtered);
@@ -1013,8 +1052,8 @@
         document.getElementById('room-search-filter').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase().trim();
             const filtered = activeRoomsData.filter(r => 
-                r.room_name.toLowerCase().includes(term) || 
-                r.room_code.toLowerCase().includes(term)
+                (r.room_name && r.room_name.toLowerCase().includes(term)) || 
+                (r.room_code && r.room_code.toLowerCase().includes(term))
             );
             renderRoomsTable(filtered);
         });
@@ -1022,12 +1061,16 @@
         // 1. Moderate User Flag Action
         async function executeUserFlag(userId, username) {
             if(confirm(`Are you sure you want to flag the account description/bio for user "${username}" (#${userId})?`)) {
-                const res = await fetch(`/api/admin/users/${userId}/flag`, { method: 'POST' });
-                if(res.ok) {
-                    triggerToast(`Profile flagged: ${username}`, 'success');
-                    loadDashboardMetrics();
-                } else {
-                    triggerToast("Unable to flag user bio.", 'error');
+                try {
+                    const res = await fetch(`/api/admin/users/${userId}/flag`, { method: 'POST' });
+                    if(res.ok) {
+                        triggerToast(`Profile flagged: ${username}`, 'success');
+                        loadDashboardMetrics();
+                    } else {
+                        triggerToast("Unable to flag user bio.", 'error');
+                    }
+                } catch (err) {
+                    triggerToast("Network error executing flag.", 'error');
                 }
             }
         }
@@ -1035,11 +1078,15 @@
         // 2. Reset User Password Action
         async function resetUserPassword(userId, username) {
             if(confirm(`Are you sure you want to reset password credentials for user "${username}" to default "reset123"?`)) {
-                const res = await fetch(`/api/admin/users/${userId}/reset-password`, { method: 'POST' });
-                if(res.ok) {
-                    triggerToast(`Password reset successfully for ${username}.`, 'success');
-                } else {
-                    triggerToast("Unable to reset user password.", 'error');
+                try {
+                    const res = await fetch(`/api/admin/users/${userId}/reset-password`, { method: 'POST' });
+                    if(res.ok) {
+                        triggerToast(`Password reset successfully for ${username}.`, 'success');
+                    } else {
+                        triggerToast("Unable to reset user password.", 'error');
+                    }
+                } catch (err) {
+                    triggerToast("Network error executing password reset.", 'error');
                 }
             }
         }
@@ -1047,12 +1094,16 @@
         // 3. Purge User Account Action
         async function deleteUserAccount(userId, username) {
             if(confirm(`🚨 WARNING: Deleting user "${username}" (#${userId}) will permanently purge their profile, memberships, and messages from the tables. Proceed?`)) {
-                const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
-                if(res.ok) {
-                    triggerToast(`Purged user account: ${username}`, 'success');
-                    loadDashboardMetrics();
-                } else {
-                    triggerToast("User deletion sequence failed.", 'error');
+                try {
+                    const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+                    if(res.ok) {
+                        triggerToast(`Purged user account: ${username}`, 'success');
+                        loadDashboardMetrics();
+                    } else {
+                        triggerToast("User deletion sequence failed.", 'error');
+                    }
+                } catch (err) {
+                    triggerToast("Network error deleting user.", 'error');
                 }
             }
         }
@@ -1060,12 +1111,16 @@
         // 4. Delete Community Room Action
         async function deleteCommunityRoom(roomId, roomName) {
             if(confirm(`🚨 WARNING: Deleting community space "${roomName}" (#${roomId}) will permanently purge it and all chat messages inside it. Proceed?`)) {
-                const res = await fetch(`/api/admin/rooms/${roomId}`, { method: 'DELETE' });
-                if(res.ok) {
-                    triggerToast(`Deleted community room: ${roomName}`, 'success');
-                    loadDashboardMetrics();
-                } else {
-                    triggerToast("Community deletion sequence failed.", 'error');
+                try {
+                    const res = await fetch(`/api/admin/rooms/${roomId}`, { method: 'DELETE' });
+                    if(res.ok) {
+                        triggerToast(`Deleted community room: ${roomName}`, 'success');
+                        loadDashboardMetrics();
+                    } else {
+                        triggerToast("Community deletion sequence failed.", 'error');
+                    }
+                } catch (err) {
+                    triggerToast("Network error deleting room.", 'error');
                 }
             }
         }
@@ -1077,10 +1132,7 @@
         async function loadAdminReports() {
             try {
                 const res = await fetch('/api/admin/reports');
-                if (!res.ok) {
-                    console.error('Fetch /api/admin/reports returned status:', res.status);
-                    return;
-                }
+                if (!res.ok) return;
                 const data = await res.json();
                 activeReportsData = Array.isArray(data) ? data : [];
                 renderReportsTable();
@@ -1149,25 +1201,24 @@
                     statusBadgeHtml = '<span class="adm-badge" style="background:rgba(100,116,139,0.15); color:#64748b;">DISMISSED</span>';
                 }
 
-                // Render Content Preview based on message_type
                 let contentPreviewHtml = '';
                 if (rep.is_deleted) {
                     contentPreviewHtml = `<em style="color:var(--adm-text-muted);">(Message Deleted)</em>`;
                 } else if (rep.message_type === 'image' && rep.file_url) {
                     contentPreviewHtml = `
                         <div style="display:flex; align-items:center; gap:6px;">
-                            <img src="${rep.file_url}" style="width:48px; height:48px; object-fit:cover; border-radius:6px; cursor:pointer; border:1px solid var(--adm-border);" onclick="window.open('${rep.file_url}', '_blank')" title="Click to view full image">
+                            <img src="${encodeURI(rep.file_url)}" style="width:48px; height:48px; object-fit:cover; border-radius:6px; cursor:pointer; border:1px solid var(--adm-border);" onclick="window.open('${encodeURI(rep.file_url)}', '_blank')" title="Click to view full image">
                             <span style="font-size:0.75rem; color:var(--adm-text-muted);">Image File</span>
                         </div>`;
                 } else if (rep.message_type === 'video' && rep.file_url) {
                     contentPreviewHtml = `
-                        <video src="${rep.file_url}" style="width:70px; height:45px; border-radius:6px; object-fit:cover;" controls></video>`;
+                        <video src="${encodeURI(rep.file_url)}" style="width:70px; height:45px; border-radius:6px; object-fit:cover;" controls></video>`;
                 } else if (rep.message_type === 'audio' && rep.file_url) {
                     contentPreviewHtml = `
-                        <audio src="${rep.file_url}" controls style="width:140px; height:32px;"></audio>`;
+                        <audio src="${encodeURI(rep.file_url)}" controls style="width:140px; height:32px;"></audio>`;
                 } else if (rep.message_type === 'pdf' && rep.file_url) {
                     contentPreviewHtml = `
-                        <a href="${rep.file_url}" target="_blank" style="color:var(--adm-accent); text-decoration:none; font-weight:600; font-size:0.8rem;">📄 View PDF Document</a>`;
+                        <a href="${encodeURI(rep.file_url)}" target="_blank" style="color:var(--adm-accent); text-decoration:none; font-weight:600; font-size:0.8rem;">📄 View PDF Document</a>`;
                 } else {
                     contentPreviewHtml = `<span style="word-break:break-word;">${escapeHTML(rep.message_text || '(No text)')}</span>`;
                 }
@@ -1199,9 +1250,9 @@
                     <td>${statusBadgeHtml}</td>
                     <td>
                         <div style="display:flex; flex-direction:column; gap:4px;">
-                            ${!rep.is_deleted && rep.message_id ? `<button class="adm-btn danger" style="padding:2px 6px; font-size:0.75rem;" onclick="executeReportAction(${rep.report_id}, 'delete_message', '${escapeHTML(rep.sender_username || '')}')">🗑️ Delete Message</button>` : ''}
-                            ${rep.sender_id ? `<button class="adm-btn warning" style="padding:2px 6px; font-size:0.75rem;" onclick="executeReportAction(${rep.report_id}, 'flag_sender', '${escapeHTML(rep.sender_username || '')}')">⚠️ Flag Sender Profile</button>` : ''}
-                            ${rep.sender_id ? `<button class="adm-btn" style="padding:2px 6px; font-size:0.75rem;" onclick="executeReportAction(${rep.report_id}, 'reset_sender_pass', '${escapeHTML(rep.sender_username || '')}')">🔑 Reset Sender Password</button>` : ''}
+                            ${!rep.is_deleted && rep.message_id ? `<button class="adm-btn danger" style="padding:2px 6px; font-size:0.75rem;" data-id="${rep.report_id}" data-user="${escapeHTML(rep.sender_username || '')}" onclick="executeReportAction(${rep.report_id}, 'delete_message', this.getAttribute('data-user'))">🗑️ Delete Message</button>` : ''}
+                            ${rep.sender_id ? `<button class="adm-btn warning" style="padding:2px 6px; font-size:0.75rem;" data-id="${rep.report_id}" data-user="${escapeHTML(rep.sender_username || '')}" onclick="executeReportAction(${rep.report_id}, 'flag_sender', this.getAttribute('data-user'))">⚠️ Flag Sender Profile</button>` : ''}
+                            ${rep.sender_id ? `<button class="adm-btn" style="padding:2px 6px; font-size:0.75rem;" data-id="${rep.report_id}" data-user="${escapeHTML(rep.sender_username || '')}" onclick="executeReportAction(${rep.report_id}, 'reset_sender_pass', this.getAttribute('data-user'))">🔑 Reset Sender Password</button>` : ''}
                             ${rep.status === 'pending' ? `<button class="adm-btn" style="padding:2px 6px; font-size:0.75rem; color:var(--adm-success); border-color:rgba(16,185,129,0.3);" onclick="executeReportAction(${rep.report_id}, 'resolve_report')">✅ Mark Resolved</button>` : ''}
                             ${rep.status === 'pending' ? `<button class="adm-btn" style="padding:2px 6px; font-size:0.75rem; color:var(--adm-text-muted);" onclick="executeReportAction(${rep.report_id}, 'dismiss_report')">🚫 Dismiss Report</button>` : ''}
                         </div>
@@ -1251,59 +1302,64 @@
             const accentBlue = '#3b82f6';
 
             // 1. Ratio Doughnut Chart Setup
-            const ctxDoughnut = document.getElementById('ratioDoughnutChart').getContext('2d');
-            if(ratioChartInstance) ratioChartInstance.destroy();
-            ratioChartInstance = new Chart(ctxDoughnut, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Users Profiles', 'Created Rooms'],
-                    datasets: [{
-                        data: [users, rooms],
-                        backgroundColor: [terracotta, accentPurple],
-                        borderColor: isDark ? '#111827' : '#ffffff',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: fontColor, font: { family: 'inherit', size: 11 } } }
+            const doughnutEl = document.getElementById('ratioDoughnutChart');
+            if (doughnutEl) {
+                const ctxDoughnut = doughnutEl.getContext('2d');
+                if(ratioChartInstance) ratioChartInstance.destroy();
+                ratioChartInstance = new Chart(ctxDoughnut, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Users Profiles', 'Created Rooms'],
+                        datasets: [{
+                            data: [users, rooms],
+                            backgroundColor: [terracotta, accentPurple],
+                            borderColor: isDark ? '#111827' : '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: fontColor, font: { family: 'inherit', size: 11 } } }
+                        }
                     }
-                }
-            });
+                });
+            }
 
             // 2. Growth/Volume Activity Bar Chart Setup
-            const ctxBar = document.getElementById('growthBarChart').getContext('2d');
-            if(growthChartInstance) growthChartInstance.destroy();
-            growthChartInstance = new Chart(ctxBar, {
-                type: 'bar',
-                data: {
-                    labels: ['Users Base', 'Room Hubs', 'Message Output Volume'],
-                    datasets: [{
-                        label: 'Metrics',
-                        data: [users, rooms, messages],
-                        backgroundColor: [accentPurple, terracotta, accentBlue],
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: fontColor, font: { size: 11 } } },
-                        x: { grid: { display: false }, ticks: { color: fontColor, font: { size: 11 } } }
+            const barEl = document.getElementById('growthBarChart');
+            if (barEl) {
+                const ctxBar = barEl.getContext('2d');
+                if(growthChartInstance) growthChartInstance.destroy();
+                growthChartInstance = new Chart(ctxBar, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Users Base', 'Room Hubs', 'Message Output Volume'],
+                        datasets: [{
+                            label: 'Metrics',
+                            data: [users, rooms, messages],
+                            backgroundColor: [accentPurple, terracotta, accentBlue],
+                            borderRadius: 6
+                        }]
                     },
-                    plugins: {
-                        legend: { display: false }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: fontColor, font: { size: 11 } } },
+                            x: { grid: { display: false }, ticks: { color: fontColor, font: { size: 11 } } }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
                     }
-                }
-            });
+                });
+            }
         }
 
-        document.getElementById('admin-logout-btn').addEventListener('click', () => {
-            window.location.reload();
-        });
+        // Initialize Authentication state on script load
+        checkAdminAuthentication();
     </script>
 </body>
 </html>

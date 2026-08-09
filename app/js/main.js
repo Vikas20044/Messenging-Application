@@ -6,10 +6,10 @@ const emojiDatabase = {
         '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','☠️','👽','👾','🤖','🎃','😺','😸','😹','😻','😼','😽','🙀','😿','😾'
     ],
     people: [
-        '👋','🤚','🖐️','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','🦿','🦵','🦶','👂','🦻','👃','🧠','🫀','🫁','🦷','🦴','👀','👁️','舌','👄','💋','🩸','👶','👧','🧒','👦','👩','🧑','👨','👩‍🦱','🧑‍🦱','👨‍🦱','👩‍🦰','🧑‍🦰','👨‍🦰','👱‍♀️','👱','👱‍♂️','👩‍🦳','🧑‍🦳','👨‍🦳','👩‍🦲','🧑‍🦲','👨‍🦲','🧔','👵','🧓','👴','👲','🧕','👮‍♀️','👮','👮‍♂️','👷‍♀️','👷','👷‍♂️','💂‍♀️','💂','💂‍♂️','🕵️‍♀️','🕵️','🕵️‍♂️','👩‍⚕️','🧑‍⚕️','👨‍⚕️'
+        '👋','🤚','🖐️','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','🦿','🦵','🦶','👂','🦻','👃','🧠','🫀','🫁','🦷','🦴','👀','👁️','👅','👄','💋','🩸','👶','👧','🧒','👦','👩','🧑','👨','👩‍🦱','🧑‍🦱','👨‍🦱','👩‍🦰','🧑‍🦰','👨‍🦰','👱‍♀️','👱','👱‍♂️','👩‍🦳','🧑‍🦳','👨‍🦳','👩‍🦲','🧑‍🦲','👨‍🦲','🧔','👵','🧓','👴','👲','🧕','👮‍♀️','👮','👮‍♂️','👷‍♀️','👷','👷‍♂️','💂‍♀️','💂','💂‍♂️','🕵️‍♀️','🕵️','🕵️‍♂️','👩‍⚕️','🧑‍⚕️','👨‍⚕️'
     ],
     nature: [
-        '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🪱','🐛','🦋','🐌','🐞','🐜','🪰','🪲','🪳','🕷️','🕸️','🦂','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','鲨','🐊','🐅','🐆','🦓','🦍','🦧','🦣','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🦬','🦙','🐐','🐏','🐑','🐎','🐖','🐄','🐂','🐃',' Deer ','🐕','🐩','🦮','🐕‍🦺','🐈','🐈‍⬛','🐓','🦃','🦤','🦚','🦜',' Swan ',' Flamingo ','🕊️','🐇','🦝','🦨','🦡','🦫','🦦','🦥','🐁','🐀','🐿️','🦔','🐾','🐉','🐲','🌵','🎄','🌲','🌳','🌴','🪵','🌱','🌿','☘️','🍀','🎍','🪴','🎋','🍃','🍂','🍁','🍄','🐚','🪨','🌾','💐','🌷','🌹','🥀','🌺','🌸','🌼','🌻','🌞','🌝','🌛','🌜','🌙','🪐','💫','⭐️','🌟','✨','⚡️','💥','🔥','🌪️','🌈','☀️','🌤️','⛅️','🌥️','☁️','🌧️','⛈️','🌩️','❄️','⛄️','💨','💧','💦','🌊'
+        '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🪱','🐛','🦋','🐌','🐞','🐜','🪰','🪲','🪳','🕷️','🕸️','🦂','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🐊','🐅','🐆','🦓','🦍','🦧','🦣','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🦬','🦙','🐐','🐏','🐑','🐎','🐖','🐄','🐂','🐃','🐕','🐩','🦮','🐕‍🦺','🐈','🐈‍⬛','🐓','🦃','🦤','🦚','🦜','🕊️','🐇','🦝','🦨','🦡','🦫','🦦','🦥','🐁','🐀','🐿️','🦔','🐾','🐉','🐲','🌵','🎄','🌲','🌳','🌴','🪵','🌱','🌿','☘️','🍀','🎍','🪴','🎋','🍃','🍂','🍁','🍄','🐚','🪨','🌾','💐','🌷','🌹','🥀','🌺','🌸','🌼','🌻','🌞','🌝','🌛','🌜','🌙','🪐','💫','⭐️','🌟','✨','⚡️','💥','🔥','🌪️','🌈','☀️','🌤️','⛅️','🌥️','☁️','🌧️','⛈️','🌩️','❄️','⛄️','💨','💧','💦','🌊'
     ],
     food: [
         '🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶️','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖','🧀','🥚','🍳','🥞','🧇','🥓','🥩','🍗','🍖','🌭','🍔','🍟','🍕','🫓','🥪','🥙','🧆','🌮','🌯','🫔','🥗','🥘','🫕','🥣','🍲','🍿','🧂','🥫','🍱','🍘','🍙','🍚','🍛','🍜','🍝','🍣','🍤','🍥','🥮','🍡','🥟','🥠','🥡','🍦','🍧','🍨','🍩','🍪','🎂','🍰','🥧','🍫','🍬','🍭','🍮','🍯','🍼','🥛','☕️','🫖','🍵','🍶','🍾','🍷','🍸','🍹','🍺','🍻','🥂','🥃','🥤','🧋','🧃','🧉','🧊'
@@ -18,7 +18,7 @@ const emojiDatabase = {
         '🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🛵','🛺','🚲','🛴','🛹','🛼','🚏','🛣️','🛤️','🛢️','⛽️','🚨','🚥','🚦','🛑','🚧','⚓️','⛵️','🛥️','🚢','✈️','🛩️','🛫','🛬','🪂','💺','🚁','🚟','🚡','🚀','🛸','🛎️','🧳','⌛️','⏳','⏰','⏱️','⏲️','🕰️','🗺️','🏔️','🌋','🗻','🏕️','🏖️','🏝️','🏞️','🏟️','🏛️','🏗️','🛖','🏠','🏡','🏢','🏣','🏥','🏦','🏨','🏪','🏫','🏬','🏭','🏰','💒','🗼','🗽','⛪️','🕌','🛕','🕍','⛩️','🕋','⛲️','⛺️','🌁','🌃','🏙️','🌄','🌅','🌆','🌇','🌉','🎠','🎡','🎢'
     ],
     activities: [
-        '⚽️','🏀','🏈','⚾️','🥎','🎾','🏐','🏉','🥏','🎱','🪀','🏓','🏸','🏒','🏑','🥍','🏏','🪃','🥅','⛳️','🪁','🏹','🎣','🤿','🥊','🥋','🎽','🛹','🛼','🛷','🥌','🎿','⛷️','🏂','🏋️‍♀️','🤺','🤼‍♂️','🤸‍♀️','⛹️‍♂️','🤾‍♂️','🧗‍♀️','🧘‍♀️','🚴‍♂️','🚵‍♂️','🏆','🥇','🥈','🥉','🏅','🎖️','🎟️','🎫','🎪','🎭','🖼️','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🪘','🎷','🎺','🎸','🪕','🎻','🎲','♟️','🎯','🎳','🎮','🎰','🧩'
+        '⚽️','🏀','🏈','⚾️','🥎','🎾','🏐','🥏','🎱','🪀','🏓','🏸','🏒','🏑','🥍','🏏','🪃','🥅','⛳️','🪁','🏹','🎣','🤿','🥊','🥋','🎽','🛹','🛼','🛷','🥌','🎿','⛷️','🏂','🏋️‍♀️','🤺','🤼‍♂️','🤸‍♀️','⛹️‍♂️','🤾‍♂️','🧗‍♀️','🧘‍♀️','🚴‍♂️','🚵‍♂️','🏆','🥇','🥈','🥉','🏅','🎖️','🎟️','🎫','🎪','🎭','🖼️','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🪘','🎷','🎺','🎸','🪕','🎻','🎲','♟️','🎯','🎳','🎮','🎰','🧩'
     ],
     symbols: [
         '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️','☦️','🛐','⛎','♈️','♉️','♊️','♋️','♌️','♍️','♎️','♏️','♐️','♑️','♒️','♓️','🆔','⚛️','☢️','☣️','🔴','🔵','⚫️','⚪️','🟤','🟣','🟢','🟡','🟠','🟥','🟦','⬛️','⬜️','🟫','🟪','🟩','🟨','🟧','🏁','🚩','🎌','🏴','🏳️','🏳️‍🌈','🏳️‍⚧️','🏴‍☠️','🇮🇳','🇺🇸','🇬🇧','🇨🇦','🇦🇺','🇫🇷','🇯🇵','🇧🇷','🇷🇺','🇨🇳','🇩🇪'
@@ -120,37 +120,41 @@ function resetToDashboard() {
 }
 
 async function initializeIdentity() {
-    const res = await fetch('/api/session-user');
-    if(!res.ok) { window.location.href = '/login'; return; }
-    const data = await res.json();
-    currentUserId = data.id;
-    currentUsername = data.username;
-    
-    const userDisplayTag = document.getElementById('user-display-tag');
-    if (userDisplayTag) userDisplayTag.innerText = `${currentUsername}`;
-    
-    const welcomeTitle = document.getElementById('dashboard-welcome-title');
-    if (welcomeTitle) {
-        const hours = new Date().getHours();
-        let greeting = "Welcome back";
-        if (hours < 12) greeting = "Good morning";
-        else if (hours < 18) greeting = "Good afternoon";
-        else greeting = "Good evening";
-        welcomeTitle.innerText = `${greeting}, ${currentUsername}! ✨`;
+    try {
+        const res = await fetch('/api/session-user');
+        if (!res.ok) { window.location.href = '/login'; return; }
+        const data = await res.json();
+        currentUserId = data.id;
+        currentUsername = data.username;
+        
+        const userDisplayTag = document.getElementById('user-display-tag');
+        if (userDisplayTag) userDisplayTag.innerText = `${currentUsername}`;
+        
+        const welcomeTitle = document.getElementById('dashboard-welcome-title');
+        if (welcomeTitle) {
+            const hours = new Date().getHours();
+            let greeting = "Welcome back";
+            if (hours < 12) greeting = "Good morning";
+            else if (hours < 18) greeting = "Good afternoon";
+            else greeting = "Good evening";
+            welcomeTitle.innerText = `${greeting}, ${currentUsername}! ✨`;
+        }
+
+        socket.emit('declareIdentity', { userId: currentUserId });
+
+        const startPing = Date.now();
+        socket.emit('requestUserOnlineStatus', { targetUserId: currentUserId }, () => {
+            const latency = Date.now() - startPing;
+            const statsLatency = document.getElementById('stats-latency');
+            if (statsLatency) statsLatency.innerText = `${latency}ms`;
+        });
+
+        loadActiveThreads();
+        loadJoinedRooms();
+        loadProfileHeaderMetadata();
+    } catch (err) {
+        console.error('Initialization error:', err);
     }
-
-    socket.emit('declareIdentity', { userId: currentUserId });
-
-    const startPing = Date.now();
-    socket.emit('requestUserOnlineStatus', { targetUserId: currentUserId }, () => {
-        const latency = Date.now() - startPing;
-        const statsLatency = document.getElementById('stats-latency');
-        if (statsLatency) statsLatency.innerText = `${latency}ms`;
-    });
-
-    loadActiveThreads();
-    loadJoinedRooms();
-    loadProfileHeaderMetadata();
 }
 
 // Bind DOM Event Listeners after document is ready
@@ -202,6 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const publicViewModal = document.getElementById('public-view-modal');
     const closePublicModalBtn = document.getElementById('close-public-modal-btn');
 
+    const checkRoomOnlineBtn = document.getElementById('check-room-online-btn');
     const closeGroupOnlineModal = document.getElementById('close-group-online-modal');
     const groupOnlineModal = document.getElementById('group-online-modal');
 
@@ -334,37 +339,41 @@ document.addEventListener('DOMContentLoaded', () => {
             const query = e.target.value.trim();
             if(query.length < 1) { searchResultsDropdown.classList.add('hidden'); return; }
 
-            const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
-            if(!res.ok) return;
-            const matches = await res.json();
+            try {
+                const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
+                if(!res.ok) return;
+                const matches = await res.json();
 
-            searchResultsDropdown.innerHTML = '';
-            if(matches.length === 0) {
-                searchResultsDropdown.innerHTML = '<div class="search-user-item" style="color: var(--text-muted); font-size: 0.85rem; justify-content: center; pointer-events: none;">No users found</div>';
-            } else {
-                matches.forEach(u => {
-                    const block = document.createElement('div');
-                    block.className = 'search-user-item';
-                    const fullName = u.full_name && u.full_name.trim() !== '' ? u.full_name : u.username;
-                    block.innerHTML = `
-                        <div class="search-avatar-wrapper">
-                            <img src="${u.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" class="search-avatar">
-                        </div>
-                        <div class="search-user-info">
-                            <span class="search-user-fullname">${escapeHTML(fullName)}</span>
-                            <span class="search-user-username">@${escapeHTML(u.username)}</span>
-                        </div>
-                        <div class="search-chat-badge">Chat</div>
-                    `;
-                    block.onclick = () => {
-                        selectActiveTargetUser(u.id, u.username, u.profile_pic_url);
-                        searchResultsDropdown.classList.add('hidden');
-                        userSearchInput.value = '';
-                    };
-                    searchResultsDropdown.appendChild(block);
-                });
+                searchResultsDropdown.innerHTML = '';
+                if(matches.length === 0) {
+                    searchResultsDropdown.innerHTML = '<div class="search-user-item" style="color: var(--text-muted); font-size: 0.85rem; justify-content: center; pointer-events: none;">No users found</div>';
+                } else {
+                    matches.forEach(u => {
+                        const block = document.createElement('div');
+                        block.className = 'search-user-item';
+                        const fullName = u.full_name && u.full_name.trim() !== '' ? u.full_name : u.username;
+                        block.innerHTML = `
+                            <div class="search-avatar-wrapper">
+                                <img src="${u.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" class="search-avatar">
+                            </div>
+                            <div class="search-user-info">
+                                <span class="search-user-fullname">${escapeHTML(fullName)}</span>
+                                <span class="search-user-username">@${escapeHTML(u.username)}</span>
+                            </div>
+                            <div class="search-chat-badge">Chat</div>
+                        `;
+                        block.onclick = () => {
+                            selectActiveTargetUser(u.id, u.username, u.profile_pic_url);
+                            searchResultsDropdown.classList.add('hidden');
+                            userSearchInput.value = '';
+                        };
+                        searchResultsDropdown.appendChild(block);
+                    });
+                }
+                searchResultsDropdown.classList.remove('hidden');
+            } catch (err) {
+                console.error('Search error:', err);
             }
-            searchResultsDropdown.classList.remove('hidden');
         });
     }
 
@@ -372,7 +381,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chatAttachTrigger && attachDropdownMenu) {
         chatAttachTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
-            attachDropdownMenu.classList.toggle('toggle-text');
             attachDropdownMenu.classList.toggle('hidden');
         });
     }
@@ -435,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                 } catch (err) {
-                    console.error("Transliteration engine connection timeout.", err);
+                    console.error("Transliteration connection error:", err);
                 }
 
                 const textAfterCursor = value.substring(selectionStart);
@@ -503,18 +511,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const desc = groupDescInput.value.trim();
             if(!name) return;
 
-            const res = await fetch('/api/rooms/create', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ room_name: name, room_desc: desc })
-            });
+            try {
+                const res = await fetch('/api/rooms/create', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ room_name: name, room_desc: desc })
+                });
 
-            if(res.ok) {
-                const room = await res.json();
-                createGroupModal.classList.add('hidden');
-                alert(`Community generated!\nAccess Code: ${room.room_code}`);
-                await loadJoinedRooms();
-                selectActiveRoom(room.id, room.room_name, room.room_code, room.room_desc, room.room_icon);
+                if (res.ok) {
+                    const room = await res.json();
+                    createGroupModal.classList.add('hidden');
+                    showToast(`Community generated! Access Code: ${room.room_code}`, "success");
+                    await loadJoinedRooms();
+                    selectActiveRoom(room.id, room.room_name, room.room_code, room.room_desc, room.room_icon);
+                } else {
+                    const err = await res.json();
+                    showToast(err.error || "Failed to create community room.", "error");
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Server communication error creating group.", "error");
             }
         });
     }
@@ -526,14 +542,77 @@ document.addEventListener('DOMContentLoaded', () => {
             const code = prompt("Enter the 5-character group room access code:");
             if(!code || code.trim() === "") return;
             
-            const res = await fetch(`/api/rooms/lookup/${code.trim()}`);
-            if(res.ok) {
-                const room = await res.json();
-                await loadJoinedRooms();
-                selectActiveRoom(room.id, room.room_name, room.room_code, room.room_desc, room.room_icon);
-            } else {
-                alert("Target configuration record verification index runtime error.");
+            try {
+                const res = await fetch(`/api/rooms/lookup/${code.trim()}`);
+                if (res.ok) {
+                    const room = await res.json();
+                    await loadJoinedRooms();
+                    selectActiveRoom(room.id, room.room_name, room.room_code, room.room_desc, room.room_icon);
+                } else {
+                    showToast("Invalid group room access code.", "error");
+                }
+            } catch (err) {
+                showToast("Error joining room.", "error");
             }
+        });
+    }
+
+    // Community Directory button & modal
+    if (checkRoomOnlineBtn) {
+        checkRoomOnlineBtn.addEventListener('click', () => {
+            if (!targetRoomId) return;
+            socket.emit('fetchGroupOnlineRoster', { roomId: targetRoomId }, (roster) => {
+                const target = document.getElementById('group-online-list-target');
+                if (!target || !groupOnlineModal) return;
+                target.innerHTML = '';
+                
+                if (!roster || roster.length === 0) {
+                    target.innerHTML = '<p class="empty-text">No active members found.</p>';
+                } else {
+                    const curRoom = joinedRoomsMap.get(targetRoomId);
+                    const currentUserIsAdmin = curRoom && curRoom.is_admin;
+
+                    roster.forEach(user => {
+                        const block = document.createElement('div');
+                        block.style.display = 'flex';
+                        block.style.justifyContent = 'space-between';
+                        block.style.alignItems = 'center';
+                        block.style.padding = '0.5rem 0';
+                        block.style.borderBottom = '1px solid var(--bg-tertiary)';
+                        
+                        const isSelf = user.id === currentUserId;
+                        const adminBadge = user.is_admin ? '<span style="font-size:0.75rem; color:var(--accent); font-weight:bold; margin-left:4px;">(Admin)</span>' : '';
+                        
+                        let adminActionsHtml = '';
+                        if (currentUserIsAdmin && !isSelf) {
+                            const toggleAction = user.is_admin ? 'Demote' : 'Make Admin';
+                            const toggleVal = !user.is_admin;
+                            adminActionsHtml = `
+                                <div style="display:flex; gap:0.4rem;">
+                                    <button class="action-btn secondary" style="padding:2px 8px; font-size:0.72rem;" onclick="toggleGroupAdmin(${targetRoomId}, ${user.id}, ${toggleVal})">${toggleAction}</button>
+                                    <button class="action-btn danger" style="padding:2px 8px; font-size:0.72rem;" onclick="removeGroupMember(${targetRoomId}, ${user.id})">Kick</button>
+                                </div>
+                            `;
+                        }
+
+                        block.innerHTML = `
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="position:relative; display:inline-block;">
+                                    <img src="${user.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" style="width:34px; height:34px; border-radius:50%; object-fit:cover;">
+                                    <div class="global-presence-badge ${user.status}"></div>
+                                </div>
+                                <div>
+                                    <div style="font-weight:600; font-size:0.9rem; color:var(--text-main);">${escapeHTML(user.username)} ${adminBadge}</div>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);">${user.status === 'online' ? '🟢 Online' : '⚪ Offline'}</div>
+                                </div>
+                            </div>
+                            ${adminActionsHtml}
+                        `;
+                        target.appendChild(block);
+                    });
+                }
+                groupOnlineModal.classList.remove('hidden');
+            });
         });
     }
 
@@ -550,6 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isCurrentlyTyping = typingState;
         socket.emit('typing', {
             sender_id: currentUserId,
+            sender_username: currentUsername,
             receiver_id: targetUserId,
             room_id: targetRoomId,
             isTyping: typingState
@@ -667,7 +747,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     cancelEdit();
                 } else {
                     const payload = {
-                        sender_id: currentUserId,
                         text,
                         message_type: 'text',
                         file_url: null,
@@ -695,7 +774,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (files.length === 0 || (!targetUserId && !targetRoomId)) return;
 
             if (files.length > 10) {
-                alert("Constraint Violation: You are limited to transmitting a maximum of 10 file objects per transaction batch.");
+                showToast("Constraint Violation: Maximum 10 files per batch.", "error");
                 chatMediaInput.value = '';
                 return;
             }
@@ -718,7 +797,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     data.files.forEach(fileInfo => {
                         if (targetUserId) {
                             socket.emit('privateMessage', {
-                                sender_id: currentUserId,
                                 receiver_id: targetUserId,
                                 text: fileInfo.filename,
                                 message_type: fileInfo.file_url ? fileInfo.message_type : 'text',
@@ -727,7 +805,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             });
                         } else if (targetRoomId) {
                             socket.emit('groupMessage', {
-                                sender_id: currentUserId,
                                 room_id: targetRoomId,
                                 text: fileInfo.filename,
                                 message_type: fileInfo.file_url ? fileInfo.message_type : 'text',
@@ -739,11 +816,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     cancelReply();
                     chatMediaInput.value = '';
                 } else {
-                    alert(data.error || 'Attachment upload validation error.');
+                    showToast(data.error || 'Attachment upload validation error.', "error");
                 }
             } catch(e) {
                 if (chatAttachTrigger) chatAttachTrigger.innerText = '📎';
-                alert('Network communication upload sequence failure.');
+                showToast('Network upload sequence failure.', "error");
             }
         });
     }
@@ -787,12 +864,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 if (res.ok && data.success) {
                     if (sidebarUserAvatar) sidebarUserAvatar.src = data.profile_pic_url;
-                    alert("Profile picture changed!");
+                    showToast("Profile picture updated successfully!", "success");
                 } else {
-                    alert(data.error || "Upload validation failed.");
+                    showToast(data.error || "Upload validation failed.", "error");
                 }
             } catch (err) {
-                alert("Server interface error occurred uploading image.");
+                showToast("Server error occurred uploading image.", "error");
             }
         });
     }
@@ -812,13 +889,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify(payload)
                 });
                 if (res.ok) {
-                    alert("Profile metadata updated!");
+                    showToast("Profile metadata updated!", "success");
                 } else {
                     const data = await res.json();
-                    alert(data.error);
+                    showToast(data.error || "Failed to update profile.", "error");
                 }
             } catch (err) {
-                alert("Network communication error.");
+                showToast("Network communication error.", "error");
             }
         });
     }
@@ -842,13 +919,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const userDisplayTag = document.getElementById('user-display-tag');
                     if (userDisplayTag) userDisplayTag.innerText = `${payload.username}`;
                     currentUsername = payload.username;
-                    alert("Account security credentials synchronized!");
+                    showToast("Account security credentials synchronized!", "success");
                     profilePasswordInput.value = '';
                 } else {
-                    alert(data.error || "Could not change credentials.");
+                    showToast(data.error || "Could not change credentials.", "error");
                 }
             } catch (err) {
-                alert("Failed to contact configuration endpoints.");
+                showToast("Failed to contact configuration endpoints.", "error");
             }
         });
     }
@@ -865,7 +942,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (targetRoomId) {
                 if (publicUsernameDisplay) publicUsernameDisplay.innerText = activeRoomName;
-                if (publicFullnameDisplay) publicFullnameDisplay.innerText = `Community Registry Code: ${activeRoomCode}`;
+                if (publicFullnameDisplay) publicFullnameDisplay.innerText = `Community Pass Code: ${activeRoomCode}`;
                 if (publicBioDisplay) publicBioDisplay.innerText = activeRoomDesc;
                 if (publicAvatarDisplay) publicAvatarDisplay.src = activeRoomIcon;
                 if (publicDetailLabelContext) publicDetailLabelContext.innerText = "Group Description";
@@ -889,7 +966,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 publicViewModal.classList.remove('hidden');
             } catch (err) {
-                console.error("Failed parsing profile interface lookups.", err);
+                console.error("Failed parsing profile lookups:", err);
             }
         });
     }
@@ -929,6 +1006,43 @@ document.addEventListener('DOMContentLoaded', () => {
         if (swipeDistance < -70 && sidebarPanel && sidebarPanel.classList.contains('open-mobile')) closeMobileSidebar();
     }, { passive: true });
 
+    // Web Audio API Synthesized WhatsApp-like Notification Chime
+    function playNotificationSound() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const now = ctx.currentTime;
+            
+            const osc1 = ctx.createOscillator();
+            const osc2 = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(659.25, now); // E5
+            osc1.frequency.exponentialRampToValueAtTime(880, now + 0.1); // A5
+
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(880, now + 0.1);
+            osc2.frequency.exponentialRampToValueAtTime(1318.51, now + 0.25); // E6
+
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.18, now + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+            osc1.connect(gain);
+            osc2.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc1.start(now);
+            osc1.stop(now + 0.12);
+            osc2.start(now + 0.1);
+            osc2.stop(now + 0.35);
+        } catch (e) {
+            // Handled silently if autoplay restricted
+        }
+    }
+
     // Socket Event Subscriptions
     socket.on('chatHistory', (history) => {
         const messageHistory = document.getElementById('message-history');
@@ -940,15 +1054,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('message', (msg) => {
-        if((targetUserId && msg.sender_id && !msg.room_id) || (targetRoomId && msg.room_id == targetRoomId)) {
+        const isCurrentPrivate = targetUserId && msg.sender_id && !msg.room_id && 
+                                 (msg.sender_id == targetUserId || msg.receiver_id == targetUserId);
+        const isCurrentGroup = targetRoomId && msg.room_id && msg.room_id == targetRoomId;
+
+        if (isCurrentPrivate || isCurrentGroup) {
             appendMessage(msg);
             
-            if (targetRoomId && msg.sender_id !== currentUserId) {
+            if (isCurrentGroup && msg.sender_id !== currentUserId) {
                 socket.emit('explicitMarkGroupMessageAsRead', { messageId: msg._id, userId: currentUserId, roomId: targetRoomId });
+            } else if (isCurrentPrivate && msg.sender_id !== currentUserId) {
+                socket.emit('markAsRead', msg._id);
             }
             scrollToBottom();
+        } else {
+            // Message arrived for another conversation
+            if (msg.sender_id !== currentUserId) {
+                playNotificationSound();
+
+                const senderName = msg.username || 'Someone';
+                let preview = msg.text || '';
+                if (msg.message_type === 'image') preview = '📷 Photo';
+                else if (msg.message_type === 'audio') preview = '🎵 Voice message';
+                else if (msg.message_type === 'video') preview = '🎥 Video clip';
+                else if (msg.message_type === 'pdf') preview = '📄 Document';
+
+                const title = msg.room_id ? `👥 ${msg.room_name || 'Group'} (@${senderName})` : `💬 @${senderName}`;
+                showToast(`${title}: ${preview}`, "info");
+            }
         }
+
+        // Live WhatsApp inbox refresh: updates unread badges, latest snippets, and moves contact to top
         loadActiveThreads();
+        if (msg.room_id) {
+            loadJoinedRooms();
+        }
     });
 
     socket.on('messageReadUpdate', (messageId) => {
@@ -957,43 +1097,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('messageEdited', ({ messageId, newText }) => {
+        const msg = messageStore.get(String(messageId));
+        if (msg) {
+            msg.text = newText;
+            msg.is_edited = true;
+        }
+
         const textSpan = document.getElementById(`text-span-${messageId}`);
         if (textSpan) {
             textSpan.innerHTML = `${escapeHTML(newText)} <span style="font-size: 0.72rem; color: var(--text-muted); margin-left: 4px; font-style: italic;">(edited)</span>`;
         }
-        
-        const dropdown = document.getElementById(`drop-${messageId}`);
-        if (dropdown) {
-            const safeText = newText.replace(/"/g, '&quot;').replace(/'/g, "\\'");
-            const divs = dropdown.querySelectorAll('div[onclick^="translateMessageText"], div[onclick^="triggerReplyMessage"], div[onclick^="triggerEditMessage"]');
-            divs.forEach(div => {
-                const onclick = div.getAttribute('onclick');
-                if (onclick) {
-                    if (onclick.includes('translateMessageText')) {
-                        const parts = onclick.split("', '");
-                        if (parts.length >= 2) {
-                            parts[1] = safeText;
-                            div.setAttribute('onclick', parts.join("', '"));
-                        }
-                    } else if (onclick.includes('triggerReplyMessage')) {
-                        const parts = onclick.split("', '");
-                        if (parts.length >= 2) {
-                            parts[2] = safeText;
-                            div.setAttribute('onclick', parts.join("', '"));
-                        }
-                    } else if (onclick.includes('triggerEditMessage')) {
-                        const parts = onclick.split("', '");
-                        if (parts.length >= 2) {
-                            parts[1] = safeText + "')";
-                            div.setAttribute('onclick', parts.join("', '"));
-                        }
-                    }
-                }
-            });
-        }
     });
 
     socket.on('messageDeleted', ({ messageId }) => {
+        const msg = messageStore.get(String(messageId));
+        if (msg) {
+            msg.is_deleted = true;
+            msg.text = "This message was deleted";
+        }
+
         const textSpan = document.getElementById(`text-span-${messageId}`);
         if (textSpan) {
             textSpan.innerText = "This message was deleted";
@@ -1046,21 +1168,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('broadcastGroupReadsSynchronized', ({ roomId }) => {
         if (targetRoomId === roomId) {
-            document.querySelectorAll('.group-ticks-tracker').forEach(async (el) => {
+            document.querySelectorAll('.group-ticks-tracker').forEach((el) => {
                 const msgId = el.getAttribute('data-msg-id');
+                if (!msgId) return;
                 socket.emit('fetchGroupMessageReadLedger', { messageId: msgId }, (ledger) => {
                     if (ledger && ledger.length > 0) {
-                        el.innerText = `✓ Seen by ${ledger.length}`;
+                        el.innerHTML = `&check;&check; Seen by ${ledger.length}`;
                         el.classList.add('read');
+                        el.setAttribute('title', `Seen by ${ledger.length} member${ledger.length > 1 ? 's' : ''} (Click for list)`);
+                    } else {
+                        el.innerHTML = `&check; Sent`;
+                        el.classList.remove('read');
+                        el.setAttribute('title', 'Sent (Click for details)');
                     }
                 });
             });
         }
     });
 
+    socket.on('roomDeleted', ({ roomId }) => {
+        if (targetRoomId === roomId) {
+            showToast("This community room has been deleted by an administrator.", "info");
+            resetToDashboard();
+        }
+        loadJoinedRooms();
+    });
+
     socket.on('userKickedFromRoom', ({ roomId, userId }) => {
         if (userId === currentUserId) {
-            alert("You have been removed from the group by an administrator.");
+            showToast("You have been removed from the group by an administrator.", "error");
             if (groupOnlineModal) groupOnlineModal.classList.add('hidden');
             if (targetRoomId === roomId) {
                 targetRoomId = null;
@@ -1069,37 +1205,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (checkRoomOnlineBtn) checkRoomOnlineBtn.classList.add('hidden');
             }
             loadJoinedRooms();
-        } else {
+        } else if (userId === null) {
             if (targetRoomId === roomId) {
-                socket.emit('fetchGroupOnlineRoster', { roomId: targetRoomId }, () => {
-                    const checkRoomOnlineBtn = document.getElementById('check-room-online-btn');
-                    if (checkRoomOnlineBtn) checkRoomOnlineBtn.click();
-                });
+                showToast("This group room has been deleted.", "info");
+                resetToDashboard();
+            }
+            loadJoinedRooms();
+        } else {
+            if (targetRoomId === roomId && !groupOnlineModal.classList.contains('hidden')) {
+                const checkBtn = document.getElementById('check-room-online-btn');
+                if (checkBtn) checkBtn.click();
             }
         }
     });
 
-    socket.on('userTyping', ({ userId, roomId, isTyping }) => {
+    socket.on('userTyping', ({ userId, username, roomId, isTyping }) => {
         const chatWindowSubtitle = document.getElementById('chat-window-subtitle');
         if (!chatWindowSubtitle) return;
 
         if (roomId && targetRoomId === roomId) {
             if (isTyping) {
-                socket.emit('fetchGroupOnlineRoster', { roomId: targetRoomId }, (roster) => {
-                    const typist = roster.find(x => x.id === userId);
-                    if (typist) {
-                        chatWindowSubtitle.innerText = `✍️ ${typist.username} is typing...`;
-                    }
-                });
+                chatWindowSubtitle.innerText = `✍️ ${escapeHTML(username || 'Someone')} is typing...`;
             } else {
-                chatWindowSubtitle.innerText = '👥 Group Chat';
+                chatWindowSubtitle.innerText = `Access Pass: ${activeRoomCode} • ${activeRoomDesc}`;
             }
         } else if (!roomId && targetUserId === userId) {
-            chatWindowSubtitle.innerText = isTyping ? '✍️ typing...' : '🟢 Online Now';
+            if (isTyping) {
+                chatWindowSubtitle.innerText = '✍️ typing...';
+            } else {
+                socket.emit('requestUserOnlineStatus', { targetUserId }, (reply) => {
+                    if (chatWindowSubtitle) chatWindowSubtitle.innerText = reply && reply.status === 'online' ? '🟢 Online Now' : '⚪ Offline';
+                });
+            }
         }
     });
 
     socket.on('reactionUpdated', ({ messageId, reactions }) => {
+        const msg = messageStore.get(String(messageId));
+        if (msg) msg.reactions = reactions;
+
         const target = document.getElementById(`reactions-target-${messageId}`);
         if (target) target.innerHTML = renderReactions(messageId, reactions);
     });
@@ -1136,7 +1280,7 @@ window.loadStarredMessages = async function() {
             const dateStr = `${dateObj.toLocaleDateString()} at ${dateObj.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
             const contextText = msg.room_name ? `in Group "${escapeHTML(msg.room_name)}"` : `from @${escapeHTML(msg.sender_username)}`;
 
-            let bodyContent = escapeHTML(msg.text);
+            let bodyContent = escapeHTML(msg.text || '');
             if (msg.message_type === 'image') bodyContent = `📷 Image Attachment`;
             else if (msg.message_type === 'audio') bodyContent = `🎵 Audio Recording`;
             else if (msg.message_type === 'video') bodyContent = `🎥 Video Clip`;
@@ -1156,16 +1300,23 @@ window.loadStarredMessages = async function() {
             card.onclick = () => {
                 modal.classList.add('hidden');
                 if (msg.room_id) {
-                    selectActiveRoom(msg.room_id, msg.room_name || 'Group', '', '', '');
+                    const cachedRoom = joinedRoomsMap.get(msg.room_id) || {};
+                    selectActiveRoom(
+                        msg.room_id, 
+                        cachedRoom.room_name || msg.room_name || 'Group', 
+                        cachedRoom.room_code || msg.room_code || '', 
+                        cachedRoom.room_desc || msg.room_desc || '', 
+                        cachedRoom.room_icon || msg.room_icon || '/uploads/default-group.png'
+                    );
                 } else if (msg.target_user_id) {
                     selectActiveTargetUser(msg.target_user_id, msg.target_username, msg.target_avatar);
                 }
-                setTimeout(() => scrollToMessage(msg.message_id), 300);
+                setTimeout(() => scrollToMessage(msg.message_id), 400);
             };
             target.appendChild(card);
         });
     } catch (err) {
-        console.error(err);
+        console.error('Error loading starred messages:', err);
         target.innerHTML = '<p class="empty-text">Failed to load starred messages.</p>';
     }
 };

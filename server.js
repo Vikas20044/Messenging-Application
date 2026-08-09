@@ -24,20 +24,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
-    secret: 'echochat_ultra_secure_key_2026',
+    secret: process.env.SESSION_SECRET || 'echochat_ultra_secure_key_2026',
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 24 * 60 * 60 * 1000 }
+    cookie: { 
+        maxAge: 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        sameSite: 'lax'
+    }
 }));
 
 // Ensure local file storage paths exist for profile photos and chat media attachments
 const uploadDir = path.join(__dirname, 'app', 'uploads');
 const chatUploadDir = path.join(__dirname, 'app', 'uploads', 'chat');
 
-if (!fs.existsSync(uploadDir)){
+if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
-if (!fs.existsSync(chatUploadDir)){
+if (!fs.existsSync(chatUploadDir)) {
     fs.mkdirSync(chatUploadDir, { recursive: true });
 }
 
@@ -45,79 +49,29 @@ if (!fs.existsSync(chatUploadDir)){
 const defaultAvatarPath = path.join(uploadDir, 'default-avatar.png');
 const defaultGroupPath = path.join(uploadDir, 'default-group.png');
 
-const whatsappUserBase64 = "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AcbEhkAFv7ieQAABYBJREFUeNrtm0toVFUYhp9zZtIxiSgNojSgIuZp0qgVpYgWpYgWpYgWpYgWpYgWpYgWpYgWbdq0KEVrKSIzI5p5K4oEEXQPUsw8tMzMcS7mXv9w7zSjmXvOnHPOf9wz56uG8//f9//nP99/zoGkpKSkpKSkpKSkpKSkpKSkpKTkpMTb4kYVpD0FBVgALAdmA9OBI0AjUAs0A6XAPeAecBu4AdwCHgKPEinf6mD9gGEAasA5YBMwGVgF1Nf7mIeAW8BfwB3gA3E6kfIuCFQCvAKuAdcBSoAnYALQAq0D1v88Pge/AL8AnYA6wA5gHbAKagBeD//V7An8CHgEPgYfAbeBWMuVbGKwNsAFYBywHGoENwBygE6it0gK8Ah4Bv4FfAnW6gY3BWpLq7/XfD7wEHgH3gD+S2gIrgvUBdgC7gZPADqATmFvxXb8D3AN+A78Gf28HdgE7gV3ATmAtsDSpMh8BfwC/gYfAn8mUbyWwAsBeYC+wD9gPrALmZfndfwt8C9b7b6AL2AfsA/YDe4B9wIsZfO9LwEvgOfAsme3v6bF/A7uBvWf0GvWlYhWpP9D3wE1S/UGrgG6gB3gJeAn0Ar0ZfO9LpP5Y30Fq+3v9VwB7T8f3Z/TzO0m9wVqgWf7v3wX+DNY8+FvPGe1vM6ktoM6Mfr4T2Av0A73Aa7S+wXof77v/HPD/2t884E2gL/h7Sxl9rA+p78/13wX8SGoLqAvWh9S2tz3X6w/W3F7+F8C8f3rff0C96I8H6+nEtoC6YL1IbevccyN+f08n9ofT+X3Bf2N/9ID90T996P0uS7b9PfX9Pf0R+zH7H7MfsR+xP2b/T9of6wPrZ/T/oP1B+7HfsX/Mfn/PfW6S2ALqgfUzte39vN7P6/v7vVf6Bf1/Zbe91N7T9rFfsl9v+9gfdg70Bf+NvT+pZfW9B6nv7fVb0vpt6v37gGZ6/186sS+gHljzUv/8S2BfUv3D6fsO6vuD7mUfUD+kX6T+mO7rC/6T+oP2D9vvfUj9oP1D9oc7sR+xP9wfTvf32Y/ZH+nH/pC7g7Vw6I/Zfyr9Y3/An/bH7EfsR+wP2T9k/1C6v6S/vR/8Zf2yfvD79cv6Ze8H/f5S+9ivt70f9P8/sB986f1e6pf0S/pL7T3pL++X/X7tsvaH7MftR+zH7Sfrp+z366S7WbKzYCnwFrASeAtYSTr7gK8L9m3Dvu98XwUscD+k+gD6p9R6OvuADmBtznv6OfAncCf8/VbgVvD3ZlKPoX5Iv+T+I3m/v20/Yv+Y/eF0fzv9H0Xb7/f37A+p78fsl/STgI9P7RfwCfCJwOfAnwU+9An4Y/8v+78F/gH+wP4H+H/8Xw9fBPwV8H/C1+9R4FwOfvUdB87Lz7u+U8A593nfcRI4WeAn31mO9XGsf59XnGP887ziPOMYf8pfx/oX9H9b1gX/gP6AsvVfVvo8XG9gHfA68AbwBvAm6XwOOBP67M3+n+wU8AvwY8Afev+G/Y6vO+HvUvq6bNfTZZb/XfCHvvpY70NqWwPqX9H3u6m1pfX7bWptZ7S+zay9fG3Z9pZaW7X1V63r4wM8A+7m8bFfwBPgH6S+r1N/0DpgDdB6xo6g9YBaS0r972N9XbY81DqS69rS67fDdQyvH0wHrgLXAtfCWmAd8I0bXWAtVv2A9Vj1E9ZzEbgE/PscBK7X913Xp/p/Wdf1wI9S+73UP+H6A+sN/HuuC1bMre5XgY+AnwN+A0+AJ8DjHPh/L8p57Mv2Xb7/AnZ8P9gX/D8W++6XWv/Fuv8OALs8qR8Zf/2pAAAAAElRU5ErkJggg==";
+const whatsappUserBase64 = "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AcbEhkAFv7ieQAABYBJREFUeNrtm0toVFUYhp9zZtIxiSgNojSgIuZp0qgVpYgWpYgWpYgWpYgWpYgWpYgWbdq0KEVrKSIzI5p5K4oEEXQPUsw8tMzMcS7mXv9w7zSjmXvOnHPOf9wz56uG8//f9//nP99/zoGkpKSkpKSkpKSkpKSkpKSkpKTkpMTb4kYVpD0FBVgALAdmA9OBI0AjUAs0A6XAPeAecBu4AdwCHgKPEinf6mD9gGEAasA5YBMwGVgF1Nf7mIeAW8BfwB3gA3E6kfIuCFQCvAKuAdcBSoAnYALQAq0D1v88Pge/AL8AnYA6wA5gHbAKagBeD//V7An8CHgEPgYfAbeBWMuVbGKwNsAFYBywHGoENwBygE6it0gK8Ah4Bv4FfAnW6gY3BWpLq7/XfD7wEHgH3gD+S2gIrgvUBdgC7gZPADqATmFvxXb8D3AN+A78Gf28HdgE7gV3ATmAtsDSpMh8BfwC/gYfAn8mUbyWwAsBeYC+wD9gPrALmZfndfwt8C9b7b6AL2AfsA/YDe4B9wIsZfO9LwEvgOfAsme3v6bF/A7uBvWf0GvWlYhWpP9D3wE1S/UGrgG6gB3gJeAn0Ar0ZfO9LpP5Y30Fq+3v9VwB7T8f3Z/TzO0m9wVqgWf7v3wX+DNY8+FvPGe1vM6ktoM6Mfr4T2Av0A73Aa7S+wXof77v/HPD/2t884E2gL/h7Sxl9rA+p78/13wX8SGoLqAvWh9S2tz3X6w/W3F7+F8C8f3rff0C96I8H6+nEtoC6YL1IbevccyN+f08n9ofT+X3Bf2N/9ID90T996P0uS7b9PfX9Pf0R+zH7H7MfsR+xP2b/T9of6wPrZ/T/oP1B+7HfsX/Mfn/PfW6S2ALqgfUzte39vN7P6/v7vVf6Bf1/Zbe91N7T9rFfsl9v+9gfdg70Bf+NvT+pZfW9B6nv7fVb0vpt6v37gGZ6/186sS+gHljzUv/8S2BfUv3D6fsO6vuD7mUfUD+kX6T+mO7rC/6T+oP2D9vvfUj9oP1D9oc7sR+xP9wfTvf32Y/ZH+nH/pC7g7Vw6I/Zfyr9Y3/An/bH7EfsR+wP2T9k/1C6v6S/vR/8Zf2yfvD79cv6Ze8H/f5S+9ivt70f9P8/sB986f1e6pf0S/pL7T3pL++X/X7tsvaH7MftR+zH7Sfrp+z366S7WbKzYCnwFrASeAtYSTr7gK8L9m3Dvu98XwUscD+k+gD6p9R6OvuADmBtznv6OfAncCf8/VbgVvD3ZlKPoX5Iv+T+I3m/v20/Yv+Y/eF0fzv9H0Xb7/f37A+p78fsl/STgI9P7RfwCfCJwOfAnwU+9An4Y/8v+78F/gH+wP4H+H/8Xw9fBPwV8H/C1+9R4FwOfvUdB87Lz7u+U8A593nfcRI4WeAn31mO9XGsf59XnGP887ziPOMYf8pfx/oX9H9b1gX/gP6AsvVfVvo8XG9gHfA68AbwBvAm6XwOOBP67M3+n+wU8AvwY8Afev+G/Y6vO+HvUvq6bNfTZZb/XfCHvvpY70NqWwPqX9H3u6m1pfX7bWptZ7S+zay9fG3Z9pZaW7X1V63r4wM8A+7m8bFfwBPgH6S+r1N/0DpgDdB6xo6g9YBaS0r972N9XbY81DqS69rS67fDdQyvH0wHrgLXAtfCWmAd8I0bXWAtVv2A9Vj1E9ZzEbgE/PscBK7X913Xp/p/Wdf1wI9S+73UP+H6A+sN/HuuC1bMre5XgY+AnwN+A0+AJ8DjHPh/L8p57Mv2Xb7/AnZ8P9gX/D8W++6XWv/Fuv8OALs8qR8Zf/2pAAAAAElRU5ErkJggg==";
 const whatsappGroupBase64 = "iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AcbEhkYlM5zKAAABmNJREFUeN7t22tsVFUUx/Hzu9MptBRaCi0F6pQC9UGBWqiPFqqPFqqPFmqPFqoPtVCoD1SoUAtV6gMVaqH6QAsVKD7wUR8gUExIID6gKCoGg9GoGIwPo0bFSDQeY0Rizv6Ym3bGO3fu3Dtz78ydOf8kk7SZO/fM2Xutvdfae60FCAgICAgICAgICAgICAgICAgIiL9T3KiCjL+gAHOBecC8wDPgGFAEFAFpYByYAcaASeA6MATcBG4AVwE/CizfEWApMB9YBswHlgELgaXAKmBVsP/+I+AHYBvQAnwD/AgMBZb/P96bAn8DPwC7gC+BrUBzYBlwH7AKWBXir/+A/A9gG/AisBX4FPgoYPmWANMALAKWAnXAUmApUBuYVw+wG/gU+AhYA6TDeIAdgZUi8d///cCrwGfAL0BiwPIdDrAcsACYAqwAlgGrgNpgz6sNfA58AnwE1ALpMB4wK7CSpHjPvwaIAnXAb0BvsHY0/O93hPIA8wJrgGhgXp8L1g9Kvf6pYI9XvX6v6+9zvdfrdf6v+vtIrR9bY3/U698P1hS8A3wKvAmsC5b2gZ6/A/gM+AR4F+gNlq6BPr9XgA+BN4E3+wW4g6VpoOcHwBvA68BrwMvAy8BLffQZ8BLwIvA8sDRYmnp7XwLMD7g/WDo6vT6gW8wU8AnwZ8BdwY/qZ8BPgU/6Y6A3+gPge+D7oE9A8HcwN/Cg/xYwPzCvHwA/BP+7vwd6oj8AeqJvgv5hA7ZgKewO+r0B77/S790f9W/fM+C33r/80u/L9+737rf8X7H/z3O/8T/j/zb/n+t+zv+M+zl/R6Wft2/Pbeft7fO25/bwdvV279/1T/x/rPtY97LuYd3FunuP7bztuXf8qf/T2/8FBAR+U5Gf+3/9P+p/8t3X39fR0ZHB69VdYVfB9+rK4L9XZwY+b2bA68/wuv9/yPfqp6C79b8O4I+An3eFfQfclZ6fA9wG9D4X7Atf6b8D3AX0Rk9f8Evg9zXf+T8wIPi7+Rdw95rgTjE/MC8/sC98T/Az7p7izv/b/A/clb4T3CnumTf/BXeNfSfYPWe6f677v7p/rvv67Zzr/onmOn8HeCtwN3A38NfAnfT89f8B+E3gbS6g/3Xg/376I8BP/eRP+3179/v77O9f4fN6/Z8Enp/y18CHgBsn9uofv9b69wN8CPhXAn6F8Z8CngQeX9G/P6H/m/pXIn7Z7wO4637f9+UfBPg94I8v7t+fs/6lC/n5gP/+7f8g8Pv6I+C3/wZg9T/Hfgv4beCPdf9N/Ru8A/w6wI8Cvz7Fj+Y+wN0Zvg/w/Sg/9v91/z3A9wPc+eM/D3zO/87fA3wO+GvgP879fI7wWcCvAZ76w68Bfg3wa+AnpT98BvhpwN2Auwf967D/R3gU+GnAwz/8M8CHgV8FfL0vAb/kZ8CXAz/+4Z8BPhj6YOCnPX/as6I/M+rP8v4X5+gPHZpZ3LOfz0h9eDqz6OdfUuCnv0+Bn/ZfUuCrv8+BP+1Z1p9R8WeG/enOn0n8mSFPf9jW0N6Vz0h6ZscP+OOfFfGZRT+fWevPnC2fP1c+P+npM/lzR7+V7b87Wz66G9N97Mbyvdkf0V3tU9w9pvu8bXv/P7fHdmO6j2wH7M12N9uX7FeyH3f+H9m92t66ZPeFtu1fUdvFp7bzP2vbxSe3z/H++X32M7Y9tgv7GdsV+5Xsz+wH7VfC8T7NnZq7M3+n+0q6n3T3Dfd4z3/LPeYf72vuvmD7Zfsl2wXbd/wXth+2H7K9L/GepHvKdkH3XzB9w/b6fEeyva7fV/Xz9+3p/q/gPv+XUfqfQ97Xb57yv0XwUfo6vX3D/yZ7C3v9/UfGevwOAC08V486Z3zKAAAAAElRU5ErkJggg==";
 
 if (!fs.existsSync(defaultAvatarPath)) {
     fs.writeFileSync(defaultAvatarPath, Buffer.from(whatsappUserBase64, 'base64'));
-    console.log('Successfully written crisp placeholder asset: default-avatar.png on disk.');
 }
 if (!fs.existsSync(defaultGroupPath)) {
     fs.writeFileSync(defaultGroupPath, Buffer.from(whatsappGroupBase64, 'base64'));
-    console.log('Successfully written crisp placeholder asset: default-group.png on disk.');
 }
 
 // Serve static assets out of the /app directory
 app.use(express.static(path.join(__dirname, 'app'), { index: false }));
 app.use('/uploads', express.static(path.join(__dirname, 'app', 'uploads')));
 
-// Initialize PostgreSQL Tables
+// Initialize PostgreSQL Tables and Performance Indexes
 initDB();
 
-// HOT DATABASE SCHEMA MIGRATION: Adjusted to handle permanent community member structures
-async function checkSchemaMigration() {
-    try {
-        await pool.query(`
-            ALTER TABLE rooms ADD COLUMN IF NOT EXISTS room_desc TEXT DEFAULT '';
-            ALTER TABLE rooms ADD COLUMN IF NOT EXISTS room_icon TEXT DEFAULT '/uploads/default-group.png';
-            
-            -- Dynamic runtime table expansion for group message reads tracking ledger
-            CREATE TABLE IF NOT EXISTS group_message_reads (
-                id SERIAL PRIMARY KEY,
-                message_id INT NOT NULL,
-                user_id INT NOT NULL,
-                read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(message_id, user_id)
-            );
-
-            -- NEW: Dynamic tracking table for permanent group entry registries
-            CREATE TABLE IF NOT EXISTS room_members (
-                id SERIAL PRIMARY KEY,
-                room_id INT NOT NULL,
-                user_id INT NOT NULL,
-                joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(room_id, user_id)
-            );
-
-            -- Add read_at to messages table if not existing
-            ALTER TABLE messages ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
-            ALTER TABLE messages ADD COLUMN IF NOT EXISTS is_edited BOOLEAN DEFAULT FALSE;
-
-            -- Message Reports Table
-            CREATE TABLE IF NOT EXISTS message_reports (
-                id SERIAL PRIMARY KEY,
-                message_id INT REFERENCES messages(id) ON DELETE CASCADE,
-                reporter_id INT REFERENCES users(id) ON DELETE CASCADE,
-                reason TEXT NOT NULL,
-                status VARCHAR(50) DEFAULT 'pending',
-                reported_at TIMESTAMPTZ DEFAULT NOW()
-            );
-        `);
-        console.log('PostgreSQL database room details, members registry & reads status schema synchronized successfully.');
-    } catch (err) {
-        console.error('Error executing live rooms database structure alteration adjustments:', err);
-    }
-}
-setTimeout(checkSchemaMigration, 1500);
-
-// Bind Modular API endpoints
+// Bind Modular Authentication Endpoints
 app.use('/api', authRoutes);
 
-// --- MULTER LAYER 1: CONFIGURATION FOR PROFILE PHOTO UPLOADS ---
+// --- MULTER STORAGE CONFIGURATIONS ---
 const profileStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
+    destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname));
@@ -126,21 +80,18 @@ const profileStorage = multer.diskStorage({
 
 const uploadProfile = multer({
     storage: profileStorage,
-    limits: { fileSize: 2 * 1024 * 1024 }, // Max 2MB file size limit
+    limits: { fileSize: 2 * 1024 * 1024 }, // Max 2MB
     fileFilter: (req, file, cb) => {
         const filetypes = /jpeg|jpg|png|webp/;
         const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
         const mimetype = filetypes.test(file.mimetype);
         if (mimetype && extname) return cb(null, true);
-        cb(new Error('Only system images (jpeg, jpg, png, webp) are permitted.'));
+        cb(new Error('Only system image formats (jpeg, jpg, png, webp) are permitted.'));
     }
 });
 
-// --- MULTER LAYER 2: CONFIGURATION FOR BULK CHAT MEDIA ATTACHMENTS ---
 const chatMediaStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, chatUploadDir);
-    },
+    destination: (req, file, cb) => cb(null, chatUploadDir),
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, 'media-' + uniqueSuffix + path.extname(file.originalname));
@@ -149,26 +100,42 @@ const chatMediaStorage = multer.diskStorage({
 
 const uploadChatMediaBulk = multer({
     storage: chatMediaStorage,
-    limits: { fileSize: 15 * 1024 * 1024 }, // Allowed maximum size: 15MB per file
+    limits: { fileSize: 15 * 1024 * 1024 }, // Max 15MB
     fileFilter: (req, file, cb) => {
-        const filetypes = /jpeg|jpg|png|webp|mp3|wav|ogg|mp4|webm|pdf/;
+        const filetypes = /jpeg|jpg|png|webp|mp3|wav|ogg|mpeg|mp4|webm|pdf/;
         const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
         const mimetype = filetypes.test(file.mimetype);
         if (mimetype && extname) return cb(null, true);
-        cb(new Error('Unsupported file extension for safe transmission inside conversations.'));
+        cb(new Error('Unsupported file extension for conversation transmission.'));
     }
 });
 
-// Middleware helper to secure incoming express profile mutations
+// --- AUTHENTICATION MIDDLEWARES ---
 function checkAuthSession(req, res, next) {
     if (req.session && req.session.userId) {
         return next();
     }
-    res.status(401).json({ error: 'Unauthorized structural access request.' });
+    res.status(401).json({ error: 'Unauthorized: Session required.' });
 }
 
-// --- ENHANCED BULK MULTIMEDIA ATTACHMENTS UPLOAD ROUTE ---
-app.post('/api/chat/upload', checkAuthSession, uploadChatMediaBulk.array('chatFiles', 10), (req, res) => {
+function checkAdminSession(req, res, next) {
+    if (req.session && req.session.isAdmin) {
+        return next();
+    }
+    res.status(403).json({ error: 'Access Denied: Admin privileges required.' });
+}
+
+// --- SECURE MULTIMEDIA ATTACHMENTS UPLOAD ROUTE ---
+app.post('/api/chat/upload', checkAuthSession, (req, res, next) => {
+    uploadChatMediaBulk.array('chatFiles', 10)(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            return res.status(400).json({ error: `Upload validation failed: ${err.message}` });
+        } else if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        next();
+    });
+}, (req, res) => {
     if (!req.files || req.files.length === 0) {
         return res.status(400).json({ error: 'No data file assets detected for delivery.' });
     }
@@ -196,24 +163,29 @@ app.post('/api/chat/upload', checkAuthSession, uploadChatMediaBulk.array('chatFi
 });
 
 // --- COMMUNITY GROUP ROOM MANAGEMENT ENDPOINTS ---
-
 app.post('/api/rooms/create', checkAuthSession, async (req, res) => {
     const { room_name, room_desc } = req.body;
-    if (!room_name) return res.status(400).json({ error: 'Room name token parameter missing.' });
+    if (!room_name || !room_name.trim()) {
+        return res.status(400).json({ error: 'Room name is required.' });
+    }
     
     const generateCode = () => Math.random().toString(36).substring(2, 7).toUpperCase();
     let roomCode = generateCode();
     
     try {
-        const collisionCheck = await pool.query('SELECT id FROM rooms WHERE room_code = $1', [roomCode]);
-        if (collisionCheck.rows.length > 0) roomCode = generateCode(); 
+        let attempts = 0;
+        while (attempts < 5) {
+            const collisionCheck = await pool.query('SELECT id FROM rooms WHERE room_code = $1', [roomCode]);
+            if (collisionCheck.rows.length === 0) break;
+            roomCode = generateCode();
+            attempts++;
+        }
 
         const result = await pool.query(
             'INSERT INTO rooms (room_name, room_code, room_desc, room_icon, created_by) VALUES ($1, $2, $3, $4, $5) RETURNING id, room_name, room_code, room_desc, room_icon',
-            [room_name, roomCode, room_desc || '', '/uploads/default-group.png', req.session.userId]
+            [room_name.trim(), roomCode, (room_desc || '').trim(), '/uploads/default-group.png', req.session.userId]
         );
         
-        // Auto-link creator to room member persistence registry with admin flag set to TRUE
         const dynamicRoom = result.rows[0];
         await pool.query(
             'INSERT INTO room_members (room_id, user_id, is_admin) VALUES ($1, $2, TRUE) ON CONFLICT DO NOTHING',
@@ -222,8 +194,8 @@ app.post('/api/rooms/create', checkAuthSession, async (req, res) => {
 
         res.json(dynamicRoom);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Database context group configuration failure.' });
+        console.error('Group room creation failure:', err);
+        res.status(500).json({ error: 'Failed to create group community.' });
     }
 });
 
@@ -234,10 +206,9 @@ app.get('/api/rooms/lookup/:code', checkAuthSession, async (req, res) => {
             [req.params.code.toUpperCase().trim()]
         );
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Target room configuration mismatch parameters.' });
+            return res.status(404).json({ error: 'Invalid room pass code.' });
         }
         
-        // Auto-enroll user inside the room membership directory table upon lookups
         const TargetRoom = result.rows[0];
         await pool.query(
             'INSERT INTO room_members (room_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
@@ -246,23 +217,50 @@ app.get('/api/rooms/lookup/:code', checkAuthSession, async (req, res) => {
 
         res.json(TargetRoom);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to query database room registries.' });
+        console.error('Room lookup failure:', err);
+        res.status(500).json({ error: 'Failed to query room registries.' });
     }
 });
 
 app.get('/api/rooms/joined', checkAuthSession, async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT r.id, r.room_name, r.room_code, r.room_desc, r.room_icon, r.created_by, rm.is_admin
+            SELECT 
+                r.id, 
+                r.room_name, 
+                r.room_code, 
+                r.room_desc, 
+                r.room_icon, 
+                r.created_by, 
+                rm.is_admin,
+                lm.text as last_message,
+                lm.message_type as last_message_type,
+                lm.sender_username as last_message_sender,
+                lm.timestamp as last_activity,
+                COALESCE(unread.unread_count, 0)::int as unread_count
             FROM rooms r
             JOIN room_members rm ON r.id = rm.room_id
+            LEFT JOIN (
+                SELECT DISTINCT ON (m.room_id)
+                    m.room_id, m.text, m.message_type, u.username as sender_username, m.timestamp
+                FROM messages m
+                JOIN users u ON m.sender_id = u.id
+                WHERE m.room_id IS NOT NULL
+                ORDER BY m.room_id, m.timestamp DESC
+            ) lm ON r.id = lm.room_id
+            LEFT JOIN (
+                SELECT m.room_id, COUNT(*)::int as unread_count
+                FROM messages m
+                LEFT JOIN group_message_reads gmr ON m.id = gmr.message_id AND gmr.user_id = $1
+                WHERE m.room_id IS NOT NULL AND m.sender_id != $1 AND gmr.id IS NULL
+                GROUP BY m.room_id
+            ) unread ON r.id = unread.room_id
             WHERE rm.user_id = $1
-            ORDER BY r.room_name ASC
+            ORDER BY COALESCE(lm.timestamp, rm.joined_at) DESC
         `, [req.session.userId]);
         res.json(result.rows);
     } catch (err) {
-        console.error(err);
+        console.error('Failed to fetch joined rooms:', err);
         res.status(500).json({ error: 'Failed to fetch joined rooms.' });
     }
 });
@@ -272,14 +270,11 @@ app.post('/api/rooms/leave', checkAuthSession, async (req, res) => {
     if (!roomId) return res.status(400).json({ error: 'Room ID parameter is missing.' });
     try {
         await pool.query('DELETE FROM room_members WHERE room_id = $1 AND user_id = $2', [roomId, req.session.userId]);
-        
-        // Notify socket clients in the room that the user left
         io.to(`group_room_${roomId}`).emit('broadcastGroupReadsSynchronized', { roomId });
-        
         res.json({ success: true, message: 'Successfully left the group room.' });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Database conflict occurred leaving group.' });
+        console.error('Error leaving group:', err);
+        res.status(500).json({ error: 'Failed to leave group.' });
     }
 });
 
@@ -289,20 +284,17 @@ app.post('/api/rooms/members/remove', checkAuthSession, async (req, res) => {
         return res.status(400).json({ error: 'Missing parameters (roomId, targetUserId).' });
     }
     try {
-        // Verify current user is an admin of the room
         const adminCheck = await pool.query('SELECT is_admin FROM room_members WHERE room_id = $1 AND user_id = $2', [roomId, req.session.userId]);
         if (adminCheck.rows.length === 0 || !adminCheck.rows[0].is_admin) {
             return res.status(403).json({ error: 'Forbidden: Only administrators can remove group members.' });
         }
 
         await pool.query('DELETE FROM room_members WHERE room_id = $1 AND user_id = $2', [roomId, targetUserId]);
-
-        // Emit dynamic kick socket notification to force front-end reload
         io.emit('userKickedFromRoom', { roomId: parseInt(roomId), userId: parseInt(targetUserId) });
 
-        res.json({ success: true, message: 'Successfully kicked user from group.' });
+        res.json({ success: true, message: 'Successfully removed user from group.' });
     } catch (err) {
-        console.error(err);
+        console.error('Failed to remove member:', err);
         res.status(500).json({ error: 'Failed to execute removal.' });
     }
 });
@@ -313,7 +305,6 @@ app.post('/api/rooms/members/toggle-admin', checkAuthSession, async (req, res) =
         return res.status(400).json({ error: 'Missing parameters (roomId, targetUserId, isAdmin).' });
     }
     try {
-        // Verify current user is an admin of the room
         const adminCheck = await pool.query('SELECT is_admin FROM room_members WHERE room_id = $1 AND user_id = $2', [roomId, req.session.userId]);
         if (adminCheck.rows.length === 0 || !adminCheck.rows[0].is_admin) {
             return res.status(403).json({ error: 'Forbidden: Only administrators can adjust credentials.' });
@@ -324,43 +315,40 @@ app.post('/api/rooms/members/toggle-admin', checkAuthSession, async (req, res) =
             [roomId, targetUserId, isAdmin]
         );
 
-        // Notify room members of updated details roster
         io.to(`group_room_${roomId}`).emit('broadcastGroupReadsSynchronized', { roomId });
-
         res.json({ success: true, message: 'Admin state toggled successfully.' });
     } catch (err) {
-        console.error(err);
+        console.error('Failed to toggle admin status:', err);
         res.status(500).json({ error: 'Failed to toggle admin status.' });
     }
 });
 
-// --- CORE PROFILE MANAGEMENT ENDPOINTS ---
-
+// --- PROFILE MANAGEMENT ENDPOINTS ---
 app.get('/api/profile/me', checkAuthSession, async (req, res) => {
     try {
         const result = await pool.query(
-            "SELECT username, full_name, bio, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", 
+            "SELECT id, username, full_name, bio, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", 
             [req.session.userId]
         );
         res.json(result.rows[0]);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Database context retrieval error.' });
+        console.error('Profile retrieval error:', err);
+        res.status(500).json({ error: 'Failed to retrieve profile data.' });
     }
 });
 
 app.get('/api/profile/user/:id', checkAuthSession, async (req, res) => {
     try {
         const result = await pool.query(
-            "SELECT username, full_name, bio, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", 
+            "SELECT id, username, full_name, bio, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", 
             [req.params.id]
         );
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'User records missing.' });
+            return res.status(404).json({ error: 'User not found.' });
         }
         res.json(result.rows[0]);
     } catch (err) {
-        console.error(err);
+        console.error('Failed to extract user metadata:', err);
         res.status(500).json({ error: 'Failed to extract profile metadata.' });
     }
 });
@@ -370,17 +358,26 @@ app.put('/api/profile/update-info', checkAuthSession, async (req, res) => {
     try {
         await pool.query(
             'UPDATE users SET full_name = $1, bio = $2 WHERE id = $3',
-            [full_name, bio, req.session.userId]
+            [(full_name || '').trim(), (bio || '').trim(), req.session.userId]
         );
         io.emit('profileUpdated', { userId: req.session.userId, full_name, bio });
-        res.json({ success: true, message: 'Profile metadata synchronized.' });
+        res.json({ success: true, message: 'Profile information updated.' });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to update user database profile information.' });
+        console.error('Failed to update user profile information:', err);
+        res.status(500).json({ error: 'Failed to update user profile information.' });
     }
 });
 
-app.post('/api/profile/upload-avatar', checkAuthSession, uploadProfile.single('avatar'), async (req, res) => {
+app.post('/api/profile/upload-avatar', checkAuthSession, (req, res, next) => {
+    uploadProfile.single('avatar')(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            return res.status(400).json({ error: `Avatar upload validation: ${err.message}` });
+        } else if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'Please select an image file asset.' });
     }
@@ -393,43 +390,53 @@ app.post('/api/profile/upload-avatar', checkAuthSession, uploadProfile.single('a
         io.emit('profileUpdated', { userId: req.session.userId, profile_pic_url: targetPublicPath });
         res.json({ success: true, profile_pic_url: targetPublicPath });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to write custom image destination file path properties.' });
+        console.error('Failed to update avatar:', err);
+        res.status(500).json({ error: 'Failed to update avatar image.' });
     }
 });
 
 app.put('/api/profile/update-credentials', checkAuthSession, async (req, res) => {
     const { username, password } = req.body;
+    if (!username || !username.trim()) {
+        return res.status(400).json({ error: 'Username cannot be empty.' });
+    }
+    const normalizedUsername = username.trim();
+    if (normalizedUsername.length < 3 || normalizedUsername.length > 50) {
+        return res.status(400).json({ error: 'Username must be between 3 and 50 characters.' });
+    }
+
     try {
         const collisionCheck = await pool.query(
             'SELECT id FROM users WHERE username = $1 AND id != $2', 
-            [username, req.session.userId]
+            [normalizedUsername, req.session.userId]
         );
         if (collisionCheck.rows.length > 0) {
-            return res.status(400).json({ error: 'The selected username is already assigned to an account.' });
+            return res.status(400).json({ error: 'The selected username is already taken.' });
         }
 
         if (password && password.trim() !== "") {
+            if (password.length < 6) {
+                return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+            }
             const hashedPassword = await bcrypt.hash(password, 10);
             await pool.query(
                 'UPDATE users SET username = $1, password = $2 WHERE id = $3',
-                [username, hashedPassword, req.session.userId]
+                [normalizedUsername, hashedPassword, req.session.userId]
             );
         } else {
-            await pool.query('UPDATE users SET username = $1 WHERE id = $2', [username, req.session.userId]);
+            await pool.query('UPDATE users SET username = $1 WHERE id = $2', [normalizedUsername, req.session.userId]);
         }
 
-        req.session.username = username;
-        io.emit('profileUpdated', { userId: req.session.userId, username: username });
-        res.json({ success: true, message: 'System access criteria updated successfully.' });
+        req.session.username = normalizedUsername;
+        io.emit('profileUpdated', { userId: req.session.userId, username: normalizedUsername });
+        res.json({ success: true, message: 'Account credentials updated successfully.' });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Security structural adjustment sequence crash.' });
+        console.error('Credentials update error:', err);
+        res.status(500).json({ error: 'Failed to update security credentials.' });
     }
 });
 
 // --- STATIC PAGE ROUTING LAYER ---
-
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -453,6 +460,17 @@ app.get('/chat', (req, res) => {
     res.sendFile(path.join(__dirname, 'app', 'home.html'));
 });
 
+app.get('/developer', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'developer.html'));
+});
+
+app.get('/faq', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'faq.html'));
+});
+
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'admin.html'));
+});
 
 app.get('/api/session-user', (req, res) => {
     if (req.session && req.session.username) {
@@ -462,17 +480,59 @@ app.get('/api/session-user', (req, res) => {
     }
 });
 
-// --- SYSTEM API ROUTING STUBS ---
+// --- CHATS & MESSAGES API ---
 app.get('/api/chats/active', checkAuthSession, async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT DISTINCT u.id, u.username, COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url 
+            SELECT 
+                u.id, 
+                u.username, 
+                u.full_name,
+                COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url,
+                lm.text as last_message,
+                lm.message_type as last_message_type,
+                lm.sender_id as last_message_sender_id,
+                lm.timestamp as last_activity,
+                COALESCE(unread.unread_count, 0)::int as unread_count
             FROM users u
-            JOIN messages m ON (u.id = m.sender_id OR u.id = m.receiver_id)
-            WHERE (m.sender_id = $1 OR m.receiver_id = $1) AND u.id != $1
+            JOIN (
+                SELECT DISTINCT ON (partner_id) 
+                    partner_id, id, text, message_type, sender_id, timestamp
+                FROM (
+                    SELECT 
+                        CASE WHEN sender_id = $1 THEN receiver_id ELSE sender_id END as partner_id,
+                        id, text, message_type, sender_id, timestamp
+                    FROM messages
+                    WHERE room_id IS NULL AND (sender_id = $1 OR receiver_id = $1)
+                ) m_sub
+                ORDER BY partner_id, timestamp DESC
+            ) lm ON u.id = lm.partner_id
+            LEFT JOIN (
+                SELECT sender_id, COUNT(*)::int as unread_count
+                FROM messages
+                WHERE receiver_id = $1 AND room_id IS NULL AND isread = FALSE
+                GROUP BY sender_id
+            ) unread ON u.id = unread.sender_id
+            ORDER BY lm.timestamp DESC
         `, [req.session.userId]);
         res.json(result.rows);
     } catch (err) {
+        console.error('Active chats query error:', err);
+        res.status(500).json([]);
+    }
+});
+
+app.get('/api/users/search', checkAuthSession, async (req, res) => {
+    const query = (req.query.q || '').trim();
+    if (!query) return res.json([]);
+    try {
+        const result = await pool.query(
+            "SELECT id, username, full_name, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE (username ILIKE $1 OR full_name ILIKE $1) AND id != $2 LIMIT 10",
+            [`%${query}%`, req.session.userId]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error('User search error:', err);
         res.status(500).json([]);
     }
 });
@@ -493,7 +553,7 @@ app.post('/api/messages/star-toggle', checkAuthSession, async (req, res) => {
             return res.json({ success: true, isStarred: true, messageId });
         }
     } catch (err) {
-        console.error(err);
+        console.error('Star toggle error:', err);
         res.status(500).json({ error: 'Failed to toggle message star.' });
     }
 });
@@ -504,7 +564,7 @@ app.get('/api/messages/starred', checkAuthSession, async (req, res) => {
         const result = await pool.query(`
             SELECT sm.id as star_id, sm.starred_at, m.id as message_id, m.text, m.timestamp, m.message_type, m.file_url, m.sender_id, m.receiver_id, m.room_id,
                    u.username as sender_username, COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as sender_avatar,
-                   r.room_name,
+                   r.room_name, r.room_code, r.room_desc, r.room_icon,
                    tu.id as target_user_id, tu.username as target_username, COALESCE(tu.profile_pic_url, '/uploads/default-avatar.png') as target_avatar
             FROM starred_messages sm
             JOIN messages m ON sm.message_id = m.id
@@ -516,25 +576,11 @@ app.get('/api/messages/starred', checkAuthSession, async (req, res) => {
         `, [userId]);
         res.json(result.rows);
     } catch (err) {
-        console.error(err);
+        console.error('Starred messages error:', err);
         res.status(500).json([]);
     }
 });
 
-app.get('/api/users/search', checkAuthSession, async (req, res) => {
-    const query = req.query.q || '';
-    try {
-        const result = await pool.query(
-            "SELECT id, username, full_name, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE (username ILIKE $1 OR full_name ILIKE $1) AND id != $2 LIMIT 10",
-            [`%${query}%`, req.session.userId]
-        );
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json([]);
-    }
-});
-
-// --- MESSAGE REPORTING USER API ENDPOINT ---
 app.post('/api/messages/report', checkAuthSession, async (req, res) => {
     const { messageId, reason } = req.body;
     if (!messageId || !reason || !reason.trim()) {
@@ -562,28 +608,38 @@ app.post('/api/messages/report', checkAuthSession, async (req, res) => {
 });
 
 // --- GLOBAL LIVE DICTIONARY TRACKING SYSTEM ---
-const connectedUsersMap = new Map(); // tracks runtime allocations format: userId -> Set of socketIds
+const connectedUsersMap = new Map(); // userId -> Set of socketIds
 
 // --- ADVANCED SECURE WEB_SOCKET LAYER ---
 io.on('connection', (socket) => {
 
-    // Trace active authentication state synchronization signals
-    socket.on('declareIdentity', ({ userId }) => {
+    socket.on('declareIdentity', async ({ userId }) => {
         if (!userId) return;
-        socket.userId = userId;
-        if (!connectedUsersMap.has(userId)) {
-            connectedUsersMap.set(userId, new Set());
+        socket.userId = parseInt(userId, 10);
+        socket.join(`user_${socket.userId}`);
+        if (!connectedUsersMap.has(socket.userId)) {
+            connectedUsersMap.set(socket.userId, new Set());
         }
-        connectedUsersMap.get(userId).add(socket.id);
-        io.emit('networkIdentityStatusChange', { userId, status: 'online' });
+        connectedUsersMap.get(socket.userId).add(socket.id);
+        io.emit('networkIdentityStatusChange', { userId: socket.userId, status: 'online' });
+
+        // Auto-join all community group rooms for real-time delivery and live unread counts
+        try {
+            const groupRoomsRes = await pool.query('SELECT room_id FROM room_members WHERE user_id = $1', [socket.userId]);
+            groupRoomsRes.rows.forEach(r => {
+                socket.join(`group_room_${r.room_id}`);
+            });
+        } catch (e) {
+            console.error('Error auto-joining socket group rooms:', e);
+        }
     });
 
     socket.on('requestUserOnlineStatus', ({ targetUserId }, callback) => {
-        const status = connectedUsersMap.has(targetUserId) && connectedUsersMap.get(targetUserId).size > 0 ? 'online' : 'offline';
+        const parsedTargetId = parseInt(targetUserId, 10);
+        const status = connectedUsersMap.has(parsedTargetId) && connectedUsersMap.get(parsedTargetId).size > 0 ? 'online' : 'offline';
         if (callback) callback({ status });
     });
 
-    // BUG FIXED: Now pulls absolute database memberships and matches profiles against application-wide global trackers
     socket.on('fetchGroupOnlineRoster', async ({ roomId }, callback) => {
         try {
             const result = await pool.query(`
@@ -613,14 +669,35 @@ io.on('connection', (socket) => {
     });
 
     socket.on('joinRoom', async ({ currentUserId, targetUserId }) => {
-        const roomName = `chat_${Math.min(currentUserId, targetUserId)}_${Math.max(currentUserId, targetUserId)}`;
+        const curId = parseInt(currentUserId || socket.userId, 10);
+        const tgtId = parseInt(targetUserId, 10);
+        if (!curId || !tgtId) return;
+
+        const roomName = `chat_${Math.min(curId, tgtId)}_${Math.max(curId, tgtId)}`;
         
         socket.rooms.forEach(room => { 
-            if (room !== socket.id) socket.leave(room); 
+            if (room !== socket.id && !room.startsWith('user_') && !room.startsWith('group_room_')) {
+                socket.leave(room);
+            }
         });
         socket.join(roomName);
 
         try {
+            // Batch update all unread messages from target partner to current user
+            const updateRes = await pool.query(`
+                UPDATE messages 
+                SET isread = TRUE, read_at = NOW() 
+                WHERE sender_id = $1 AND receiver_id = $2 AND isread = FALSE AND room_id IS NULL
+                RETURNING id
+            `, [tgtId, curId]);
+
+            if (updateRes.rows.length > 0) {
+                updateRes.rows.forEach(r => {
+                    io.to(roomName).emit('messageReadUpdate', r.id);
+                    io.to(`user_${tgtId}`).emit('messageReadUpdate', r.id);
+                });
+            }
+
             const result = await pool.query(`
                 SELECT m.id as _id, m.text, m.timestamp, m.isread as "isRead", 
                        u.username as username, m.sender_id, m.message_type, m.file_url, m.is_deleted, m.is_edited,
@@ -634,11 +711,11 @@ io.on('connection', (socket) => {
                        (
                            SELECT COALESCE(json_object_agg(eg.emoji, eg.users), '{}'::json)
                            FROM (
-                               SELECT mr.emoji, json_agg(u2.username) as users
-                               FROM message_reactions mr
-                               JOIN users u2 ON mr.user_id = u2.id
-                               WHERE mr.message_id = m.id
-                               GROUP BY mr.emoji
+                                SELECT mr.emoji, json_agg(u2.username) as users
+                                FROM message_reactions mr
+                                JOIN users u2 ON mr.user_id = u2.id
+                                WHERE mr.message_id = m.id
+                                GROUP BY mr.emoji
                            ) eg
                        ) as reactions
                 FROM messages m
@@ -648,7 +725,7 @@ io.on('connection', (socket) => {
                 WHERE ((m.sender_id = $1 AND m.receiver_id = $2) 
                    OR (m.sender_id = $2 AND m.receiver_id = $1)) AND m.room_id IS NULL
                 ORDER BY m.timestamp ASC LIMIT 100
-            `, [currentUserId, targetUserId]);
+            `, [curId, tgtId]);
 
             socket.emit('chatHistory', result.rows);
         } catch (err) {
@@ -656,8 +733,12 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('privateMessage', async ({ sender_id, receiver_id, text, message_type, file_url, reply_to_message_id }) => {
-        const roomName = `chat_${Math.min(sender_id, receiver_id)}_${Math.max(sender_id, receiver_id)}`;
+    socket.on('privateMessage', async ({ receiver_id, text, message_type, file_url, reply_to_message_id }) => {
+        const sender_id = socket.userId;
+        const receiverIdParsed = parseInt(receiver_id, 10);
+        if (!sender_id || !receiverIdParsed) return;
+
+        const roomName = `chat_${Math.min(sender_id, receiverIdParsed)}_${Math.max(sender_id, receiverIdParsed)}`;
         const type = message_type || 'text';
         const url = file_url || null;
         const parentId = reply_to_message_id || null;
@@ -666,7 +747,7 @@ io.on('connection', (socket) => {
                 INSERT INTO messages (sender_id, receiver_id, text, message_type, file_url, reply_to_message_id) 
                 VALUES ($1, $2, $3, $4, $5, $6) 
                 RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url, is_deleted, reply_to_message_id, read_at
-            `, [sender_id, receiver_id, text, type, url, parentId]);
+            `, [sender_id, receiverIdParsed, text, type, url, parentId]);
 
             const userResult = await pool.query("SELECT username, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", [sender_id]);
 
@@ -684,6 +765,7 @@ io.on('connection', (socket) => {
             const payload = {
                 ...result.rows[0],
                 sender_id,
+                receiver_id: receiverIdParsed,
                 username: userResult.rows[0].username,
                 profile_pic_url: userResult.rows[0].profile_pic_url,
                 reply_to_text: parentMsg ? parentMsg.text : null,
@@ -692,21 +774,44 @@ io.on('connection', (socket) => {
                 reactions: {}
             };
 
+            // Emit to direct chat room and both users' personal rooms for real-time inbox updates
             io.to(roomName).emit('message', payload);
+            io.to(`user_${receiverIdParsed}`).emit('message', payload);
+            io.to(`user_${sender_id}`).emit('message', payload);
         } catch (err) {
-            console.error('Failed to execute private message database insert sequence:', err);
+            console.error('Failed to execute private message insert:', err);
         }
     });
 
     socket.on('joinGroupRoom', async ({ roomId }) => {
-        const roomName = `group_room_${roomId}`;
-        
-        socket.rooms.forEach(room => { 
-            if (room !== socket.id) socket.leave(room); 
-        });
+        const userId = socket.userId;
+        const roomIdParsed = parseInt(roomId, 10);
+        if (!roomIdParsed) return;
+
+        // Verify membership in room_members table
+        if (userId) {
+            const memberCheck = await pool.query('SELECT 1 FROM room_members WHERE room_id = $1 AND user_id = $2', [roomIdParsed, userId]);
+            if (memberCheck.rows.length === 0) {
+                // Auto-enroll if missing
+                await pool.query('INSERT INTO room_members (room_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [roomIdParsed, userId]);
+            }
+        }
+
+        const roomName = `group_room_${roomIdParsed}`;
         socket.join(roomName);
 
         try {
+            // Track individual group message reads first so counts are accurate in history
+            if (userId) {
+                await pool.query(`
+                    INSERT INTO group_message_reads (message_id, user_id)
+                    SELECT id, $1 FROM messages WHERE room_id = $2 AND sender_id != $1
+                    ON CONFLICT DO NOTHING
+                `, [userId, roomIdParsed]);
+                
+                io.to(roomName).emit('broadcastGroupReadsSynchronized', { roomId: roomIdParsed });
+            }
+
             const result = await pool.query(`
                 SELECT m.id as _id, m.text, m.timestamp, m.isread as "isRead", 
                        u.username as username, m.sender_id, m.message_type, m.file_url, m.is_deleted, m.is_edited,
@@ -716,15 +821,16 @@ io.on('connection', (socket) => {
                        pu.username as reply_to_username,
                        p.is_deleted as reply_to_is_deleted,
                        m.read_at,
+                       (SELECT COUNT(*)::int FROM group_message_reads gmr WHERE gmr.message_id = m.id) AS "seen_count",
                        ((SELECT COUNT(*) FROM starred_messages sm WHERE sm.message_id = m.id AND sm.user_id = $2) > 0) AS "isStarred",
                        (
                            SELECT COALESCE(json_object_agg(eg.emoji, eg.users), '{}'::json)
                            FROM (
-                               SELECT mr.emoji, json_agg(u2.username) as users
-                               FROM message_reactions mr
-                               JOIN users u2 ON mr.user_id = u2.id
-                               WHERE mr.message_id = m.id
-                               GROUP BY mr.emoji
+                                SELECT mr.emoji, json_agg(u2.username) as users
+                                FROM message_reactions mr
+                                JOIN users u2 ON mr.user_id = u2.id
+                                WHERE mr.message_id = m.id
+                                GROUP BY mr.emoji
                            ) eg
                        ) as reactions
                 FROM messages m
@@ -733,27 +839,24 @@ io.on('connection', (socket) => {
                 LEFT JOIN users pu ON p.sender_id = pu.id
                 WHERE m.room_id = $1
                 ORDER BY m.timestamp ASC LIMIT 100
-            `, [roomId, socket.userId || 0]);
-
-            // Flush dynamic individual group message read records on workspace join entry
-            if (socket.userId) {
-                await pool.query(`
-                    INSERT INTO group_message_reads (message_id, user_id)
-                    SELECT id, $1 FROM messages WHERE room_id = $2 AND sender_id != $1
-                    ON CONFLICT DO NOTHING
-                `, [socket.userId, roomId]);
-                
-                io.to(roomName).emit('broadcastGroupReadsSynchronized', { roomId });
-            }
+            `, [roomIdParsed, userId || 0]);
 
             socket.emit('chatHistory', result.rows);
         } catch (err) {
-            console.error('Failed processing bulk group history lookups:', err);
+            console.error('Failed processing group history lookup:', err);
         }
     });
 
-    socket.on('groupMessage', async ({ sender_id, room_id, text, message_type, file_url, reply_to_message_id }) => {
-        const roomName = `group_room_${room_id}`;
+    socket.on('groupMessage', async ({ room_id, text, message_type, file_url, reply_to_message_id }) => {
+        const sender_id = socket.userId;
+        const roomIdParsed = parseInt(room_id, 10);
+        if (!sender_id || !roomIdParsed) return;
+
+        // Verify membership
+        const memberCheck = await pool.query('SELECT 1 FROM room_members WHERE room_id = $1 AND user_id = $2', [roomIdParsed, sender_id]);
+        if (memberCheck.rows.length === 0) return;
+
+        const roomName = `group_room_${roomIdParsed}`;
         const type = message_type || 'text';
         const url = file_url || null;
         const parentId = reply_to_message_id || null;
@@ -762,20 +865,28 @@ io.on('connection', (socket) => {
                 INSERT INTO messages (sender_id, room_id, text, message_type, file_url, reply_to_message_id) 
                 VALUES ($1, $2, $3, $4, $5, $6) 
                 RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url, room_id, is_deleted, reply_to_message_id, read_at
-            `, [sender_id, room_id, text, type, url, parentId]);
+            `, [sender_id, roomIdParsed, text, type, url, parentId]);
 
             const targetMessageId = result.rows[0]._id;
             const userResult = await pool.query("SELECT username, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", [sender_id]);
 
-            // Auto log implicit visibility metrics for sockets active inside the workspace stream context
+            let room_name = 'Group';
+            try {
+                const rRes = await pool.query('SELECT room_name FROM rooms WHERE id = $1', [roomIdParsed]);
+                if (rRes.rows.length > 0) room_name = rRes.rows[0].room_name;
+            } catch (e) {}
+
+            // Auto log reads for other sockets currently in the room (excluding sender)
             const activeRoomSockets = io.sockets.adapter.rooms.get(roomName) || new Set();
+            let initialSeenCount = 0;
             for (const sockId of activeRoomSockets) {
                 const clientSock = io.sockets.sockets.get(sockId);
-                if (clientSock && clientSock.userId) {
+                if (clientSock && clientSock.userId && clientSock.userId !== sender_id) {
                     await pool.query(`
                         INSERT INTO group_message_reads (message_id, user_id) 
                         VALUES ($1, $2) ON CONFLICT DO NOTHING
                     `, [targetMessageId, clientSock.userId]);
+                    initialSeenCount++;
                 }
             }
 
@@ -793,6 +904,8 @@ io.on('connection', (socket) => {
             const payload = {
                 ...result.rows[0],
                 sender_id,
+                room_name,
+                seen_count: initialSeenCount,
                 username: userResult.rows[0].username,
                 profile_pic_url: userResult.rows[0].profile_pic_url,
                 reply_to_text: parentMsg ? parentMsg.text : null,
@@ -803,16 +916,22 @@ io.on('connection', (socket) => {
 
             io.to(roomName).emit('message', payload);
         } catch (err) {
-            console.error('Group processing mutation execution insert failure:', err);
+            console.error('Group message insertion failure:', err);
         }
     });
 
     socket.on('markAsRead', async (messageId) => {
         try {
+            const msgCheck = await pool.query('SELECT sender_id, receiver_id FROM messages WHERE id = $1', [messageId]);
+            if (msgCheck.rows.length === 0) return;
+            const msg = msgCheck.rows[0];
+
             await pool.query('UPDATE messages SET isread = TRUE, read_at = NOW() WHERE id = $1 AND isread = FALSE', [messageId]);
-            io.emit('messageReadUpdate', messageId);
+            
+            const chatRoomName = `chat_${Math.min(msg.sender_id, msg.receiver_id)}_${Math.max(msg.sender_id, msg.receiver_id)}`;
+            io.to(chatRoomName).emit('messageReadUpdate', messageId);
         } catch (err) {
-            console.error('Failed to update private thread state receipt:', err);
+            console.error('Failed to update message read receipt:', err);
         }
     });
 
@@ -826,18 +945,24 @@ io.on('connection', (socket) => {
         }
     });
 
-    // --- FIXED: Removed stray text from the database query execution string ---
-socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }) => {
-    try {
-        await pool.query(`
-            INSERT INTO group_message_reads (message_id, user_id) 
-            VALUES ($1, $2) ON CONFLICT DO NOTHING
-        `, [messageId, userId]);
-        io.to(`group_room_${roomId}`).emit('broadcastGroupReadsSynchronized', { roomId });
-    } catch (err) {
-        console.error(err);
-    }
-});
+    socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }) => {
+        try {
+            const uId = userId || socket.userId;
+            if (!uId || !messageId) return;
+
+            // Don't mark own message as read
+            const msgCheck = await pool.query('SELECT sender_id FROM messages WHERE id = $1', [messageId]);
+            if (msgCheck.rows.length > 0 && msgCheck.rows[0].sender_id === uId) return;
+
+            await pool.query(`
+                INSERT INTO group_message_reads (message_id, user_id) 
+                VALUES ($1, $2) ON CONFLICT DO NOTHING
+            `, [messageId, uId]);
+            io.to(`group_room_${roomId}`).emit('broadcastGroupReadsSynchronized', { roomId });
+        } catch (err) {
+            console.error('Error marking group message read:', err);
+        }
+    });
 
     socket.on('fetchGroupMessageReadLedger', async ({ messageId }, callback) => {
         try {
@@ -854,38 +979,33 @@ socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }
         }
     });
 
-    socket.on('typing', ({ sender_id, receiver_id, room_id, isTyping }) => {
+    socket.on('typing', ({ sender_id, sender_username, receiver_id, room_id, isTyping }) => {
+        const userId = socket.userId || sender_id;
         if (room_id) {
-            socket.to(`group_room_${room_id}`).emit('userTyping', { userId: sender_id, roomId: room_id, isTyping });
+            socket.to(`group_room_${room_id}`).emit('userTyping', { userId, username: sender_username, roomId: room_id, isTyping });
         } else if (receiver_id) {
-            const chatRoomName = `chat_${Math.min(sender_id, receiver_id)}_${Math.max(sender_id, receiver_id)}`;
-            socket.to(chatRoomName).emit('userTyping', { userId: sender_id, isTyping });
+            const chatRoomName = `chat_${Math.min(userId, receiver_id)}_${Math.max(userId, receiver_id)}`;
+            socket.to(chatRoomName).emit('userTyping', { userId, username: sender_username, isTyping });
         }
     });
-
 
     socket.on('messageReaction', async ({ messageId, emoji, roomId, receiverId }) => {
         try {
             const userId = socket.userId;
-            if (!userId) return;
+            if (!userId || !messageId || !emoji) return;
 
-            // Check if reaction already exists
             const checkRes = await pool.query('SELECT emoji FROM message_reactions WHERE message_id = $1 AND user_id = $2', [messageId, userId]);
             
             if (checkRes.rows.length > 0) {
                 if (checkRes.rows[0].emoji === emoji) {
-                    // Toggle off
                     await pool.query('DELETE FROM message_reactions WHERE message_id = $1 AND user_id = $2', [messageId, userId]);
                 } else {
-                    // Update reaction
                     await pool.query('UPDATE message_reactions SET emoji = $3 WHERE message_id = $1 AND user_id = $2', [messageId, userId, emoji]);
                 }
             } else {
-                // Add new reaction
                 await pool.query('INSERT INTO message_reactions (message_id, user_id, emoji) VALUES ($1, $2, $3)', [messageId, userId, emoji]);
             }
 
-            // Compile updated reaction map for this message
             const reactionMapRes = await pool.query(`
                 SELECT mr.emoji, json_agg(u.username) as users
                 FROM message_reactions mr
@@ -899,7 +1019,6 @@ socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }
                 reactions[row.emoji] = row.users;
             });
 
-            // Emit the updated reactions
             if (roomId) {
                 io.to(`group_room_${roomId}`).emit('reactionUpdated', { messageId, reactions });
             } else if (receiverId) {
@@ -914,9 +1033,8 @@ socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }
     socket.on('editMessage', async ({ messageId, text }) => {
         try {
             const userId = socket.userId;
-            if (!userId) return;
+            if (!userId || !text || !text.trim()) return;
 
-            // Fetch message to verify ownership
             const messageRes = await pool.query(
                 'SELECT sender_id, receiver_id, room_id, is_deleted FROM messages WHERE id = $1',
                 [messageId]
@@ -925,21 +1043,19 @@ socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }
             if (messageRes.rows.length === 0) return;
             const message = messageRes.rows[0];
 
-            if (parseInt(userId) !== message.sender_id) {
+            if (parseInt(userId, 10) !== message.sender_id) {
                 console.error(`Unauthorized edit attempt by user ${userId} on message ${messageId}`);
                 return;
             }
 
             if (message.is_deleted) return;
 
-            // Update database
             await pool.query(
                 'UPDATE messages SET text = $1, is_edited = TRUE WHERE id = $2',
-                [text, messageId]
+                [text.trim(), messageId]
             );
 
-            // Emit the edited message event
-            const payload = { messageId, newText: text };
+            const payload = { messageId, newText: text.trim() };
             if (message.room_id) {
                 io.to(`group_room_${message.room_id}`).emit('messageEdited', payload);
             } else {
@@ -956,7 +1072,6 @@ socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }
             const parsedMessageId = parseInt(messageId, 10);
             if (isNaN(parsedMessageId)) return;
 
-            // Fetch message details
             const messageRes = await pool.query(
                 'SELECT sender_id, receiver_id, room_id FROM messages WHERE id = $1',
                 [parsedMessageId]
@@ -965,13 +1080,17 @@ socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }
             if (messageRes.rows.length === 0) return;
             const message = messageRes.rows[0];
 
-            // Update database to soft delete
+            // Verify ownership
+            if (parseInt(socket.userId, 10) !== message.sender_id) {
+                console.error(`Unauthorized delete attempt by user ${socket.userId} on message ${parsedMessageId}`);
+                return;
+            }
+
             await pool.query(
                 "UPDATE messages SET is_deleted = TRUE, text = 'This message was deleted' WHERE id = $1",
                 [parsedMessageId]
             );
 
-            // Emit the deleted message event
             const payload = { messageId: parsedMessageId };
             if (message.room_id) {
                 io.to(`group_room_${message.room_id}`).emit('messageDeleted', payload);
@@ -996,38 +1115,47 @@ socket.on('explicitMarkGroupMessageAsRead', async ({ messageId, userId, roomId }
     });
 });
 
+// --- ADMINISTRATIVE SECURITY & CONTROL PIPELINE ---
 
-
-// --- UPDATED ADMINISTRATIVE PIPELINE GATEWAYS & EXTENDED MODERATION STUBS ---
-
-// 1. Serving Admin Interface View safely from the directory route path
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'admin.html'));
-});
-
-// 2. Security Gate Verification Handler
+// Admin Session Verification
 app.post('/api/admin/verify', (req, res) => {
     const { username, password } = req.body;
-    if (username === 'admin' && password === 'admin123') {
-        return res.sendStatus(200);
+    const expectedAdmin = process.env.ADMIN_USER || 'admin';
+    const expectedPass = process.env.ADMIN_PASS || 'admin123';
+
+    if (username === expectedAdmin && password === expectedPass) {
+        req.session.isAdmin = true;
+        req.session.adminUser = username;
+        return res.json({ success: true, message: 'Administrative authentication verified.' });
     }
     res.status(401).send('Access Denied: Invalid Administrative Credentials.');
 });
 
-// 3. ENHANCED: Dynamic Database Aggregations for Active Communities & Core Tables
-app.get('/api/admin/metrics', async (req, res) => {
+app.get('/api/admin/check-auth', (req, res) => {
+    if (req.session && req.session.isAdmin) {
+        return res.json({ isAuthenticated: true, username: req.session.adminUser || 'admin' });
+    }
+    res.json({ isAuthenticated: false });
+});
+
+app.post('/api/admin/logout', (req, res) => {
+    if (req.session) {
+        req.session.isAdmin = false;
+        req.session.adminUser = null;
+    }
+    res.json({ success: true, message: 'Logged out of admin console.' });
+});
+
+// Dynamic Admin Metrics
+app.get('/api/admin/metrics', checkAdminSession, async (req, res) => {
     try {
-        // Collect analytical counter variables tracking sizes across tables concurrently
         const userCountRes = await pool.query('SELECT COUNT(*) FROM users');
         const roomCountRes = await pool.query('SELECT COUNT(*) FROM rooms');
         const messageCountRes = await pool.query('SELECT COUNT(*) FROM messages');
         const reportCountRes = await pool.query('SELECT COUNT(*) FROM message_reports');
         const pendingReportCountRes = await pool.query("SELECT COUNT(*) FROM message_reports WHERE status = 'pending'");
         
-        // Dynamic lookups parsing profiles ledger tables data 
         const usersListRes = await pool.query('SELECT id, username, full_name, bio FROM users ORDER BY id DESC LIMIT 50');
-        
-        // NEW EXTENDED QUERY: Gathers live group chat telemetry schemas
         const roomsListRes = await pool.query('SELECT id, room_name, room_code, room_desc, created_by FROM rooms ORDER BY id DESC LIMIT 50');
 
         res.json({
@@ -1042,72 +1170,65 @@ app.get('/api/admin/metrics', async (req, res) => {
             rooms: roomsListRes.rows
         });
     } catch (err) {
-        console.error('Failure mapping tracking system matrix indexes telemetry:', err);
-        res.status(500).json({ error: 'Administrative dashboard analytics sequence runtime crash.' });
+        console.error('Admin metrics calculation crash:', err);
+        res.status(500).json({ error: 'Administrative dashboard analytics failure.' });
     }
 });
 
-// 4. NEW FUNCTIONALITY: Operational Moderation Route Hookup
-app.post('/api/admin/users/:id/flag', async (req, res) => {
+app.post('/api/admin/users/:id/flag', checkAdminSession, async (req, res) => {
     const targetedUserId = req.params.id;
     try {
-        // Example System Level Reset: Flags account by setting a diagnostic system placeholder notification
         await pool.query(
             "UPDATE users SET bio = '⚠️ This profile content description is undergoing review by system administrative safety officers.' WHERE id = $1", 
             [targetedUserId]
         );
         
-        // Notify the application ecosystem in real time that structural information parameters altered
         io.emit('profileUpdated', { userId: targetedUserId, bio: '⚠️ Undergoing review.' });
-        
         res.sendStatus(200);
     } catch (err) {
-        console.error(err);
+        console.error('Error flagging user bio:', err);
         res.status(500).send('Database mutation action sequence conflict.');
     }
 });
 
-// 5. NEW FUNCTIONALITY: Operational Moderation Route for User Deletion
-app.delete('/api/admin/users/:id', async (req, res) => {
+app.delete('/api/admin/users/:id', checkAdminSession, async (req, res) => {
     const targetedUserId = req.params.id;
     try {
         await pool.query('DELETE FROM users WHERE id = $1', [targetedUserId]);
         io.emit('userModerated', { userId: targetedUserId, action: 'deleted' });
         res.sendStatus(200);
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Database mutation action sequence conflict: User deletion failed.');
+        console.error('Error deleting user:', err);
+        res.status(500).send('User deletion failed.');
     }
 });
 
-// 6. NEW FUNCTIONALITY: Operational Moderation Route for Room Deletion
-app.delete('/api/admin/rooms/:id', async (req, res) => {
+app.delete('/api/admin/rooms/:id', checkAdminSession, async (req, res) => {
     const targetedRoomId = req.params.id;
     try {
         await pool.query('DELETE FROM rooms WHERE id = $1', [targetedRoomId]);
-        io.emit('userKickedFromRoom', { roomId: parseInt(targetedRoomId), userId: null });
+        io.emit('roomDeleted', { roomId: parseInt(targetedRoomId, 10) });
+        io.emit('userKickedFromRoom', { roomId: parseInt(targetedRoomId, 10), userId: null });
         res.sendStatus(200);
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Database mutation action sequence conflict: Room deletion failed.');
+        console.error('Error deleting room:', err);
+        res.status(500).send('Room deletion failed.');
     }
 });
 
-// 7. NEW FUNCTIONALITY: Operational Moderation Route for Resetting User Password
-app.post('/api/admin/users/:id/reset-password', async (req, res) => {
+app.post('/api/admin/users/:id/reset-password', checkAdminSession, async (req, res) => {
     const targetedUserId = req.params.id;
     try {
         const defaultHashedPassword = await bcrypt.hash('reset123', 10);
         await pool.query('UPDATE users SET password = $1 WHERE id = $2', [defaultHashedPassword, targetedUserId]);
         res.status(200).send('Password reset to default "reset123" successfully.');
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Database mutation action sequence conflict: Password reset failed.');
+        console.error('Error resetting password:', err);
+        res.status(500).send('Password reset failed.');
     }
 });
 
-// 8. ADMINISTRATIVE MESSAGE REPORTS ENDPOINTS
-app.get('/api/admin/reports', async (req, res) => {
+app.get('/api/admin/reports', checkAdminSession, async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT 
@@ -1141,7 +1262,7 @@ app.get('/api/admin/reports', async (req, res) => {
     }
 });
 
-app.post('/api/admin/reports/:id/action', async (req, res) => {
+app.post('/api/admin/reports/:id/action', checkAdminSession, async (req, res) => {
     const reportId = req.params.id;
     const { action } = req.body;
     try {
@@ -1187,15 +1308,6 @@ app.post('/api/admin/reports/:id/action', async (req, res) => {
         console.error('Failed to execute report action:', err);
         res.status(500).json({ error: 'Database conflict executing report action.' });
     }
-});
-
-// Add these stubs alongside your existing standalone routing views in server.js
-app.get('/developer', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'developer.html'));
-});
-
-app.get('/faq', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'faq.html'));
 });
 
 server.listen(PORT, () => {

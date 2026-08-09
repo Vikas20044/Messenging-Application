@@ -490,6 +490,31 @@
         </div>
     </div>
 
+    <!-- REPORT MESSAGE MODAL -->
+    <div id="report-message-modal" class="modal-overlay hidden" style="z-index: 9999;">
+        <div class="modal-card" style="max-width: 440px;">
+            <header class="modal-header">
+                <h3 style="color: var(--accent); font-weight: bold; font-size: 1.15rem; display: flex; align-items: center; gap: 6px;">🚩 Report Message</h3>
+                <button id="close-report-modal-btn" class="close-modal-x" onclick="window.closeReportModal()">&times;</button>
+            </header>
+            <div class="modal-body" style="text-align: left; padding-top: 0.5rem;">
+                <div style="background: var(--bg-primary); border: 1px solid var(--bg-tertiary); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 2px;">Target Message</div>
+                    <div id="report-sender-preview" style="font-size: 0.85rem; font-weight: 600; color: var(--text-main);">From: @username</div>
+                    <div id="report-text-preview" style="font-size: 0.85rem; color: var(--text-muted); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px;">Snippet</div>
+                </div>
+                <form id="report-form" onsubmit="event.preventDefault(); window.submitReportMessage();">
+                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Reason / Description of Report *</label>
+                    <textarea id="report-reason-input" rows="4" placeholder="Explain why you are reporting this message (e.g. harassment, spam, inappropriate media, hate speech)..." required style="width: 100%; box-sizing: border-box; background: var(--bg-primary); border: 1px solid var(--bg-tertiary); color: var(--text-main); padding: 0.6rem; border-radius: 8px; font-size: 0.88rem; outline: none; resize: vertical; margin-bottom: 1rem;"></textarea>
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button type="button" class="action-btn secondary" onclick="window.closeReportModal()" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Cancel</button>
+                        <button type="submit" class="action-btn primary" style="background: var(--accent); border-color: var(--accent); color: white; padding: 0.5rem 1.2rem; font-size: 0.85rem; font-weight: 600;">Submit Report</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST NOTIFICATION STACK -->
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
 

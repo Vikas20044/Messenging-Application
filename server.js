@@ -92,6 +92,16 @@ async function checkSchemaMigration() {
             -- Add read_at to messages table if not existing
             ALTER TABLE messages ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
             ALTER TABLE messages ADD COLUMN IF NOT EXISTS is_edited BOOLEAN DEFAULT FALSE;
+
+            -- Message Reports Table
+            CREATE TABLE IF NOT EXISTS message_reports (
+                id SERIAL PRIMARY KEY,
+                message_id INT REFERENCES messages(id) ON DELETE CASCADE,
+                reporter_id INT REFERENCES users(id) ON DELETE CASCADE,
+                reason TEXT NOT NULL,
+                status VARCHAR(50) DEFAULT 'pending',
+                reported_at TIMESTAMPTZ DEFAULT NOW()
+            );
         `);
         console.log('PostgreSQL database room details, members registry & reads status schema synchronized successfully.');
     } catch (err) {
@@ -521,6 +531,30 @@ app.get('/api/users/search', checkAuthSession, async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         res.status(500).json([]);
+    }
+});
+
+// --- MESSAGE REPORTING USER API ENDPOINT ---
+app.post('/api/messages/report', checkAuthSession, async (req, res) => {
+    const { messageId, reason } = req.body;
+    if (!messageId || !reason || !reason.trim()) {
+        return res.status(400).json({ error: 'Message ID and report reason description are required.' });
+    }
+    try {
+        const reporterId = req.session.userId;
+        const msgCheck = await pool.query('SELECT id FROM messages WHERE id = $1', [messageId]);
+        if (msgCheck.rows.length === 0) {
+            return res.status(404).json({ error: 'Target message not found.' });
+        }
+        await pool.query(
+            'INSERT INTO message_reports (message_id, reporter_id, reason) VALUES ($1, $2, $3)',
+            [messageId, reporterId, reason.trim()]
+        );
+        io.emit('newReportCreated', { messageId, reporterId });
+        res.json({ success: true, message: 'Message reported successfully to system administrators.' });
+    } catch (err) {
+        console.error('Error recording message report:', err);
+        res.status(500).json({ error: 'Failed to record message report.' });
     }
 });
 
@@ -984,6 +1018,8 @@ app.get('/api/admin/metrics', async (req, res) => {
         const userCountRes = await pool.query('SELECT COUNT(*) FROM users');
         const roomCountRes = await pool.query('SELECT COUNT(*) FROM rooms');
         const messageCountRes = await pool.query('SELECT COUNT(*) FROM messages');
+        const reportCountRes = await pool.query('SELECT COUNT(*) FROM message_reports');
+        const pendingReportCountRes = await pool.query("SELECT COUNT(*) FROM message_reports WHERE status = 'pending'");
         
         // Dynamic lookups parsing profiles ledger tables data 
         const usersListRes = await pool.query('SELECT id, username, full_name, bio FROM users ORDER BY id DESC LIMIT 50');
@@ -995,7 +1031,9 @@ app.get('/api/admin/metrics', async (req, res) => {
             counters: {
                 userCount: userCountRes.rows[0].count,
                 roomCount: roomCountRes.rows[0].count,
-                messageCount: messageCountRes.rows[0].count
+                messageCount: messageCountRes.rows[0].count,
+                reportCount: reportCountRes.rows[0].count,
+                pendingReportCount: pendingReportCountRes.rows[0].count
             },
             users: usersListRes.rows,
             rooms: roomsListRes.rows
@@ -1062,6 +1100,89 @@ app.post('/api/admin/users/:id/reset-password', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).send('Database mutation action sequence conflict: Password reset failed.');
+    }
+});
+
+// 8. ADMINISTRATIVE MESSAGE REPORTS ENDPOINTS
+app.get('/api/admin/reports', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT 
+                mr.id as report_id,
+                mr.message_id,
+                mr.reason,
+                mr.status,
+                mr.reported_at,
+                rep.id as reporter_id,
+                rep.username as reporter_username,
+                rep.email as reporter_email,
+                snd.id as sender_id,
+                snd.username as sender_username,
+                snd.email as sender_email,
+                m.text as message_text,
+                m.message_type,
+                m.file_url,
+                m.is_deleted,
+                m.timestamp as message_timestamp,
+                m.room_id
+            FROM message_reports mr
+            LEFT JOIN users rep ON mr.reporter_id = rep.id
+            LEFT JOIN messages m ON mr.message_id = m.id
+            LEFT JOIN users snd ON m.sender_id = snd.id
+            ORDER BY mr.reported_at DESC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching admin reports:', err);
+        res.status(500).json({ error: 'Failed to fetch message reports.' });
+    }
+});
+
+app.post('/api/admin/reports/:id/action', async (req, res) => {
+    const reportId = req.params.id;
+    const { action } = req.body;
+    try {
+        const reportRes = await pool.query('SELECT mr.*, m.sender_id FROM message_reports mr LEFT JOIN messages m ON mr.message_id = m.id WHERE mr.id = $1', [reportId]);
+        if (reportRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Report record not found.' });
+        }
+        const report = reportRes.rows[0];
+
+        if (action === 'delete_message' && report.message_id) {
+            await pool.query(
+                "UPDATE messages SET is_deleted = TRUE, text = 'This message was deleted by system admin' WHERE id = $1",
+                [report.message_id]
+            );
+            await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
+            io.emit('messageDeleted', { messageId: report.message_id });
+        } else if (action === 'flag_sender' && report.sender_id) {
+            await pool.query(
+                "UPDATE users SET bio = '⚠️ Profile content under review by system admin.' WHERE id = $1",
+                [report.sender_id]
+            );
+            await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
+            io.emit('profileUpdated', { userId: report.sender_id, bio: '⚠️ Undergoing review.' });
+        } else if (action === 'reset_sender_pass' && report.sender_id) {
+            const defaultHashedPassword = await bcrypt.hash('reset123', 10);
+            await pool.query('UPDATE users SET password = $1 WHERE id = $2', [defaultHashedPassword, report.sender_id]);
+            await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
+        } else if (action === 'delete_sender' && report.sender_id) {
+            await pool.query('DELETE FROM users WHERE id = $1', [report.sender_id]);
+            await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
+            io.emit('userModerated', { userId: report.sender_id, action: 'deleted' });
+        } else if (action === 'dismiss_report') {
+            await pool.query("UPDATE message_reports SET status = 'dismissed' WHERE id = $1", [reportId]);
+        } else if (action === 'resolve_report') {
+            await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
+        } else {
+            return res.status(400).json({ error: 'Invalid moderation action parameter.' });
+        }
+
+        io.emit('reportStatusUpdated', { reportId });
+        res.json({ success: true, message: 'Report action executed successfully.' });
+    } catch (err) {
+        console.error('Failed to execute report action:', err);
+        res.status(500).json({ error: 'Database conflict executing report action.' });
     }
 });
 

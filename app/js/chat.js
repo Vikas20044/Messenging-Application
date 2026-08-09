@@ -31,6 +31,59 @@ window.cancelReply = function() {
     }
 };
 
+// Report Message Helpers
+let activeReportMessageId = null;
+
+window.triggerReportMessage = function(messageId, username, textSnippet) {
+    activeReportMessageId = messageId;
+    const modal = document.getElementById('report-message-modal');
+    const senderPreview = document.getElementById('report-sender-preview');
+    const textPreview = document.getElementById('report-text-preview');
+    const reasonInput = document.getElementById('report-reason-input');
+
+    if (senderPreview) senderPreview.innerText = `From: @${username}`;
+    if (textPreview) textPreview.innerText = textSnippet || 'Attachment file';
+    if (reasonInput) reasonInput.value = '';
+    if (modal) modal.classList.remove('hidden');
+
+    document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
+};
+
+window.closeReportModal = function() {
+    activeReportMessageId = null;
+    const modal = document.getElementById('report-message-modal');
+    if (modal) modal.classList.add('hidden');
+};
+
+window.submitReportMessage = async function() {
+    if (!activeReportMessageId) return;
+    const reasonInput = document.getElementById('report-reason-input');
+    const reason = reasonInput ? reasonInput.value.trim() : '';
+
+    if (!reason) {
+        showToast("Please provide a reason description for the report.", "warning");
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/messages/report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messageId: activeReportMessageId, reason })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showToast("Message reported successfully to system administrators! 🚩", "success");
+            window.closeReportModal();
+        } else {
+            showToast(data.error || "Failed to submit report.", "error");
+        }
+    } catch (err) {
+        console.error(err);
+        showToast("Server communication failure reporting message.", "error");
+    }
+};
+
 window.triggerEditMessage = function(messageId, text) {
     activeEditMessageId = messageId;
     cancelReply();
@@ -236,6 +289,7 @@ function wrapMediaWithMenu(msg, mediaHtml) {
     }
 
     const starLabel = msg.isStarred ? '⭐ Unstar Message' : '⭐ Star Message';
+    const mediaSnippet = msg.message_type === 'image' ? '📷 Image' : (msg.message_type === 'video' ? '🎥 Video' : (msg.message_type === 'audio' ? '🎵 Audio' : '📄 Document'));
     const menuHtml = `
         <div class="msg-menu-container" style="position: relative; margin-left: auto; align-self: flex-start;">
             <span class="three-dots-icon" onclick="toggleDropdown(event, 'drop-${msg._id}')">⋮</span>
@@ -243,6 +297,7 @@ function wrapMediaWithMenu(msg, mediaHtml) {
                 ${pickerHtml}
                 <div onclick="triggerReplyMessage('${msg._id}', '${safeUser}', '', '${msg.message_type}')" style="cursor: pointer; padding: 4px 8px;">Reply</div>
                 <div id="star-option-${msg._id}" onclick="toggleStarMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px; color: #eab308; font-weight: 600;">${starLabel}</div>
+                <div onclick="triggerReportMessage('${msg._id}', '${safeUser}', '${mediaSnippet}')" style="cursor: pointer; padding: 4px 8px; color: #ef4444; font-weight: 600;">🚩 Report</div>
                 ${deleteOptionHtml}
             </div>
         </div>`;
@@ -345,6 +400,7 @@ function appendMessage(msg) {
                             ${pickerHtml}
                             <div onclick="triggerReplyMessage('${msg._id}', '${safeUser}', '${safeText}', 'text')" style="cursor: pointer; padding: 4px 8px;">Reply</div>
                             <div id="star-option-${msg._id}" onclick="toggleStarMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px; color: #eab308; font-weight: 600;">${starLabel}</div>
+                            <div onclick="triggerReportMessage('${msg._id}', '${safeUser}', '${safeText}')" style="cursor: pointer; padding: 4px 8px; color: #ef4444; font-weight: 600;">🚩 Report</div>
                             <div onclick="translateMessageText('${msg._id}', '${safeText}', 'kn', 'Kannada')">Kannada</div>
                             <div onclick="translateMessageText('${msg._id}', '${safeText}', 'ta', 'Tamil')">Tamil</div>
                             <div onclick="translateMessageText('${msg._id}', '${safeText}', 'te', 'Telugu')">Telugu</div>

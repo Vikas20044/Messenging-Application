@@ -542,9 +542,12 @@ app.post('/api/messages/report', checkAuthSession, async (req, res) => {
     }
     try {
         const reporterId = req.session.userId;
-        const msgCheck = await pool.query('SELECT id FROM messages WHERE id = $1', [messageId]);
+        const msgCheck = await pool.query('SELECT id, sender_id FROM messages WHERE id = $1', [messageId]);
         if (msgCheck.rows.length === 0) {
             return res.status(404).json({ error: 'Target message not found.' });
+        }
+        if (msgCheck.rows[0].sender_id === reporterId) {
+            return res.status(400).json({ error: 'Self-reporting is not allowed. You cannot report your own message.' });
         }
         await pool.query(
             'INSERT INTO message_reports (message_id, reporter_id, reason) VALUES ($1, $2, $3)',

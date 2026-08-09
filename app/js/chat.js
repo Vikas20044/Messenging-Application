@@ -290,6 +290,9 @@ function wrapMediaWithMenu(msg, mediaHtml) {
 
     const starLabel = msg.isStarred ? '⭐ Unstar Message' : '⭐ Star Message';
     const mediaSnippet = msg.message_type === 'image' ? '📷 Image' : (msg.message_type === 'video' ? '🎥 Video' : (msg.message_type === 'audio' ? '🎵 Audio' : '📄 Document'));
+    const reportOptionHtml = !isOutgoing 
+        ? `<div onclick="triggerReportMessage('${msg._id}', '${safeUser}', '${mediaSnippet}')" style="cursor: pointer; padding: 4px 8px; color: #ef4444; font-weight: 600;">🚩 Report</div>` 
+        : '';
     const menuHtml = `
         <div class="msg-menu-container" style="position: relative; margin-left: auto; align-self: flex-start;">
             <span class="three-dots-icon" onclick="toggleDropdown(event, 'drop-${msg._id}')">⋮</span>
@@ -297,7 +300,7 @@ function wrapMediaWithMenu(msg, mediaHtml) {
                 ${pickerHtml}
                 <div onclick="triggerReplyMessage('${msg._id}', '${safeUser}', '', '${msg.message_type}')" style="cursor: pointer; padding: 4px 8px;">Reply</div>
                 <div id="star-option-${msg._id}" onclick="toggleStarMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px; color: #eab308; font-weight: 600;">${starLabel}</div>
-                <div onclick="triggerReportMessage('${msg._id}', '${safeUser}', '${mediaSnippet}')" style="cursor: pointer; padding: 4px 8px; color: #ef4444; font-weight: 600;">🚩 Report</div>
+                ${reportOptionHtml}
                 ${deleteOptionHtml}
             </div>
         </div>`;
@@ -390,6 +393,10 @@ function appendMessage(msg) {
             `;
         }
 
+        const reportOptionHtml = !isOutgoing 
+            ? `<div onclick="triggerReportMessage('${msg._id}', '${safeUser}', '${safeText}')" style="cursor: pointer; padding: 4px 8px; color: #ef4444; font-weight: 600;">🚩 Report</div>` 
+            : '';
+
         inlineRenderBody = `
             <div class="text-content-wrapper" style="position: relative; display: flex; flex-direction: column; width: 100%;">
                 <div style="display: flex; align-items: flex-start; gap: 8px; width: 100%;">
@@ -400,7 +407,7 @@ function appendMessage(msg) {
                             ${pickerHtml}
                             <div onclick="triggerReplyMessage('${msg._id}', '${safeUser}', '${safeText}', 'text')" style="cursor: pointer; padding: 4px 8px;">Reply</div>
                             <div id="star-option-${msg._id}" onclick="toggleStarMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px; color: #eab308; font-weight: 600;">${starLabel}</div>
-                            <div onclick="triggerReportMessage('${msg._id}', '${safeUser}', '${safeText}')" style="cursor: pointer; padding: 4px 8px; color: #ef4444; font-weight: 600;">🚩 Report</div>
+                            ${reportOptionHtml}
                             <div onclick="translateMessageText('${msg._id}', '${safeText}', 'kn', 'Kannada')">Kannada</div>
                             <div onclick="translateMessageText('${msg._id}', '${safeText}', 'ta', 'Tamil')">Tamil</div>
                             <div onclick="translateMessageText('${msg._id}', '${safeText}', 'te', 'Telugu')">Telugu</div>

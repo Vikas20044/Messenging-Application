@@ -827,248 +827,57 @@ body {
     text-decoration: underline;
 }
 
-/* --- MESSAGE ACTION MENU & SMART DROPDOWN LAYER --- */
-.msg-menu-container {
-    position: relative;
-    margin-left: auto;
-    align-self: flex-start;
-    display: inline-flex;
-    align-items: center;
-}
-
+/* --- TRANSLATION LAYER OVERLAYS --- */
 .three-dots-icon {
     cursor: pointer;
     color: var(--text-muted);
-    padding: 2px 5px;
-    font-size: 1.15rem;
-    line-height: 1;
-    border-radius: 4px;
+    padding: 0 4px;
+    font-size: 1.1rem;
     user-select: none;
     display: inline-block;
-    transition: background-color 0.15s ease, color 0.15s ease;
 }
-
 .three-dots-icon:hover {
     color: var(--text-main);
-    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .msg-dropdown {
     position: absolute;
+    top: 24px;
     background-color: #ffffff;
     border: 1px solid var(--bg-tertiary);
-    border-radius: 12px;
-    z-index: 1000;
-    width: 200px;
-    max-width: calc(100vw - 32px);
-    max-height: 280px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    overflow-y: auto;
-    overflow-x: hidden;
-    overscroll-behavior: contain;
-    padding: 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    animation: msgDropdownPop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 8px;
+    z-index: 500;
+    width: 165px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    overflow: hidden;
 }
-
-@keyframes msgDropdownPop {
-    from {
-        opacity: 0;
-        transform: scale(0.94);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* Default downward placement */
-.msg-dropdown.drop-down {
-    top: calc(100% + 4px);
-    bottom: auto;
-}
-
-/* Smart upward placement when near bottom */
-.msg-dropdown.drop-up {
-    bottom: calc(100% + 4px);
-    top: auto;
-}
-
 .incoming .msg-dropdown {
-    left: 0;
+    left: 0;   
     right: auto;
 }
-
 .outgoing .msg-dropdown {
-    right: 0;
+    right: 0;  
     left: auto;
 }
 
-/* Reactions Bar in Dropdown */
-.reactions-picker {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 4px 6px;
-    margin-bottom: 4px;
-    border-bottom: 1px solid var(--bg-tertiary);
-    background: var(--bg-secondary);
-    border-radius: 8px;
-}
-
-.reactions-picker span {
+.msg-dropdown div {
+    padding: 10px 14px;
+    font-size: 0.85rem;
     cursor: pointer;
-    font-size: 1.15rem;
-    line-height: 1;
-    padding: 3px;
-    border-radius: 6px;
-    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease;
-}
-
-.reactions-picker span:hover {
-    transform: scale(1.3);
-    background-color: rgba(0, 0, 0, 0.06);
-}
-
-/* Message Menu Items */
-.msg-menu-main-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.msg-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 10px;
-    font-size: 0.84rem;
-    font-weight: 500;
     color: var(--text-main);
-    border-radius: 6px;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.15s ease, color 0.15s ease;
     text-align: left;
 }
-
-.msg-menu-item .menu-icon {
-    font-size: 0.95rem;
-    width: 18px;
-    display: inline-flex;
-    justify-content: center;
-    flex-shrink: 0;
+.msg-dropdown div:hover {
+    background-color: var(--accent);
+    color: #ffffff;
 }
-
-.msg-menu-item .menu-nav-arrow {
-    margin-left: auto;
-    font-size: 1.1rem;
-    color: var(--text-muted);
-    font-weight: 700;
-    line-height: 1;
-}
-
-.msg-menu-item:hover {
-    background-color: var(--bg-secondary);
-    color: var(--accent);
-}
-
-.msg-menu-item.danger-item {
-    color: #ef4444;
-}
-
-.msg-menu-item.danger-item:hover {
-    background-color: rgba(239, 68, 68, 0.08);
-    color: #dc2626;
-}
-
-/* Translation Submenu */
-.translate-submenu {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.translate-sub-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 4px 6px 6px 6px;
-    border-bottom: 1px solid var(--bg-tertiary);
-    margin-bottom: 2px;
-}
-
-.translate-sub-back {
-    cursor: pointer;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--accent);
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: var(--bg-secondary);
-    transition: background-color 0.15s ease;
-}
-
-.translate-sub-back:hover {
-    background-color: var(--bg-tertiary);
-}
-
-.translate-sub-title {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.translate-langs-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    max-height: 180px;
-    overflow-y: auto;
-    padding-right: 2px;
-}
-
-.translate-langs-grid .lang-opt {
-    padding: 6px 10px;
-    font-size: 0.82rem;
-    color: var(--text-main);
-    border-radius: 6px;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.translate-langs-grid .lang-opt:hover {
-    background-color: var(--bg-secondary);
-    color: var(--accent);
-}
-
-.translate-langs-grid .lang-opt.reset-opt {
-    color: var(--accent);
-    font-weight: 700;
-    border-top: 1px dashed var(--bg-tertiary);
-    margin-top: 2px;
-    padding-top: 6px;
-}
-
-.translate-langs-grid .lang-opt.reset-opt:hover {
-    background-color: var(--bg-secondary);
-}
-
-/* Translation feedback label below message */
 .translated-label {
     display: block;
-    font-size: 0.74rem;
+    font-size: 0.75rem;
     color: var(--accent);
     font-style: italic;
-    margin-top: 3px;
-    opacity: 0.9;
+    margin-top: 4px;
 }
-
 
 /* --- MODAL DIALOGUES --- */
 .modal-overlay {
@@ -1368,13 +1177,7 @@ body {
         height: 30px !important;
         font-size: 0.95rem !important;
     }
-
-    .msg-dropdown {
-        width: 185px;
-        max-height: 240px;
-    }
 }
-
 
 /* ==========================================================================
    REAL-TIME SPA VIEW SUBSYSTEMS & INLINE REFRACTORS (ADDED)

@@ -607,92 +607,6 @@ app.post('/api/messages/report', checkAuthSession, async (req, res) => {
     }
 });
 
-// --- GROK AI CLOUD MESSAGE TRANSLATION ENDPOINT ---
-app.post('/api/translate', checkAuthSession, async (req, res) => {
-    const { text, targetLang, targetLangName } = req.body;
-    if (!text || !text.trim()) {
-        return res.status(400).json({ error: 'Text content is required for translation.' });
-    }
-
-    const targetCode = (targetLang || 'en').trim();
-    const targetName = (targetLangName || targetCode).trim();
-
-    const grokApiKey = process.env.GROK_API_KEY || process.env.XAI_API_KEY || process.env.AI_API_KEY;
-    const grokApiUrl = process.env.GROK_API_URL || 'https://api.x.ai/v1/chat/completions';
-    const grokModel = process.env.GROK_MODEL || 'grok-2-latest';
-
-    // 1. If Grok AI API key is configured, translate via Grok AI Cloud
-    if (grokApiKey && grokApiKey.trim() !== '') {
-        try {
-            const systemPrompt = `You are an expert native linguist and contextual translation engine.
-Your task is to translate the user's chat message into ${targetName} (${targetCode}) with deep contextual and cultural understanding:
-1. CONTEXTUAL OVER LITERAL: Do NOT perform rigid word-by-word literal translations. Understand the real underlying meaning, conversational intent, emotion, and context of the message.
-2. IDIOMS, SLANG & EXPRESSIONS: Convert idioms, proverbs, colloquialisms, and regional slang into their most natural and authentic equivalent expressions in ${targetName}. If an exact idiomatic match does not exist, convey the exact sentiment and nuance naturally as a native speaker would converse.
-3. TONE & FORMATTING: Retain the natural conversational flow, casual/formal tone, punctuation, emojis, and line breaks intact.
-4. STRICT DIRECT OUTPUT: Output ONLY the final translated text. Never include surrounding quotes, explanatory notes, markdown commentary, or introductory phrases.`;
-
-            const aiResponse = await fetch(grokApiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${grokApiKey.trim()}`
-                },
-                body: JSON.stringify({
-                    model: grokModel,
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: text.trim() }
-                    ],
-                    temperature: 0.3,
-                    max_tokens: 1024
-                })
-            });
-
-            if (aiResponse.ok) {
-                const aiData = await aiResponse.json();
-                if (aiData.choices && aiData.choices.length > 0 && aiData.choices[0].message) {
-                    const translatedText = aiData.choices[0].message.content.trim();
-                    return res.json({
-                        success: true,
-                        translatedText,
-                        engine: 'grok-ai',
-                        targetLang: targetCode,
-                        targetLangName: targetName
-                    });
-                }
-            } else {
-                const errBody = await aiResponse.text();
-                console.warn(`Grok AI Cloud API returned status ${aiResponse.status}:`, errBody);
-            }
-        } catch (aiErr) {
-            console.error('Grok AI Cloud translation request error:', aiErr.message);
-        }
-    }
-
-    // 2. Resilient Fallback to Google Translation API
-    try {
-        const gRes = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(targetCode)}&dt=t&q=${encodeURIComponent(text.trim())}`);
-        if (gRes.ok) {
-            const gData = await gRes.json();
-            let translatedOutput = '';
-            if (gData && gData[0]) {
-                gData[0].forEach(item => { if (item[0]) translatedOutput += item[0]; });
-            }
-            return res.json({
-                success: true,
-                translatedText: translatedOutput,
-                engine: 'google-fallback',
-                targetLang: targetCode,
-                targetLangName: targetName
-            });
-        }
-    } catch (gErr) {
-        console.error('Fallback translation failure:', gErr.message);
-    }
-
-    res.status(500).json({ error: 'Translation service is temporarily unavailable.' });
-});
-
 // --- GLOBAL LIVE DICTIONARY TRACKING SYSTEM ---
 const connectedUsersMap = new Map(); // userId -> Set of socketIds
 
@@ -860,8 +774,10 @@ io.on('connection', (socket) => {
                 reactions: {}
             };
 
-            // Emit uniquely to both users' connected devices (chained rooms automatically deduplicate per socket)
-            io.to(`user_${receiverIdParsed}`).to(`user_${sender_id}`).emit('message', payload);
+            // Emit to direct chat room and both users' personal rooms for real-time inbox updates
+            io.to(roomName).emit('message', payload);
+            io.to(`user_${receiverIdParsed}`).emit('message', payload);
+            io.to(`user_${sender_id}`).emit('message', payload);
         } catch (err) {
             console.error('Failed to execute private message insert:', err);
         }

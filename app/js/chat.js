@@ -189,12 +189,66 @@ function toggleDropdown(e, dropdownId) {
     if (!targetMenu) return;
     const isHidden = targetMenu.classList.contains('hidden');
     
-    document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
+    document.querySelectorAll('.msg-dropdown').forEach(d => {
+        if (d !== targetMenu) {
+            d.classList.add('hidden');
+            const sub = d.querySelector('.translate-submenu');
+            const main = d.querySelector('.msg-menu-main-content');
+            if (sub) sub.classList.add('hidden');
+            if (main) main.classList.remove('hidden');
+        }
+    });
     
     if (isHidden) {
+        // Reset translation submenu view when opening
+        const sub = targetMenu.querySelector('.translate-submenu');
+        const main = targetMenu.querySelector('.msg-menu-main-content');
+        if (sub) sub.classList.add('hidden');
+        if (main) main.classList.remove('hidden');
+
         targetMenu.classList.remove('hidden');
+
+        // Smart dynamic boundary calculation: Check if dropdown should flip upwards
+        const triggerBtn = e.currentTarget;
+        const btnRect = triggerBtn.getBoundingClientRect();
+        const pane = document.getElementById('message-history');
+        const paneRect = pane ? pane.getBoundingClientRect() : null;
+
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        const bottomBoundary = paneRect ? Math.min(viewportHeight, paneRect.bottom) : viewportHeight;
+        const spaceBelow = bottomBoundary - btnRect.bottom;
+        const spaceAbove = paneRect ? (btnRect.top - paneRect.top) : btnRect.top;
+
+        // If less than 240px below and more space above, open upwards (drop-up)
+        if (spaceBelow < 240 && spaceAbove > spaceBelow) {
+            targetMenu.classList.add('drop-up');
+            targetMenu.classList.remove('drop-down');
+        } else {
+            targetMenu.classList.add('drop-down');
+            targetMenu.classList.remove('drop-up');
+        }
+    } else {
+        targetMenu.classList.add('hidden');
     }
 }
+
+window.toggleTranslateSubmenu = function(e, messageId) {
+    if (e) e.stopPropagation();
+    const dropdown = document.getElementById(`drop-${messageId}`);
+    if (!dropdown) return;
+    const mainContent = dropdown.querySelector('.msg-menu-main-content');
+    const subContent = dropdown.querySelector('.translate-submenu');
+    if (!mainContent || !subContent) return;
+
+    if (subContent.classList.contains('hidden')) {
+        mainContent.classList.add('hidden');
+        subContent.classList.remove('hidden');
+    } else {
+        subContent.classList.add('hidden');
+        mainContent.classList.remove('hidden');
+    }
+};
+
 
 function triggerReceiptsAudit(msgId) {
     const receiptsListTarget = document.getElementById('receipts-list-target');
@@ -301,33 +355,43 @@ window.toggleStarMessage = async function(messageId) {
 function wrapMediaWithMenu(msg, mediaHtml) {
     const isOutgoing = msg.sender_id === currentUserId;
     const pickerHtml = `
-        <div class="reactions-picker" style="display: flex; gap: 6px; padding: 4px; justify-content: space-around; border-bottom: 1px solid var(--bg-tertiary); margin-bottom: 4px;">
-            <span onclick="triggerReaction('${msg._id}', '👍')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">👍</span>
-            <span onclick="triggerReaction('${msg._id}', '❤️')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">❤️</span>
-            <span onclick="triggerReaction('${msg._id}', '😂')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">😂</span>
-            <span onclick="triggerReaction('${msg._id}', '😮')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">😮</span>
-            <span onclick="triggerReaction('${msg._id}', '😢')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">😢</span>
-            <span onclick="triggerReaction('${msg._id}', '🙏')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🙏</span>
+        <div class="reactions-picker">
+            <span onclick="triggerReaction('${msg._id}', '👍')" title="Thumbs Up">👍</span>
+            <span onclick="triggerReaction('${msg._id}', '❤️')" title="Heart">❤️</span>
+            <span onclick="triggerReaction('${msg._id}', '😂')" title="Laugh">😂</span>
+            <span onclick="triggerReaction('${msg._id}', '😮')" title="Surprised">😮</span>
+            <span onclick="triggerReaction('${msg._id}', '😢')" title="Sad">😢</span>
+            <span onclick="triggerReaction('${msg._id}', '🙏')" title="Thanks">🙏</span>
         </div>`;
 
     let deleteOptionHtml = '';
     if (isOutgoing) {
-        deleteOptionHtml = `<div onclick="triggerDeleteMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px; color: var(--accent);">Delete</div>`;
+        deleteOptionHtml = `<div class="msg-menu-item danger-item" onclick="triggerDeleteMessage('${msg._id}')">
+            <span class="menu-icon">🗑️</span><span>Delete</span>
+        </div>`;
     }
 
-    const starLabel = msg.isStarred ? '⭐ Unstar Message' : '⭐ Star Message';
+    const starLabel = msg.isStarred ? 'Unstar' : 'Star';
     const reportOptionHtml = !isOutgoing 
-        ? `<div onclick="triggerReportMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px; color: #ef4444; font-weight: 600;">🚩 Report</div>` 
+        ? `<div class="msg-menu-item danger-item" onclick="triggerReportMessage('${msg._id}')">
+            <span class="menu-icon">🚩</span><span>Report</span>
+        </div>` 
         : '';
     const menuHtml = `
-        <div class="msg-menu-container" style="position: relative; margin-left: auto; align-self: flex-start;">
-            <span class="three-dots-icon" onclick="toggleDropdown(event, 'drop-${msg._id}')">⋮</span>
-            <div id="drop-${msg._id}" class="msg-dropdown hidden" style="right: 0; left: auto; top: 22px; width: 155px; z-index: 50;">
+        <div class="msg-menu-container">
+            <span class="three-dots-icon" onclick="toggleDropdown(event, 'drop-${msg._id}')" title="Message Options">⋮</span>
+            <div id="drop-${msg._id}" class="msg-dropdown hidden">
                 ${pickerHtml}
-                <div onclick="triggerReplyMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px;">Reply</div>
-                <div id="star-option-${msg._id}" onclick="toggleStarMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px; color: #eab308; font-weight: 600;">${starLabel}</div>
-                ${reportOptionHtml}
-                ${deleteOptionHtml}
+                <div class="msg-menu-main-content">
+                    <div class="msg-menu-item" onclick="triggerReplyMessage('${msg._id}')">
+                        <span class="menu-icon">↩️</span><span>Reply</span>
+                    </div>
+                    <div class="msg-menu-item" id="star-option-${msg._id}" onclick="toggleStarMessage('${msg._id}')">
+                        <span class="menu-icon">${msg.isStarred ? '⭐' : '☆'}</span><span>${starLabel}</span>
+                    </div>
+                    ${deleteOptionHtml}
+                    ${reportOptionHtml}
+                </div>
             </div>
         </div>`;
 
@@ -343,7 +407,13 @@ function wrapMediaWithMenu(msg, mediaHtml) {
 
 function appendMessage(msg) {
     const messageHistory = document.getElementById('message-history');
-    if (!messageHistory) return;
+    if (!messageHistory || !msg || !msg._id) return;
+
+    // Strict deduplication guard: never append a message that is already in DOM
+    if (document.getElementById(`msg-card-${msg._id}`)) {
+        messageStore.set(String(msg._id), msg);
+        return;
+    }
 
     messageStore.set(String(msg._id), msg);
 
@@ -397,15 +467,15 @@ function appendMessage(msg) {
             </div>`;
         inlineRenderBody = wrapMediaWithMenu(msg, pdfHtml);
     } else {
-        const starLabel = msg.isStarred ? '⭐ Unstar Message' : '⭐ Star Message';
+        const starLabel = msg.isStarred ? 'Unstar' : 'Star';
         const pickerHtml = `
-            <div class="reactions-picker" style="display: flex; gap: 6px; padding: 4px; justify-content: space-around; border-bottom: 1px solid var(--bg-tertiary); margin-bottom: 4px;">
-                <span onclick="triggerReaction('${msg._id}', '👍')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">👍</span>
-                <span onclick="triggerReaction('${msg._id}', '❤️')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">❤️</span>
-                <span onclick="triggerReaction('${msg._id}', '😂')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">😂</span>
-                <span onclick="triggerReaction('${msg._id}', '😮')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">😮</span>
-                <span onclick="triggerReaction('${msg._id}', '😢')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">😢</span>
-                <span onclick="triggerReaction('${msg._id}', '🙏')" style="cursor: pointer; font-size: 1.1rem; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🙏</span>
+            <div class="reactions-picker">
+                <span onclick="triggerReaction('${msg._id}', '👍')" title="Thumbs Up">👍</span>
+                <span onclick="triggerReaction('${msg._id}', '❤️')" title="Heart">❤️</span>
+                <span onclick="triggerReaction('${msg._id}', '😂')" title="Laugh">😂</span>
+                <span onclick="triggerReaction('${msg._id}', '😮')" title="Surprised">😮</span>
+                <span onclick="triggerReaction('${msg._id}', '😢')" title="Sad">😢</span>
+                <span onclick="triggerReaction('${msg._id}', '🙏')" title="Thanks">🙏</span>
             </div>`;
 
         const editedHtml = msg.is_edited ? ` <span style="font-size: 0.72rem; color: var(--text-muted); margin-left: 4px; font-style: italic;">(edited)</span>` : '';
@@ -413,41 +483,67 @@ function appendMessage(msg) {
         let extraOptionsHtml = '';
         if (isOutgoing) {
             extraOptionsHtml = `
-                <hr style="border: 0; border-top: 1px solid var(--bg-tertiary); margin: 4px 0;">
-                <div onclick="triggerEditMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px; color: var(--tick-read);">Edit</div>
-                <div onclick="triggerDeleteMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px; color: var(--accent);">Delete</div>
+                <div class="msg-menu-item" onclick="triggerEditMessage('${msg._id}')">
+                    <span class="menu-icon">✏️</span><span>Edit</span>
+                </div>
+                <div class="msg-menu-item danger-item" onclick="triggerDeleteMessage('${msg._id}')">
+                    <span class="menu-icon">🗑️</span><span>Delete</span>
+                </div>
             `;
         }
 
         const reportOptionHtml = !isOutgoing 
-            ? `<div onclick="triggerReportMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px; color: #ef4444; font-weight: 600;">🚩 Report</div>` 
+            ? `<div class="msg-menu-item danger-item" onclick="triggerReportMessage('${msg._id}')">
+                <span class="menu-icon">🚩</span><span>Report</span>
+            </div>` 
             : '';
 
         inlineRenderBody = `
             <div class="text-content-wrapper" style="position: relative; display: flex; flex-direction: column; width: 100%;">
                 <div style="display: flex; align-items: flex-start; gap: 8px; width: 100%;">
                     <span id="text-span-${msg._id}">${escapeHTML(msg.text)}${editedHtml}</span>
-                    <div class="msg-menu-container" style="position: relative; margin-left: auto; align-self: flex-start;">
-                        <span class="three-dots-icon" onclick="toggleDropdown(event, 'drop-${msg._id}')">⋮</span>
-                        <div id="drop-${msg._id}" class="msg-dropdown hidden" style="width: 155px; z-index: 50;">
+                    <div class="msg-menu-container">
+                        <span class="three-dots-icon" onclick="toggleDropdown(event, 'drop-${msg._id}')" title="Message Options">⋮</span>
+                        <div id="drop-${msg._id}" class="msg-dropdown hidden">
                             ${pickerHtml}
-                            <div onclick="triggerReplyMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px;">Reply</div>
-                            <div id="star-option-${msg._id}" onclick="toggleStarMessage('${msg._id}')" style="cursor: pointer; padding: 4px 8px; color: #eab308; font-weight: 600;">${starLabel}</div>
-                            ${reportOptionHtml}
-                            <div onclick="translateMessageText('${msg._id}', 'kn', 'Kannada')">Kannada</div>
-                            <div onclick="translateMessageText('${msg._id}', 'ta', 'Tamil')">Tamil</div>
-                            <div onclick="translateMessageText('${msg._id}', 'te', 'Telugu')">Telugu</div>
-                            <div onclick="translateMessageText('${msg._id}', 'ml', 'Malayalam')">Malayalam</div>
-                            <div onclick="translateMessageText('${msg._id}', 'bn', 'Bengali')">Bengali</div>
-                            <hr style="border: 0; border-top: 1px solid var(--bg-tertiary); margin: 4px 0;">
-                            <div onclick="translateMessageText('${msg._id}', 'en', 'English')" style="color: var(--tick-read); font-weight: bold;">Translate back</div>
-                            ${extraOptionsHtml}
+                            <div class="msg-menu-main-content">
+                                <div class="msg-menu-item" onclick="triggerReplyMessage('${msg._id}')">
+                                    <span class="menu-icon">↩️</span><span>Reply</span>
+                                </div>
+                                <div class="msg-menu-item" id="star-option-${msg._id}" onclick="toggleStarMessage('${msg._id}')">
+                                    <span class="menu-icon">${msg.isStarred ? '⭐' : '☆'}</span><span>${starLabel}</span>
+                                </div>
+                                <div class="msg-menu-item translate-nav-btn" onclick="toggleTranslateSubmenu(event, '${msg._id}')">
+                                    <span class="menu-icon">🌐</span><span>Translate</span><span class="menu-nav-arrow">›</span>
+                                </div>
+                                ${extraOptionsHtml}
+                                ${reportOptionHtml}
+                            </div>
+                            <div class="translate-submenu hidden">
+                                <div class="translate-sub-header">
+                                    <span class="translate-sub-back" onclick="toggleTranslateSubmenu(event, '${msg._id}')">‹ Back</span>
+                                    <span class="translate-sub-title">Select Language</span>
+                                </div>
+                                <div class="translate-langs-grid">
+                                    <div class="lang-opt" onclick="translateMessageText('${msg._id}', 'kn', 'Kannada')">Kannada (ಕನ್ನಡ)</div>
+                                    <div class="lang-opt" onclick="translateMessageText('${msg._id}', 'ta', 'Tamil')">Tamil (தமிழ்)</div>
+                                    <div class="lang-opt" onclick="translateMessageText('${msg._id}', 'te', 'Telugu')">Telugu (తెలుగు)</div>
+                                    <div class="lang-opt" onclick="translateMessageText('${msg._id}', 'ml', 'Malayalam')">Malayalam (മലയാളം)</div>
+                                    <div class="lang-opt" onclick="translateMessageText('${msg._id}', 'bn', 'Bengali')">Bengali (বাংলা)</div>
+                                    <div class="lang-opt" onclick="translateMessageText('${msg._id}', 'hi', 'Hindi')">Hindi (हिन्दी)</div>
+                                    <div class="lang-opt" onclick="translateMessageText('${msg._id}', 'es', 'Spanish')">Spanish (Español)</div>
+                                    <div class="lang-opt" onclick="translateMessageText('${msg._id}', 'fr', 'French')">French (Français)</div>
+                                    <div class="lang-opt" onclick="translateMessageText('${msg._id}', 'de', 'German')">German (Deutsch)</div>
+                                    <div class="lang-opt reset-opt" onclick="translateMessageText('${msg._id}', 'en', 'English')">🔄 Original / English</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div id="reactions-target-${msg._id}" style="width: 100%; pointer-events: auto;">${renderReactions(msg._id, msg.reactions)}</div>
             </div>`;
     }
+
 
     if (!isOutgoing) {
         row.innerHTML = `

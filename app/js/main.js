@@ -262,7 +262,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.addEventListener('click', (e) => {
-        document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
+        document.querySelectorAll('.msg-dropdown').forEach(d => {
+            d.classList.add('hidden');
+            d.classList.remove('drop-up');
+        });
+        document.querySelectorAll('.msg-translate-submenu').forEach(s => s.classList.add('hidden'));
+        document.querySelectorAll('.message-row').forEach(r => r.style.zIndex = '');
         if (attachDropdownMenu) attachDropdownMenu.classList.add('hidden');
         if (emojiPickerPanel && !emojiPickerPanel.contains(e.target) && e.target !== chatEmojiTrigger) {
             emojiPickerPanel.classList.add('hidden');

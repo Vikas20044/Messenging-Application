@@ -607,6 +607,151 @@ app.post('/api/messages/report', checkAuthSession, async (req, res) => {
     }
 });
 
+// --- AI CHAT SUMMARIZATION PIPELINE (GROQ CLOUD AI) ---
+app.post('/api/chat/summarize', checkAuthSession, async (req, res) => {
+    const { targetUserId, targetRoomId } = req.body;
+    const currentUserId = req.session.userId;
+
+    if (!targetUserId && !targetRoomId) {
+        return res.status(400).json({ error: 'Missing target conversation parameters (targetUserId or targetRoomId).' });
+    }
+
+    try {
+        let messages = [];
+        let chatTitle = 'Chat Conversation';
+
+        if (targetRoomId) {
+            // Verify group membership
+            const memberCheck = await pool.query('SELECT 1 FROM room_members WHERE room_id = $1 AND user_id = $2', [targetRoomId, currentUserId]);
+            if (memberCheck.rows.length === 0) {
+                return res.status(403).json({ error: 'Access denied: You are not a member of this community room.' });
+            }
+
+            const roomRes = await pool.query('SELECT room_name FROM rooms WHERE id = $1', [targetRoomId]);
+            if (roomRes.rows.length > 0) {
+                chatTitle = `Group: ${roomRes.rows[0].room_name}`;
+            }
+
+            const msgsRes = await pool.query(`
+                SELECT m.id, m.text, m.message_type, m.file_url, m.is_deleted, m.timestamp, u.username
+                FROM messages m
+                JOIN users u ON m.sender_id = u.id
+                WHERE m.room_id = $1
+                ORDER BY m.timestamp DESC
+                LIMIT 50
+            `, [targetRoomId]);
+            messages = msgsRes.rows.reverse();
+        } else if (targetUserId) {
+            const userRes = await pool.query('SELECT username FROM users WHERE id = $1', [targetUserId]);
+            if (userRes.rows.length > 0) {
+                chatTitle = `Direct Chat with @${userRes.rows[0].username}`;
+            }
+
+            const msgsRes = await pool.query(`
+                SELECT m.id, m.text, m.message_type, m.file_url, m.is_deleted, m.timestamp, u.username
+                FROM messages m
+                JOIN users u ON m.sender_id = u.id
+                WHERE m.room_id IS NULL AND (
+                    (m.sender_id = $1 AND m.receiver_id = $2) OR
+                    (m.sender_id = $2 AND m.receiver_id = $1)
+                )
+                ORDER BY m.timestamp DESC
+                LIMIT 50
+            `, [currentUserId, targetUserId]);
+            messages = msgsRes.rows.reverse();
+        }
+
+        const validMessages = messages.filter(m => !m.is_deleted);
+        if (validMessages.length < 2) {
+            return res.status(400).json({ 
+                error: 'Not enough conversation messages to summarize yet. Please exchange a few messages first!' 
+            });
+        }
+
+        // Build transcript string
+        const transcript = validMessages.map(m => {
+            const time = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            let content = m.text || '';
+            if (m.message_type === 'image') content = `[Sent Image: ${m.text || 'Photo'}]`;
+            else if (m.message_type === 'audio') content = `[Sent Voice Note / Audio]`;
+            else if (m.message_type === 'video') content = `[Sent Video Clip]`;
+            else if (m.message_type === 'pdf') content = `[Sent Document / PDF: ${m.text || 'File'}]`;
+            return `[${time}] ${m.username}: ${content}`;
+        }).join('\n');
+
+        const groqApiKey = process.env.GROQ_API_KEY;
+        if (!groqApiKey || !groqApiKey.trim()) {
+            return res.status(400).json({
+                error: 'Groq API Key not found. Please add your free key to GROQ_API_KEY in the .env file (obtainable instantly for free at https://console.groq.com).'
+            });
+        }
+
+        const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${groqApiKey.trim()}`
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    {
+                        role: 'system',
+                        content: `You are a direct, concise conversation summarizer.
+Your task is to summarize ALL the messages provided in the chat transcript accurately and comprehensively.
+
+CRITICAL INSTRUCTIONS:
+- Include ONLY the summarized points of the messages.
+- Do NOT include any conversational filler, greetings, preambles (such as "Here is the summary:", "Sure! Here is a breakdown:"), meta-commentary, or closing notes.
+- Ensure every significant topic or update discussed across all messages is included in the summary.
+- Format strictly as clean bullet points:
+
+### 📌 Summary of Conversation
+- Bullet points summarizing all discussion points and information exchanged across the messages.
+
+### 📋 Key Decisions & Action Items
+- Bullet points for any decisions, agreements, or tasks (omit this section if none exist).
+
+Start directly with the summary points and nothing else.`
+                    },
+                    {
+                        role: 'user',
+                        content: `Summarize all messages from this transcript:\n\n${transcript}`
+                    }
+                ],
+                temperature: 0.2,
+                max_tokens: 800
+            })
+        });
+
+        if (!groqResponse.ok) {
+            const errBody = await groqResponse.text();
+            console.error('Groq API Error Response:', errBody);
+            let errMsg = 'Failed to generate summary with Groq AI.';
+            try {
+                const parsed = JSON.parse(errBody);
+                if (parsed.error && parsed.error.message) errMsg = parsed.error.message;
+            } catch (e) {}
+            return res.status(500).json({ error: errMsg });
+        }
+
+        const groqData = await groqResponse.json();
+        const summaryText = groqData.choices && groqData.choices[0] && groqData.choices[0].message
+            ? groqData.choices[0].message.content
+            : 'No summary could be generated.';
+
+        res.json({
+            success: true,
+            summary: summaryText,
+            messageCount: validMessages.length,
+            chatTitle
+        });
+    } catch (err) {
+        console.error('Error generating chat summary:', err);
+        res.status(500).json({ error: 'Server error while processing AI chat summary.' });
+    }
+});
+
 // --- GLOBAL LIVE DICTIONARY TRACKING SYSTEM ---
 const connectedUsersMap = new Map(); // userId -> Set of socketIds
 

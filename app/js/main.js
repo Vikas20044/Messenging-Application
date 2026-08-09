@@ -991,30 +991,6 @@ document.addEventListener('DOMContentLoaded', () => {
         closeStarredModalBtn.addEventListener('click', () => starredMessagesModal.classList.add('hidden'));
     }
 
-    // AI Chat Summarization (Groq Cloud AI) Triggers
-    const btnSummarizeChat = document.getElementById('btn-summarize-chat');
-    const closeAiSummaryBtn = document.getElementById('close-ai-summary-btn');
-    const btnDoneAiSummary = document.getElementById('btn-done-ai-summary');
-    const btnCopyAiSummary = document.getElementById('btn-copy-ai-summary');
-    const btnRefreshAiSummary = document.getElementById('btn-refresh-ai-summary');
-    const aiSummaryModal = document.getElementById('ai-summary-modal');
-
-    if (btnSummarizeChat) {
-        btnSummarizeChat.addEventListener('click', window.triggerChatSummarization);
-    }
-    if (closeAiSummaryBtn && aiSummaryModal) {
-        closeAiSummaryBtn.addEventListener('click', () => aiSummaryModal.classList.add('hidden'));
-    }
-    if (btnDoneAiSummary && aiSummaryModal) {
-        btnDoneAiSummary.addEventListener('click', () => aiSummaryModal.classList.add('hidden'));
-    }
-    if (btnCopyAiSummary) {
-        btnCopyAiSummary.addEventListener('click', window.copyAISummaryToClipboard);
-    }
-    if (btnRefreshAiSummary) {
-        btnRefreshAiSummary.addEventListener('click', window.triggerChatSummarization);
-    }
-
     // Touch swipe gesture handlers
     let touchStartX = 0;
     let touchEndX = 0;

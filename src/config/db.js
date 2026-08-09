@@ -111,6 +111,30 @@ const initDB = async () => {
             );
         `);
 
+        // Pinned Chats Table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS pinned_chats (
+                id SERIAL PRIMARY KEY,
+                user_id INT REFERENCES users(id) ON DELETE CASCADE,
+                target_user_id INT REFERENCES users(id) ON DELETE CASCADE,
+                room_id INT REFERENCES rooms(id) ON DELETE CASCADE,
+                pinned_at TIMESTAMPTZ DEFAULT NOW(),
+                CONSTRAINT unique_user_target UNIQUE(user_id, target_user_id),
+                CONSTRAINT unique_user_room UNIQUE(user_id, room_id)
+            );
+        `);
+
+        // Starred Messages Table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS starred_messages (
+                id SERIAL PRIMARY KEY,
+                user_id INT REFERENCES users(id) ON DELETE CASCADE,
+                message_id INT REFERENCES messages(id) ON DELETE CASCADE,
+                starred_at TIMESTAMPTZ DEFAULT NOW(),
+                UNIQUE(user_id, message_id)
+            );
+        `);
+
         console.log('Successfully connected to Neon Cloud Database & Tables Verified!');
     } catch (err) {
         console.error('Neon Database initialization failed:', err);

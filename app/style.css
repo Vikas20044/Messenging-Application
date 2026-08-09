@@ -2188,4 +2188,66 @@ body {
 .active-chats-list::-webkit-scrollbar-track,
 #community-threads-target::-webkit-scrollbar-track {
     background: transparent;
-}
+}
+
+/* ==========================================================================
+   STARRED MESSAGES STYLES
+   ========================================================================== */
+
+.star-badge-indicator {
+    font-size: 0.7rem;
+    color: #eab308;
+    margin-left: 4px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.starred-msg-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--bg-tertiary);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.starred-msg-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.starred-msg-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.starred-msg-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--text-main);
+}
+
+.starred-msg-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.starred-msg-time {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.starred-msg-body {
+    font-size: 0.88rem;
+    color: var(--text-main);
+    word-break: break-word;
+}
+

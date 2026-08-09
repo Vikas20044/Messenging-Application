@@ -467,6 +467,50 @@ app.get('/api/chats/active', checkAuthSession, async (req, res) => {
     }
 });
 
+app.post('/api/messages/star-toggle', checkAuthSession, async (req, res) => {
+    const userId = req.session.userId;
+    const { messageId } = req.body;
+
+    if (!messageId) return res.status(400).json({ error: 'Message ID is required.' });
+
+    try {
+        const existing = await pool.query('SELECT id FROM starred_messages WHERE user_id = $1 AND message_id = $2', [userId, messageId]);
+        if (existing.rows.length > 0) {
+            await pool.query('DELETE FROM starred_messages WHERE user_id = $1 AND message_id = $2', [userId, messageId]);
+            return res.json({ success: true, isStarred: false, messageId });
+        } else {
+            await pool.query('INSERT INTO starred_messages (user_id, message_id) VALUES ($1, $2)', [userId, messageId]);
+            return res.json({ success: true, isStarred: true, messageId });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to toggle message star.' });
+    }
+});
+
+app.get('/api/messages/starred', checkAuthSession, async (req, res) => {
+    const userId = req.session.userId;
+    try {
+        const result = await pool.query(`
+            SELECT sm.id as star_id, sm.starred_at, m.id as message_id, m.text, m.timestamp, m.message_type, m.file_url, m.sender_id, m.receiver_id, m.room_id,
+                   u.username as sender_username, COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as sender_avatar,
+                   r.room_name,
+                   tu.id as target_user_id, tu.username as target_username, COALESCE(tu.profile_pic_url, '/uploads/default-avatar.png') as target_avatar
+            FROM starred_messages sm
+            JOIN messages m ON sm.message_id = m.id
+            JOIN users u ON m.sender_id = u.id
+            LEFT JOIN rooms r ON m.room_id = r.id
+            LEFT JOIN users tu ON tu.id = (CASE WHEN m.sender_id = $1 THEN m.receiver_id ELSE m.sender_id END)
+            WHERE sm.user_id = $1
+            ORDER BY sm.starred_at DESC
+        `, [userId]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json([]);
+    }
+});
+
 app.get('/api/users/search', checkAuthSession, async (req, res) => {
     const query = req.query.q || '';
     try {
@@ -549,6 +593,7 @@ io.on('connection', (socket) => {
                        pu.username as reply_to_username,
                        p.is_deleted as reply_to_is_deleted,
                        m.read_at,
+                       ((SELECT COUNT(*) FROM starred_messages sm WHERE sm.message_id = m.id AND sm.user_id = $1) > 0) AS "isStarred",
                        (
                            SELECT COALESCE(json_object_agg(eg.emoji, eg.users), '{}'::json)
                            FROM (
@@ -634,6 +679,7 @@ io.on('connection', (socket) => {
                        pu.username as reply_to_username,
                        p.is_deleted as reply_to_is_deleted,
                        m.read_at,
+                       ((SELECT COUNT(*) FROM starred_messages sm WHERE sm.message_id = m.id AND sm.user_id = $2) > 0) AS "isStarred",
                        (
                            SELECT COALESCE(json_object_agg(eg.emoji, eg.users), '{}'::json)
                            FROM (
@@ -650,7 +696,7 @@ io.on('connection', (socket) => {
                 LEFT JOIN users pu ON p.sender_id = pu.id
                 WHERE m.room_id = $1
                 ORDER BY m.timestamp ASC LIMIT 100
-            `, [roomId]);
+            `, [roomId, socket.userId || 0]);
 
             // Flush dynamic individual group message read records on workspace join entry
             if (socket.userId) {

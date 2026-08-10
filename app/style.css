@@ -227,6 +227,111 @@ body {
     height: 16px;
 }
 
+/* --- RESPONSIVE MOBILE QUICK MENU DROPDOWN --- */
+.mobile-nav-menu-container {
+    display: none;
+    position: relative;
+}
+
+.mobile-nav-dropdown {
+    position: absolute;
+    top: 42px;
+    right: 0;
+    width: 220px;
+    background: #ffffff;
+    border: 1px solid var(--bg-tertiary);
+    border-radius: 14px;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 0.5rem;
+    z-index: 2500;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    animation: fadeInDropdown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInDropdown {
+    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.mobile-menu-user-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 10px;
+    cursor: pointer;
+    background: var(--bg-secondary);
+    transition: background 0.15s ease;
+}
+
+.mobile-menu-user-row:hover {
+    background: var(--bg-tertiary);
+}
+
+.mobile-menu-user-row img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--accent);
+    flex-shrink: 0;
+}
+
+.mobile-menu-user-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+#mobile-menu-username {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--text-main);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mobile-menu-status {
+    font-size: 0.7rem;
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.mobile-menu-divider {
+    height: 1px;
+    background: var(--bg-tertiary);
+    margin: 0.35rem 0;
+}
+
+.mobile-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.mobile-nav-item:hover {
+    background-color: var(--accent);
+    color: #ffffff;
+}
+
+.mobile-nav-item-icon {
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* --- AUTHENTICATION STYLING --- */
 .auth-box {
     background-color: var(--bg-secondary);
@@ -1310,6 +1415,14 @@ body {
     .mobile-only {
         display: inline-block;
     }
+
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-nav-menu-container {
+        display: inline-block !important;
+    }
     
     .resize-handle {
         display: none !important; 
@@ -1318,13 +1431,27 @@ body {
     .top-navbar {
         flex-wrap: nowrap;
         height: 54px;
-        padding: 0 0.75rem;
-        gap: 0.4rem;
+        padding: 0 0.6rem;
+        gap: 0.35rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .navbar-left {
+        flex: 0 0 auto;
+        min-width: auto;
+        gap: 0;
     }
 
     .navbar-brand {
-        font-size: 1rem;
+        font-size: 1.05rem;
         letter-spacing: -0.3px;
+        white-space: nowrap;
+        font-weight: 750;
+        max-width: none;
+        overflow: visible;
+        text-overflow: clip;
     }
 
     .navbar-status {
@@ -1333,36 +1460,34 @@ body {
 
     .navbar-search-container {
         order: unset;
-        flex: 1;
-        max-width: 170px;
-        margin: 0 0.2rem;
+        flex: 1 1 auto;
+        min-width: 90px;
+        max-width: 220px;
+        margin: 0 0.35rem;
     }
 
     .navbar-search-container input {
-        padding: 0.45rem 0.5rem 0.45rem 2rem;
+        padding: 0.42rem 0.5rem 0.42rem 2rem;
         font-size: 0.82rem;
-        border-radius: 6px;
+        border-radius: 8px;
     }
 
     .search-icon-svg {
-        left: 10px;
+        left: 9px;
         width: 13px;
         height: 13px;
     }
 
     .navbar-right {
-        gap: 0.4rem;
-    }
-
-    .navbar-user-profile {
-        padding: 0.2rem;
-        background: transparent;
-        border: none;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        flex-shrink: 0;
     }
 
     .nav-action-btn {
-        padding: 0.45rem;
-        border-radius: 6px;
+        padding: 0.45rem 0.55rem;
+        border-radius: 8px;
     }
 
     .sidebar-panel {
@@ -1768,15 +1893,15 @@ body {
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 1140px;
+    max-width: 1240px;
     margin: 0 auto;
     flex: 1;
     min-height: 0;
     max-height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 1.5rem 1.5rem;
-    gap: 1.25rem;
+    padding: 2rem 2rem 3rem 2rem;
+    gap: 1.5rem;
     background-color: transparent;
     animation: fadeInDashboard 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1796,7 +1921,7 @@ body {
     border: 1px solid var(--bg-tertiary);
     border-left: 4.5px solid var(--accent);
     color: var(--text-main);
-    padding: 1.5rem 1.75rem;
+    padding: 1.75rem 2rem;
     border-radius: 18px;
     position: relative;
     overflow: hidden;
@@ -1942,11 +2067,11 @@ body {
     box-shadow: 0 4px 12px rgba(203, 110, 50, 0.12);
 }
 
-/* --- HIGH-UX BENTO SHAPED GRID LAUNCHPAD --- */
+/* --- HIGH-UX BENTO SHAPED GRID LAUNCHPAD (2x2 Desktop Layout) --- */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.35rem;
     width: 100%;
     flex-shrink: 0;
 }
@@ -1954,23 +2079,25 @@ body {
 .dashboard-card {
     background-color: #ffffff;
     border: 1px solid var(--bg-tertiary);
-    border-radius: 14px;
-    padding: 1.35rem 1.25rem;
+    border-radius: 16px;
+    padding: 1.5rem 1.6rem;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    justify-content: space-between;
     transition: all 0.25s cubic-bezier(0.215, 0.610, 0.355, 1);
     box-shadow: 0 4px 16px rgba(54, 42, 33, 0.02);
     position: relative;
     overflow: hidden;
     min-width: 0;
+    min-height: 155px;
 }
 
 .dashboard-card:hover {
     transform: translateY(-4px);
     border-color: var(--accent);
-    box-shadow: 0 12px 28px rgba(203, 110, 50, 0.08);
+    box-shadow: 0 14px 32px rgba(203, 110, 50, 0.1);
     background: #ffffff;
 }
 
@@ -1992,22 +2119,22 @@ body {
 .bento-purple { background-color: rgba(168, 85, 247, 0.09); color: #9333ea; }
 
 .dashboard-card h3 {
-    font-size: 0.98rem;
+    font-size: 1.05rem;
     font-weight: 750;
     color: var(--text-main);
     margin-bottom: 0.35rem;
 }
 
 .dashboard-card p {
-    font-size: 0.84rem;
-    line-height: 1.5;
+    font-size: 0.88rem;
+    line-height: 1.55;
     color: var(--text-muted);
-    margin-bottom: 1.15rem;
+    margin-bottom: 1.25rem;
     flex-grow: 1;
 }
 
 .card-action-link {
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: var(--accent);
     transition: color 0.15s linear;
@@ -2132,8 +2259,8 @@ body {
    ========================================================================== */
 .dashboard-stats-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.35rem;
     width: 100%;
     flex-shrink: 0;
 }
@@ -2141,11 +2268,11 @@ body {
 .stat-glass-card {
     background: #ffffff;
     border: 1px solid var(--bg-tertiary);
-    border-radius: 14px;
-    padding: 1rem 1.2rem;
+    border-radius: 16px;
+    padding: 1.15rem 1.4rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.15rem;
     box-shadow: 0 4px 14px rgba(54, 42, 33, 0.02);
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     min-width: 0;
@@ -2983,6 +3110,34 @@ body.dark-theme .nav-action-btn:hover {
     background: rgba(203, 110, 50, 0.15);
     color: var(--accent);
     border-color: var(--accent);
+}
+
+/* Dark Theme Mobile Quick Menu */
+body.dark-theme .mobile-nav-dropdown {
+    background: #181f2e;
+    border-color: #2a3449;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+}
+
+body.dark-theme .mobile-menu-user-row {
+    background: #111827;
+}
+
+body.dark-theme .mobile-menu-user-row:hover {
+    background: #1f2937;
+}
+
+body.dark-theme .mobile-menu-divider {
+    background: #2a3449;
+}
+
+body.dark-theme .mobile-nav-item {
+    color: #f3f4f6;
+}
+
+body.dark-theme .mobile-nav-item:hover {
+    background-color: var(--accent);
+    color: #ffffff;
 }
 
 /* Sidebar in Dark Theme - Matches Admin Sidebar (#111827) */

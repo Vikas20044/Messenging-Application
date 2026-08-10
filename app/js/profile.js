@@ -40,8 +40,10 @@ async function loadProfileHeaderMetadata() {
         if (res.ok) {
             const data = await res.json();
             const sidebarUserAvatar = document.getElementById('sidebar-user-avatar');
-            if (data.profile_pic_url && sidebarUserAvatar) {
-                sidebarUserAvatar.src = data.profile_pic_url;
+            const mobileMenuAvatar = document.getElementById('mobile-menu-user-avatar');
+            if (data.profile_pic_url) {
+                if (sidebarUserAvatar) sidebarUserAvatar.src = data.profile_pic_url;
+                if (mobileMenuAvatar) mobileMenuAvatar.src = data.profile_pic_url;
             }
         }
     } catch(e) { 

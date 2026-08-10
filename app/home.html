@@ -11,10 +11,10 @@
     <nav class="top-navbar">
         <div class="navbar-left">
             <div class="navbar-brand" onclick="resetToDashboard()" style="cursor: pointer;" title="Return to Dashboard Welcome Screen">Realtime Messaging Application</div>
-            <div class="navbar-status" id="navbar-status-tag">Status: Connected</div>
+            <div class="navbar-status desktop-only" id="navbar-status-tag">Status: Connected</div>
             
             <!-- High UI/UX About Navigation Dropdown Menu -->
-            <div class="navbar-item-container">
+            <div class="navbar-item-container desktop-only">
                 <button type="button" id="navbar-about-trigger" class="nav-action-btn" title="Learn more about the application">
                     <span>About</span>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -38,21 +38,59 @@
         </div>
 
         <div class="navbar-right">
-            <div class="navbar-user-profile">
+            <div class="navbar-user-profile desktop-only">
                 <img id="sidebar-user-avatar" src="/uploads/default-avatar.png" alt="Avatar" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';">
                 <span id="user-display-tag">username</span>
             </div>
             
-            <button id="open-starred-btn" class="nav-action-btn" title="View Starred Messages" style="font-size: 0.9rem; padding: 0.45rem 0.7rem; display: flex; align-items: center; gap: 4px; color: #eab308; font-weight: bold;">
+            <button id="open-starred-btn" class="nav-action-btn desktop-only" title="View Starred Messages" style="font-size: 0.9rem; padding: 0.45rem 0.7rem; display: flex; align-items: center; gap: 4px; color: #eab308; font-weight: bold;">
                 ⭐ Starred
             </button>
 
-            <button id="open-profile-btn" class="nav-action-btn" title="Edit Profile & Settings">
+            <button id="open-profile-btn" class="nav-action-btn desktop-only" title="Edit Profile & Settings">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon-svg">
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
             </button>
+
+            <!-- Responsive Mobile Quick Menu Dropdown Trigger Container -->
+            <div class="navbar-item-container mobile-nav-menu-container">
+                <button type="button" id="navbar-mobile-menu-trigger" class="nav-action-btn" title="More Options">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon-svg">
+                        <circle cx="12" cy="12" r="1.5"></circle>
+                        <circle cx="12" cy="5" r="1.5"></circle>
+                        <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                </button>
+                <div id="navbar-mobile-menu-dropdown" class="msg-dropdown hidden mobile-nav-dropdown">
+                    <div class="mobile-menu-user-row" id="mobile-menu-user-trigger" title="View & Edit Profile">
+                        <img id="mobile-menu-user-avatar" src="/uploads/default-avatar.png" alt="Avatar" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';">
+                        <div class="mobile-menu-user-meta">
+                            <span id="mobile-menu-username">username</span>
+                            <span class="mobile-menu-status">🟢 Online</span>
+                        </div>
+                    </div>
+                    <div class="mobile-menu-divider"></div>
+                    <div class="mobile-nav-item" id="mobile-menu-profile-opt">
+                        <span class="mobile-nav-item-icon">⚙️</span>
+                        <span>Settings & Profile</span>
+                    </div>
+                    <div class="mobile-nav-item" id="mobile-menu-starred-opt">
+                        <span class="mobile-nav-item-icon">⭐</span>
+                        <span>Starred Messages</span>
+                    </div>
+                    <div class="mobile-menu-divider"></div>
+                    <div class="mobile-nav-item" onclick="switchMainView('developer')">
+                        <span class="mobile-nav-item-icon">👨‍💻</span>
+                        <span>Developers</span>
+                    </div>
+                    <div class="mobile-nav-item" onclick="switchMainView('faq')">
+                        <span class="mobile-nav-item-icon">❓</span>
+                        <span>Help & FAQ</span>
+                    </div>
+                </div>
+            </div>
             
             <button id="exit-chat-btn" class="nav-action-btn danger" title="Exit Workspace">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon-svg">

@@ -129,6 +129,8 @@ async function initializeIdentity() {
         
         const userDisplayTag = document.getElementById('user-display-tag');
         if (userDisplayTag) userDisplayTag.innerText = `${currentUsername}`;
+        const mobileMenuUsername = document.getElementById('mobile-menu-username');
+        if (mobileMenuUsername) mobileMenuUsername.innerText = `${currentUsername}`;
         
         const welcomeTitle = document.getElementById('dashboard-welcome-title');
         if (welcomeTitle) {
@@ -285,6 +287,50 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
             if (isHidden) {
                 navbarAboutDropdown.classList.remove('hidden');
+            }
+        });
+    }
+
+    // Mobile Navbar Quick Menu Handlers
+    const navbarMobileMenuTrigger = document.getElementById('navbar-mobile-menu-trigger');
+    const navbarMobileMenuDropdown = document.getElementById('navbar-mobile-menu-dropdown');
+    const mobileMenuUserTrigger = document.getElementById('mobile-menu-user-trigger');
+    const mobileMenuProfileOpt = document.getElementById('mobile-menu-profile-opt');
+    const mobileMenuStarredOpt = document.getElementById('mobile-menu-starred-opt');
+
+    if (navbarMobileMenuTrigger && navbarMobileMenuDropdown) {
+        navbarMobileMenuTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = navbarMobileMenuDropdown.classList.contains('hidden');
+            document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
+            if (isHidden) {
+                navbarMobileMenuDropdown.classList.remove('hidden');
+            }
+        });
+    }
+
+    if (mobileMenuUserTrigger) {
+        mobileMenuUserTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (navbarMobileMenuDropdown) navbarMobileMenuDropdown.classList.add('hidden');
+            openProfileModalHandler();
+        });
+    }
+
+    if (mobileMenuProfileOpt) {
+        mobileMenuProfileOpt.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (navbarMobileMenuDropdown) navbarMobileMenuDropdown.classList.add('hidden');
+            openProfileModalHandler();
+        });
+    }
+
+    if (mobileMenuStarredOpt) {
+        mobileMenuStarredOpt.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (navbarMobileMenuDropdown) navbarMobileMenuDropdown.classList.add('hidden');
+            if (typeof window.loadStarredMessages === 'function') {
+                window.loadStarredMessages();
             }
         });
     }
@@ -886,6 +932,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 if (res.ok && data.success) {
                     if (sidebarUserAvatar) sidebarUserAvatar.src = data.profile_pic_url;
+                    const mobileMenuAvatar = document.getElementById('mobile-menu-user-avatar');
+                    if (mobileMenuAvatar) mobileMenuAvatar.src = data.profile_pic_url;
                     showToast("Profile picture updated successfully!", "success");
                 } else {
                     showToast(data.error || "Upload validation failed.", "error");
@@ -940,6 +988,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     const userDisplayTag = document.getElementById('user-display-tag');
                     if (userDisplayTag) userDisplayTag.innerText = `${payload.username}`;
+                    const mobileMenuUsername = document.getElementById('mobile-menu-username');
+                    if (mobileMenuUsername) mobileMenuUsername.innerText = `${payload.username}`;
                     currentUsername = payload.username;
                     showToast("Account security credentials synchronized!", "success");
                     profilePasswordInput.value = '';

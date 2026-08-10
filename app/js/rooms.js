@@ -59,7 +59,11 @@ function renderRoomInSidebar(room) {
     if (unreadCount > 0 && targetRoomId !== id) item.classList.add('has-unread');
     if (targetRoomId === id) item.classList.add('active-selected');
     
+    const isSelected = window.isChatSelected && window.isChatSelected('room', id);
+    if (isSelected) item.classList.add('selected-chat');
+    
     item.innerHTML = `
+        <div class="chat-select-checkbox" onclick="event.stopPropagation(); window.toggleSelectChat('room', ${id});"></div>
         <div class="thread-avatar-wrap">
             <img src="${icon}" onerror="this.onerror=null; this.src='/uploads/default-group.png';" class="thread-avatar-img group-icon">
         </div>
@@ -74,7 +78,13 @@ function renderRoomInSidebar(room) {
             </div>
         </div>
     `;
-    item.onclick = () => selectActiveRoom(id, name, code, desc, icon);
+    item.onclick = () => {
+        if (window.isChatSelectionActive && window.isChatSelectionActive()) {
+            window.toggleSelectChat('room', id);
+            return;
+        }
+        selectActiveRoom(id, name, code, desc, icon);
+    };
     communityThreadsTarget.appendChild(item);
 }
 
@@ -103,6 +113,7 @@ function selectActiveRoom(id, name, code, desc, icon) {
     if (advSenderContainer) advSenderContainer.style.display = 'flex';
     if (clearBtn) clearBtn.click();
     cancelReply();
+    if (window.exitMessageSelectMode) window.exitMessageSelectMode();
     
     activeRoomName = name;
     activeRoomCode = code;

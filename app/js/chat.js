@@ -2,6 +2,362 @@
 
 const messageStore = new Map();
 
+// --- MULTI-MESSAGE SELECTION & FORWARD/DELETE ENGINE ---
+let isMessageSelectMode = false;
+const selectedMessageIds = new Set();
+
+window.isMessageSelectionActive = function() {
+    return isMessageSelectMode;
+};
+
+window.enterMessageSelectMode = function(initialMessageId) {
+    isMessageSelectMode = true;
+    selectedMessageIds.clear();
+    if (initialMessageId) {
+        selectedMessageIds.add(String(initialMessageId));
+    }
+    const messageHistory = document.getElementById('message-history');
+    if (messageHistory) messageHistory.classList.add('message-select-mode');
+    
+    const selectBar = document.getElementById('msg-select-action-bar');
+    if (selectBar) selectBar.classList.remove('hidden');
+
+    document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
+
+    window.syncMessageSelectionUI();
+    window.updateMessageSelectBar();
+};
+
+window.exitMessageSelectMode = function() {
+    isMessageSelectMode = false;
+    selectedMessageIds.clear();
+    const messageHistory = document.getElementById('message-history');
+    if (messageHistory) messageHistory.classList.remove('message-select-mode');
+    
+    const selectBar = document.getElementById('msg-select-action-bar');
+    if (selectBar) selectBar.classList.add('hidden');
+
+    window.syncMessageSelectionUI();
+};
+
+window.toggleSelectMessage = function(messageId) {
+    const idStr = String(messageId);
+    if (!isMessageSelectMode) {
+        window.enterMessageSelectMode(idStr);
+        return;
+    }
+    if (selectedMessageIds.has(idStr)) {
+        selectedMessageIds.delete(idStr);
+    } else {
+        selectedMessageIds.add(idStr);
+    }
+    window.syncMessageSelectionUI();
+    window.updateMessageSelectBar();
+};
+
+window.syncMessageSelectionUI = function() {
+    document.querySelectorAll('.message-row').forEach(row => {
+        const id = row.id.replace('msg-card-', '');
+        if (selectedMessageIds.has(id)) {
+            row.classList.add('selected');
+        } else {
+            row.classList.remove('selected');
+        }
+    });
+};
+
+window.selectAllMessages = function() {
+    const allRows = document.querySelectorAll('.message-row');
+    if (allRows.length === 0) return;
+    
+    const allSelected = Array.from(allRows).every(row => {
+        const id = row.id.replace('msg-card-', '');
+        return selectedMessageIds.has(id);
+    });
+
+    if (allSelected) {
+        selectedMessageIds.clear();
+    } else {
+        allRows.forEach(row => {
+            const id = row.id.replace('msg-card-', '');
+            selectedMessageIds.add(id);
+        });
+    }
+    window.syncMessageSelectionUI();
+    window.updateMessageSelectBar();
+};
+
+window.updateMessageSelectBar = function() {
+    const count = selectedMessageIds.size;
+    const countText = document.getElementById('msg-select-count-text');
+    const fwdCountTag = document.getElementById('forward-count-tag');
+    const delCountTag = document.getElementById('delete-count-tag');
+    const fwdBtn = document.getElementById('btn-forward-selected-msgs');
+    const delBtn = document.getElementById('btn-delete-selected-msgs');
+    const selectAllBtn = document.getElementById('btn-select-all-msgs');
+
+    if (countText) countText.innerText = `${count} Selected`;
+    if (fwdCountTag) fwdCountTag.innerText = count;
+    if (delCountTag) delCountTag.innerText = count;
+
+    if (fwdBtn) fwdBtn.disabled = count === 0;
+    if (delBtn) delBtn.disabled = count === 0;
+
+    const allRows = document.querySelectorAll('.message-row');
+    if (selectAllBtn && allRows.length > 0) {
+        const isAll = count === allRows.length && count > 0;
+        selectAllBtn.innerText = isAll ? 'Deselect All' : 'Select All';
+    }
+};
+
+window.deleteSelectedMessages = function() {
+    if (selectedMessageIds.size === 0) return;
+    const msgIds = Array.from(selectedMessageIds);
+    const count = msgIds.length;
+
+    showConfirm("Delete Messages", `Are you sure you want to delete the ${count} selected message(s)? This will mark them as deleted for all participants.`, async () => {
+        try {
+            const res = await fetch('/api/messages/batch-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messageIds: msgIds })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                showToast(`Deleted ${data.deletedCount} message(s) successfully!`, "success");
+                window.exitMessageSelectMode();
+            } else {
+                showToast(data.error || "Failed to delete messages.", "error");
+            }
+        } catch (err) {
+            console.error('Batch delete error:', err);
+            showToast("Server communication error deleting messages.", "error");
+        }
+    });
+};
+
+// --- FORWARDING MODAL CONTROLLER ---
+const selectedForwardDestinations = new Set();
+
+window.triggerSingleMessageForward = function(messageId) {
+    document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
+    window.enterMessageSelectMode(messageId);
+    window.openForwardModal();
+};
+
+window.openForwardModal = async function() {
+    if (selectedMessageIds.size === 0) {
+        showToast("Please select at least one message to forward.", "info");
+        return;
+    }
+
+    selectedForwardDestinations.clear();
+    const modal = document.getElementById('forward-messages-modal');
+    const countLabel = document.getElementById('forward-msg-count-label');
+    const previewSample = document.getElementById('forward-preview-sample');
+    const searchInput = document.getElementById('forward-search-input');
+    const destinationsList = document.getElementById('forward-destinations-list');
+    const confirmBtn = document.getElementById('btn-confirm-forward');
+    const selectedTargetsCount = document.getElementById('forward-selected-targets-count');
+
+    if (countLabel) countLabel.innerText = `${selectedMessageIds.size} message(s)`;
+    if (searchInput) searchInput.value = '';
+    if (confirmBtn) confirmBtn.disabled = true;
+    if (selectedTargetsCount) selectedTargetsCount.innerText = '0 selected';
+
+    if (previewSample) {
+        const firstId = selectedMessageIds.values().next().value;
+        const firstMsg = messageStore.get(String(firstId));
+        if (firstMsg) {
+            let snippet = firstMsg.text || '';
+            if (firstMsg.message_type === 'image') snippet = '📷 Photo';
+            else if (firstMsg.message_type === 'audio') snippet = '🎵 Voice message';
+            else if (firstMsg.message_type === 'video') snippet = '🎥 Video';
+            else if (firstMsg.message_type === 'pdf') snippet = '📄 Document';
+            previewSample.innerText = `"${snippet}"`;
+        } else {
+            previewSample.innerText = '';
+        }
+    }
+
+    if (destinationsList) {
+        destinationsList.innerHTML = '<p class="empty-text" style="padding:1rem 0; text-align:center;">Loading contacts & communities...</p>';
+    }
+
+    if (modal) modal.classList.remove('hidden');
+
+    try {
+        const [chatsRes, roomsRes] = await Promise.all([
+            fetch('/api/chats/active'),
+            fetch('/api/rooms/joined')
+        ]);
+        const chats = chatsRes.ok ? await chatsRes.json() : [];
+        const rooms = roomsRes.ok ? await roomsRes.json() : [];
+
+        window.cachedForwardChats = chats;
+        window.cachedForwardRooms = rooms;
+
+        window.renderForwardDestinations(chats, rooms, '');
+    } catch (err) {
+        console.error('Error fetching forward destinations:', err);
+        if (destinationsList) destinationsList.innerHTML = '<p class="empty-text" style="color:var(--danger);">Failed to load destinations.</p>';
+    }
+};
+
+window.renderForwardDestinations = function(chats, rooms, filterText) {
+    const destinationsList = document.getElementById('forward-destinations-list');
+    if (!destinationsList) return;
+    destinationsList.innerHTML = '';
+
+    const query = (filterText || '').toLowerCase().trim();
+
+    const filteredChats = (chats || []).filter(c => {
+        if (c.is_deleted) return false;
+        if (!query) return true;
+        return (c.username && c.username.toLowerCase().includes(query)) || 
+               (c.full_name && c.full_name.toLowerCase().includes(query));
+    });
+
+    const filteredRooms = (rooms || []).filter(r => {
+        if (!query) return true;
+        return (r.room_name && r.room_name.toLowerCase().includes(query)) ||
+               (r.room_code && r.room_code.toLowerCase().includes(query));
+    });
+
+    if (filteredChats.length === 0 && filteredRooms.length === 0) {
+        destinationsList.innerHTML = '<p class="empty-text" style="text-align:center; padding:1.5rem 0;">No matching contacts or communities found.</p>';
+        return;
+    }
+
+    // Render Communities section
+    if (filteredRooms.length > 0) {
+        const secTitle = document.createElement('div');
+        secTitle.style.cssText = 'font-size:0.7rem; font-weight:800; color:var(--accent); text-transform:uppercase; margin-top:4px; padding:0 4px;';
+        secTitle.innerText = 'Communities';
+        destinationsList.appendChild(secTitle);
+
+        filteredRooms.forEach(room => {
+            const destKey = `room:${room.id}`;
+            const isSelected = selectedForwardDestinations.has(destKey);
+            const item = document.createElement('div');
+            item.className = `forward-destination-item ${isSelected ? 'selected' : ''}`;
+            item.id = `dest-item-${destKey}`;
+            item.innerHTML = `
+                <div class="forward-destination-left">
+                    <img src="${room.room_icon || '/uploads/default-group.png'}" onerror="this.onerror=null; this.src='/uploads/default-group.png';" class="forward-dest-avatar">
+                    <div class="forward-dest-meta">
+                        <span class="forward-dest-name">${escapeHTML(room.room_name)}</span>
+                        <span class="forward-dest-sub">Pass: ${escapeHTML(room.room_code)}</span>
+                    </div>
+                </div>
+                <div class="forward-dest-checkbox"></div>
+            `;
+            item.onclick = () => window.toggleForwardDestination(destKey);
+            destinationsList.appendChild(item);
+        });
+    }
+
+    // Render Contacts section
+    if (filteredChats.length > 0) {
+        const secTitle = document.createElement('div');
+        secTitle.style.cssText = 'font-size:0.7rem; font-weight:800; color:var(--accent); text-transform:uppercase; margin-top:8px; padding:0 4px;';
+        secTitle.innerText = 'Recent Contacts';
+        destinationsList.appendChild(secTitle);
+
+        filteredChats.forEach(user => {
+            const destKey = `user:${user.id}`;
+            const isSelected = selectedForwardDestinations.has(destKey);
+            const item = document.createElement('div');
+            item.className = `forward-destination-item ${isSelected ? 'selected' : ''}`;
+            item.id = `dest-item-${destKey}`;
+            item.innerHTML = `
+                <div class="forward-destination-left">
+                    <img src="${user.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" class="forward-dest-avatar">
+                    <div class="forward-dest-meta">
+                        <span class="forward-dest-name">${escapeHTML(user.full_name || user.username)}</span>
+                        <span class="forward-dest-sub">@${escapeHTML(user.username)}</span>
+                    </div>
+                </div>
+                <div class="forward-dest-checkbox"></div>
+            `;
+            item.onclick = () => window.toggleForwardDestination(destKey);
+            destinationsList.appendChild(item);
+        });
+    }
+};
+
+window.toggleForwardDestination = function(destKey) {
+    if (selectedForwardDestinations.has(destKey)) {
+        selectedForwardDestinations.delete(destKey);
+    } else {
+        selectedForwardDestinations.add(destKey);
+    }
+
+    const item = document.getElementById(`dest-item-${destKey}`);
+    if (item) {
+        if (selectedForwardDestinations.has(destKey)) {
+            item.classList.add('selected');
+        } else {
+            item.classList.remove('selected');
+        }
+    }
+
+    const count = selectedForwardDestinations.size;
+    const confirmBtn = document.getElementById('btn-confirm-forward');
+    const selectedTargetsCount = document.getElementById('forward-selected-targets-count');
+
+    if (confirmBtn) confirmBtn.disabled = count === 0;
+    if (selectedTargetsCount) selectedTargetsCount.innerText = `${count} selected`;
+};
+
+window.closeForwardModal = function() {
+    const modal = document.getElementById('forward-messages-modal');
+    if (modal) modal.classList.add('hidden');
+};
+
+window.submitForwardMessages = async function() {
+    if (selectedMessageIds.size === 0 || selectedForwardDestinations.size === 0) return;
+
+    const targets = Array.from(selectedForwardDestinations).map(key => {
+        const [type, idStr] = key.split(':');
+        return { type, id: parseInt(idStr, 10) };
+    });
+
+    const messageIds = Array.from(selectedMessageIds).map(id => parseInt(id, 10));
+    const confirmBtn = document.getElementById('btn-confirm-forward');
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerText = 'Sending...';
+    }
+
+    try {
+        const res = await fetch('/api/messages/forward', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messageIds, targets })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showToast(`Forwarded ${messageIds.length} message(s) to ${targets.length} destination(s)! ↗️`, "success");
+            window.closeForwardModal();
+            window.exitMessageSelectMode();
+        } else {
+            showToast(data.error || "Failed to forward messages.", "error");
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.innerText = 'Send ↗️';
+            }
+        }
+    } catch (err) {
+        console.error('Forward submission error:', err);
+        showToast("Server error during forwarding.", "error");
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerText = 'Send ↗️';
+        }
+    }
+};
+
 // Quoting & Reply Helpers
 window.triggerReplyMessage = function(messageId) {
     document.querySelectorAll('.msg-dropdown').forEach(d => {
@@ -519,6 +875,14 @@ function wrapMediaWithMenu(msg, mediaHtml) {
                     <span class="menu-item-icon">↩️</span>
                     <span>Reply</span>
                 </div>
+                <div class="msg-menu-item" onclick="window.enterMessageSelectMode('${msg._id}')">
+                    <span class="menu-item-icon">☑️</span>
+                    <span>Select Messages</span>
+                </div>
+                <div class="msg-menu-item" onclick="window.triggerSingleMessageForward('${msg._id}')">
+                    <span class="menu-item-icon">↗️</span>
+                    <span>Share / Forward</span>
+                </div>
                 <div id="star-option-${msg._id}" class="msg-menu-item star-item" onclick="toggleStarMessage('${msg._id}')">
                     <span class="menu-item-icon">⭐</span>
                     <span class="star-label-text">${starLabel}</span>
@@ -551,10 +915,21 @@ function appendMessage(msg) {
     messageStore.set(String(msg._id), msg);
 
     const isOutgoing = currentUserId && Number(msg.sender_id) === Number(currentUserId);
+    const isSelected = selectedMessageIds.has(String(msg._id));
     const row = document.createElement('div');
-    row.className = `message-row ${isOutgoing ? 'outgoing' : 'incoming'}`;
+    row.className = `message-row ${isOutgoing ? 'outgoing' : 'incoming'} ${isSelected ? 'selected' : ''}`;
     row.id = `msg-card-${msg._id}`;
     
+    // Row click handler for message multi-selection mode
+    row.addEventListener('click', (e) => {
+        if (window.isMessageSelectionActive && window.isMessageSelectionActive()) {
+            if (e.target.closest('.msg-menu-container') || e.target.closest('a') || e.target.closest('audio') || e.target.closest('video') || e.target.closest('.reactions-badge-row') || e.target.closest('.reactions-picker')) {
+                return;
+            }
+            window.toggleSelectMessage(msg._id);
+        }
+    });
+
     const msgDate = new Date(msg.timestamp);
     const dateString = msgDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
     const timeString = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -646,6 +1021,14 @@ function appendMessage(msg) {
                                 <span class="menu-item-icon">↩️</span>
                                 <span>Reply</span>
                             </div>
+                            <div class="msg-menu-item" onclick="window.enterMessageSelectMode('${msg._id}')">
+                                <span class="menu-item-icon">☑️</span>
+                                <span>Select Messages</span>
+                            </div>
+                            <div class="msg-menu-item" onclick="window.triggerSingleMessageForward('${msg._id}')">
+                                <span class="menu-item-icon">↗️</span>
+                                <span>Share / Forward</span>
+                            </div>
                             <div id="star-option-${msg._id}" class="msg-menu-item star-item" onclick="toggleStarMessage('${msg._id}')">
                                 <span class="menu-item-icon">⭐</span>
                                 <span class="star-label-text">${starLabel}</span>
@@ -673,8 +1056,11 @@ function appendMessage(msg) {
             </div>`;
     }
 
+    const selectCheckboxHtml = `<div class="msg-select-checkbox" onclick="event.stopPropagation(); window.toggleSelectMessage('${msg._id}')"></div>`;
+
     if (!isOutgoing) {
         row.innerHTML = `
+            ${selectCheckboxHtml}
             <img src="${msg.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" class="chat-bubble-avatar" title="Click chat header to see details">
             <div class="bubble-layout-block">
                 ${targetRoomId ? `<div class="sender-title" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 2px; font-weight: 600; text-align: left;">${escapeHTML(msg.username || '')}</div>` : ''}
@@ -709,6 +1095,7 @@ function appendMessage(msg) {
         }
 
         row.innerHTML = `
+            ${selectCheckboxHtml}
             <div class="bubble-layout-block">
                 <div class="message-bubble" id="bubble-${msg._id}">${quoteHtml}${inlineRenderBody}</div>
                 <div class="message-meta">
@@ -788,6 +1175,9 @@ async function loadActiveThreads() {
                 item.classList.add('active-selected');
             }
 
+            const isSelected = window.isChatSelected && window.isChatSelected('user', user.id);
+            if (isSelected) item.classList.add('selected-chat');
+
             const unreadPillHtml = (unreadCount > 0 && targetUserId !== user.id)
                 ? `<span class="unread-count-pill" id="unread-badge-user-${user.id}">${unreadCount}</span>`
                 : '';
@@ -796,6 +1186,7 @@ async function loadActiveThreads() {
             const snippetFormatted = formatMessageSnippet(user.last_message, user.last_message_type, user.last_message_sender_id);
 
             item.innerHTML = `
+                <div class="chat-select-checkbox" onclick="event.stopPropagation(); window.toggleSelectChat('user', ${user.id});"></div>
                 <div class="thread-avatar-wrap">
                     <img id="thread-avatar-${user.id}" src="${user.profile_pic_url || '/uploads/default-avatar.png'}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" class="thread-avatar-img">
                     <div id="status-badge-${user.id}" class="global-presence-badge offline"></div>
@@ -811,7 +1202,13 @@ async function loadActiveThreads() {
                     </div>
                 </div>
             `;
-            item.onclick = () => selectActiveTargetUser(user.id, user.username, user.profile_pic_url);
+            item.onclick = () => {
+                if (window.isChatSelectionActive && window.isChatSelectionActive()) {
+                    window.toggleSelectChat('user', user.id);
+                    return;
+                }
+                selectActiveTargetUser(user.id, user.username, user.profile_pic_url);
+            };
             activeThreadsTarget.appendChild(item);
 
             socket.emit('requestUserOnlineStatus', { targetUserId: user.id }, (reply) => {
@@ -854,6 +1251,7 @@ function selectActiveTargetUser(id, name, picUrl) {
     if (advSenderContainer) advSenderContainer.style.display = 'none';
     if (clearBtn) clearBtn.click();
     cancelReply();
+    if (window.exitMessageSelectMode) window.exitMessageSelectMode();
 
     if (isUnavailable) {
         if (chatWindowTitle) chatWindowTitle.innerText = 'Unavailable User';

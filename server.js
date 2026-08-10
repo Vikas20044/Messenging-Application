@@ -619,6 +619,242 @@ app.post('/api/messages/report', checkAuthSession, async (req, res) => {
     }
 });
 
+// --- BATCH MESSAGE DELETION ENDPOINT ---
+app.post('/api/messages/batch-delete', checkAuthSession, async (req, res) => {
+    const { messageIds } = req.body;
+    if (!messageIds || !Array.isArray(messageIds) || messageIds.length === 0) {
+        return res.status(400).json({ error: 'Array of message IDs required.' });
+    }
+
+    try {
+        const userId = req.session.userId;
+        const validIds = messageIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+
+        const updateRes = await pool.query(`
+            UPDATE messages 
+            SET is_deleted = TRUE, text = 'This message was deleted' 
+            WHERE id = ANY($1::int[]) AND sender_id = $2
+            RETURNING id, sender_id, receiver_id, room_id
+        `, [validIds, userId]);
+
+        updateRes.rows.forEach(msg => {
+            const payload = { messageId: msg.id };
+            if (msg.room_id) {
+                io.to(`group_room_${msg.room_id}`).emit('messageDeleted', payload);
+            } else if (msg.receiver_id) {
+                const chatRoomName = `chat_${Math.min(msg.sender_id, msg.receiver_id)}_${Math.max(msg.sender_id, msg.receiver_id)}`;
+                io.to(chatRoomName).emit('messageDeleted', payload);
+            }
+        });
+
+        res.json({
+            success: true,
+            deletedCount: updateRes.rows.length,
+            deletedIds: updateRes.rows.map(r => r.id)
+        });
+    } catch (err) {
+        console.error('Batch message delete error:', err);
+        res.status(500).json({ error: 'Failed to delete selected messages.' });
+    }
+});
+
+// --- BATCH MESSAGE FORWARD ENDPOINT ---
+app.post('/api/messages/forward', checkAuthSession, async (req, res) => {
+    const { messageIds, targets } = req.body;
+    if (!messageIds || !Array.isArray(messageIds) || messageIds.length === 0) {
+        return res.status(400).json({ error: 'Message IDs required.' });
+    }
+    if (!targets || !Array.isArray(targets) || targets.length === 0) {
+        return res.status(400).json({ error: 'At least one target destination required.' });
+    }
+
+    try {
+        const sender_id = req.session.userId;
+        const validIds = messageIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+
+        // Retrieve original messages in chronological order
+        const msgQuery = await pool.query(
+            'SELECT id, text, message_type, file_url, is_deleted FROM messages WHERE id = ANY($1::int[]) ORDER BY timestamp ASC',
+            [validIds]
+        );
+
+        if (msgQuery.rows.length === 0) {
+            return res.status(404).json({ error: 'No messages found to forward.' });
+        }
+
+        const userResult = await pool.query(
+            "SELECT username, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", 
+            [sender_id]
+        );
+        const senderUsername = userResult.rows[0].username;
+        const senderAvatar = userResult.rows[0].profile_pic_url;
+
+        let totalForwarded = 0;
+
+        for (const target of targets) {
+            const targetType = target.type; // 'user' or 'room'
+            const targetId = parseInt(target.id, 10);
+            if (isNaN(targetId)) continue;
+
+            if (targetType === 'user') {
+                const uCheck = await pool.query('SELECT id, is_deleted FROM users WHERE id = $1', [targetId]);
+                if (uCheck.rows.length === 0 || uCheck.rows[0].is_deleted) continue;
+
+                const roomName = `chat_${Math.min(sender_id, targetId)}_${Math.max(sender_id, targetId)}`;
+
+                for (const origMsg of msgQuery.rows) {
+                    const forwardText = origMsg.is_deleted ? 'This message was deleted' : origMsg.text;
+                    const forwardType = origMsg.is_deleted ? 'text' : (origMsg.message_type || 'text');
+                    const forwardUrl = origMsg.is_deleted ? null : origMsg.file_url;
+
+                    const insertRes = await pool.query(`
+                        INSERT INTO messages (sender_id, receiver_id, text, message_type, file_url) 
+                        VALUES ($1, $2, $3, $4, $5) 
+                        RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url, is_deleted, reply_to_message_id, read_at
+                    `, [sender_id, targetId, forwardText, forwardType, forwardUrl]);
+
+                    const payload = {
+                        ...insertRes.rows[0],
+                        sender_id,
+                        receiver_id: targetId,
+                        username: senderUsername,
+                        profile_pic_url: senderAvatar,
+                        reply_to_text: null,
+                        reply_to_username: null,
+                        reply_to_is_deleted: false,
+                        reactions: {}
+                    };
+
+                    io.to(roomName).to(`user_${targetId}`).to(`user_${sender_id}`).emit('message', payload);
+                    totalForwarded++;
+                }
+            } else if (targetType === 'room') {
+                const memberCheck = await pool.query('SELECT 1 FROM room_members WHERE room_id = $1 AND user_id = $2', [targetId, sender_id]);
+                if (memberCheck.rows.length === 0) continue;
+
+                const roomName = `group_room_${targetId}`;
+                let room_name = 'Group';
+                try {
+                    const rRes = await pool.query('SELECT room_name FROM rooms WHERE id = $1', [targetId]);
+                    if (rRes.rows.length > 0) room_name = rRes.rows[0].room_name;
+                } catch (e) {}
+
+                for (const origMsg of msgQuery.rows) {
+                    const forwardText = origMsg.is_deleted ? 'This message was deleted' : origMsg.text;
+                    const forwardType = origMsg.is_deleted ? 'text' : (origMsg.message_type || 'text');
+                    const forwardUrl = origMsg.is_deleted ? null : origMsg.file_url;
+
+                    const insertRes = await pool.query(`
+                        INSERT INTO messages (sender_id, room_id, text, message_type, file_url) 
+                        VALUES ($1, $2, $3, $4, $5) 
+                        RETURNING id as _id, text, timestamp, isread as "isRead", message_type, file_url, room_id, is_deleted, reply_to_message_id, read_at
+                    `, [sender_id, targetId, forwardText, forwardType, forwardUrl]);
+
+                    const targetMessageId = insertRes.rows[0]._id;
+                    const activeRoomSockets = io.sockets.adapter.rooms.get(roomName) || new Set();
+                    let initialSeenCount = 0;
+                    for (const sockId of activeRoomSockets) {
+                        const clientSock = io.sockets.sockets.get(sockId);
+                        if (clientSock && clientSock.userId && clientSock.userId !== sender_id) {
+                            await pool.query(`
+                                INSERT INTO group_message_reads (message_id, user_id) 
+                                VALUES ($1, $2) ON CONFLICT DO NOTHING
+                            `, [targetMessageId, clientSock.userId]);
+                            initialSeenCount++;
+                        }
+                    }
+
+                    const payload = {
+                        ...insertRes.rows[0],
+                        sender_id,
+                        room_name,
+                        seen_count: initialSeenCount,
+                        username: senderUsername,
+                        profile_pic_url: senderAvatar,
+                        reply_to_text: null,
+                        reply_to_username: null,
+                        reply_to_is_deleted: false,
+                        reactions: {}
+                    };
+
+                    io.to(roomName).emit('message', payload);
+                    totalForwarded++;
+                }
+            }
+        }
+
+        res.json({ success: true, forwardedCount: totalForwarded });
+    } catch (err) {
+        console.error('Batch message forward error:', err);
+        res.status(500).json({ error: 'Failed to forward messages.' });
+    }
+});
+
+// --- BATCH CHATS DELETION ENDPOINT ---
+app.post('/api/chats/batch-delete', checkAuthSession, async (req, res) => {
+    const { userIds } = req.body;
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ error: 'Array of user IDs required.' });
+    }
+
+    try {
+        const currentUserId = req.session.userId;
+        const targetIds = userIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+
+        if (targetIds.length > 0) {
+            await pool.query(`
+                DELETE FROM messages 
+                WHERE room_id IS NULL AND (
+                    (sender_id = $1 AND receiver_id = ANY($2::int[])) OR 
+                    (sender_id = ANY($2::int[]) AND receiver_id = $1)
+                )
+            `, [currentUserId, targetIds]);
+
+            await pool.query(`
+                DELETE FROM pinned_chats 
+                WHERE user_id = $1 AND target_user_id = ANY($2::int[])
+            `, [currentUserId, targetIds]);
+        }
+
+        res.json({ success: true, message: 'Selected direct chat histories removed.' });
+    } catch (err) {
+        console.error('Batch chat delete error:', err);
+        res.status(500).json({ error: 'Failed to delete selected chats.' });
+    }
+});
+
+// --- BATCH ROOMS LEAVE/DELETE ENDPOINT ---
+app.post('/api/rooms/batch-leave', checkAuthSession, async (req, res) => {
+    const { roomIds } = req.body;
+    if (!roomIds || !Array.isArray(roomIds) || roomIds.length === 0) {
+        return res.status(400).json({ error: 'Array of room IDs required.' });
+    }
+
+    try {
+        const currentUserId = req.session.userId;
+        const targetRoomIds = roomIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+
+        for (const roomId of targetRoomIds) {
+            const roomCheck = await pool.query('SELECT created_by FROM rooms WHERE id = $1', [roomId]);
+            if (roomCheck.rows.length > 0 && roomCheck.rows[0].created_by === currentUserId) {
+                await pool.query('DELETE FROM rooms WHERE id = $1', [roomId]);
+                io.emit('roomDeleted', { roomId });
+                io.emit('userKickedFromRoom', { roomId, userId: null });
+            } else {
+                await pool.query('DELETE FROM room_members WHERE room_id = $1 AND user_id = $2', [roomId, currentUserId]);
+                await pool.query('DELETE FROM pinned_chats WHERE user_id = $1 AND room_id = $2', [currentUserId, roomId]);
+                io.to(`group_room_${roomId}`).emit('broadcastGroupReadsSynchronized', { roomId });
+                io.emit('userKickedFromRoom', { roomId, userId: currentUserId });
+            }
+        }
+
+        res.json({ success: true, message: 'Updated community memberships.' });
+    } catch (err) {
+        console.error('Batch room leave error:', err);
+        res.status(500).json({ error: 'Failed to leave selected communities.' });
+    }
+});
+
 // --- GLOBAL LIVE DICTIONARY TRACKING SYSTEM ---
 const connectedUsersMap = new Map(); // userId -> Set of socketIds
 
@@ -1118,6 +1354,33 @@ io.on('connection', (socket) => {
             }
         } catch (err) {
             console.error('Failed to handle deleteMessage event:', err);
+        }
+    });
+
+    socket.on('deleteMultipleMessages', async ({ messageIds }) => {
+        try {
+            if (!messageIds || !Array.isArray(messageIds) || !socket.userId) return;
+            const validIds = messageIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+            if (validIds.length === 0) return;
+
+            const updateRes = await pool.query(`
+                UPDATE messages 
+                SET is_deleted = TRUE, text = 'This message was deleted' 
+                WHERE id = ANY($1::int[]) AND sender_id = $2
+                RETURNING id, sender_id, receiver_id, room_id
+            `, [validIds, socket.userId]);
+
+            updateRes.rows.forEach(msg => {
+                const payload = { messageId: msg.id };
+                if (msg.room_id) {
+                    io.to(`group_room_${msg.room_id}`).emit('messageDeleted', payload);
+                } else if (msg.receiver_id) {
+                    const chatRoomName = `chat_${Math.min(msg.sender_id, msg.receiver_id)}_${Math.max(msg.sender_id, msg.receiver_id)}`;
+                    io.to(chatRoomName).emit('messageDeleted', payload);
+                }
+            });
+        } catch (err) {
+            console.error('Failed to handle deleteMultipleMessages event:', err);
         }
     });
 

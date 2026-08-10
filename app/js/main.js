@@ -159,6 +159,166 @@ async function initializeIdentity() {
     }
 }
 
+// --- MULTI-CHAT / COMMUNITY SELECTION & DELETION ENGINE ---
+let isChatSelectMode = false;
+const selectedChatUserIds = new Set();
+const selectedChatRoomIds = new Set();
+
+window.isChatSelectionActive = function() {
+    return isChatSelectMode;
+};
+
+window.isChatSelected = function(type, id) {
+    if (type === 'user') return selectedChatUserIds.has(Number(id));
+    if (type === 'room') return selectedChatRoomIds.has(Number(id));
+    return false;
+};
+
+window.toggleChatSelectMode = function() {
+    if (isChatSelectMode) {
+        window.exitChatSelectMode();
+    } else {
+        window.enterChatSelectMode();
+    }
+};
+
+window.enterChatSelectMode = function() {
+    isChatSelectMode = true;
+    selectedChatUserIds.clear();
+    selectedChatRoomIds.clear();
+
+    const sidebarPanel = document.getElementById('sidebar-panel');
+    if (sidebarPanel) sidebarPanel.classList.add('sidebar-select-mode');
+
+    const optionsBtn = document.getElementById('sidebar-options-btn');
+    if (optionsBtn) {
+        optionsBtn.classList.add('active');
+    }
+
+    const selectBar = document.getElementById('sidebar-select-bar');
+    if (selectBar) selectBar.classList.remove('hidden');
+
+    const dropdown = document.getElementById('sidebar-options-dropdown');
+    if (dropdown) dropdown.classList.add('hidden');
+
+    window.syncChatSelectionUI();
+    window.updateChatSelectBar();
+};
+
+window.exitChatSelectMode = function() {
+    isChatSelectMode = false;
+    selectedChatUserIds.clear();
+    selectedChatRoomIds.clear();
+
+    const sidebarPanel = document.getElementById('sidebar-panel');
+    if (sidebarPanel) sidebarPanel.classList.remove('sidebar-select-mode');
+
+    const optionsBtn = document.getElementById('sidebar-options-btn');
+    if (optionsBtn) {
+        optionsBtn.classList.remove('active');
+    }
+
+    const selectBar = document.getElementById('sidebar-select-bar');
+    if (selectBar) selectBar.classList.add('hidden');
+
+    window.syncChatSelectionUI();
+};
+
+window.toggleSelectChat = function(type, id) {
+    const numId = Number(id);
+    if (type === 'user') {
+        if (selectedChatUserIds.has(numId)) {
+            selectedChatUserIds.delete(numId);
+        } else {
+            selectedChatUserIds.add(numId);
+        }
+    } else if (type === 'room') {
+        if (selectedChatRoomIds.has(numId)) {
+            selectedChatRoomIds.delete(numId);
+        } else {
+            selectedChatRoomIds.add(numId);
+        }
+    }
+    window.syncChatSelectionUI();
+    window.updateChatSelectBar();
+};
+
+window.syncChatSelectionUI = function() {
+    document.querySelectorAll('#active-threads-target .thread-item').forEach(item => {
+        const idStr = item.id.replace('thread-user-', '');
+        const numId = Number(idStr);
+        if (selectedChatUserIds.has(numId)) {
+            item.classList.add('selected-chat');
+        } else {
+            item.classList.remove('selected-chat');
+        }
+    });
+
+    document.querySelectorAll('#community-threads-target .thread-item').forEach(item => {
+        const idStr = item.id.replace('thread-room-', '');
+        const numId = Number(idStr);
+        if (selectedChatRoomIds.has(numId)) {
+            item.classList.add('selected-chat');
+        } else {
+            item.classList.remove('selected-chat');
+        }
+    });
+};
+
+window.updateChatSelectBar = function() {
+    const total = selectedChatUserIds.size + selectedChatRoomIds.size;
+    const countEl = document.getElementById('sidebar-select-count');
+    const delBtn = document.getElementById('btn-delete-selected-chats');
+
+    if (countEl) countEl.innerText = `${total} Selected`;
+    if (delBtn) delBtn.disabled = total === 0;
+};
+
+window.deleteSelectedChats = function() {
+    const userIds = Array.from(selectedChatUserIds);
+    const roomIds = Array.from(selectedChatRoomIds);
+    const total = userIds.length + roomIds.length;
+    if (total === 0) return;
+
+    showConfirm("Delete Conversations", `Are you sure you want to delete ${total} selected conversation(s)? Direct chat message histories will be deleted, and you will leave or remove selected communities.`, async () => {
+        try {
+            let deletedActive = false;
+            if (targetUserId && userIds.includes(Number(targetUserId))) deletedActive = true;
+            if (targetRoomId && roomIds.includes(Number(targetRoomId))) deletedActive = true;
+
+            const promises = [];
+            if (userIds.length > 0) {
+                promises.push(fetch('/api/chats/batch-delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userIds })
+                }));
+            }
+            if (roomIds.length > 0) {
+                promises.push(fetch('/api/rooms/batch-leave', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ roomIds })
+                }));
+            }
+
+            await Promise.all(promises);
+            showToast(`Deleted / left ${total} conversation(s) successfully!`, "success");
+
+            window.exitChatSelectMode();
+            loadActiveThreads();
+            loadJoinedRooms();
+
+            if (deletedActive) {
+                resetToDashboard();
+            }
+        } catch (err) {
+            console.error('Error batch deleting chats:', err);
+            showToast("Server communication error deleting chats.", "error");
+        }
+    });
+};
+
 // Bind DOM Event Listeners after document is ready
 document.addEventListener('DOMContentLoaded', () => {
     const msgInput = document.getElementById('msg-input');
@@ -273,6 +433,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (attachDropdownMenu) attachDropdownMenu.classList.add('hidden');
         if (emojiPickerPanel && !emojiPickerPanel.contains(e.target) && e.target !== chatEmojiTrigger) {
             emojiPickerPanel.classList.add('hidden');
+        }
+        const sidebarOptionsDropdown = document.getElementById('sidebar-options-dropdown');
+        const sidebarOptionsBtn = document.getElementById('sidebar-options-btn');
+        if (sidebarOptionsDropdown && !sidebarOptionsDropdown.contains(e.target) && e.target !== sidebarOptionsBtn) {
+            sidebarOptionsDropdown.classList.add('hidden');
         }
         const searchContainer = document.querySelector('.navbar-search-container');
         if (searchContainer && searchResultsDropdown && !searchContainer.contains(e.target)) {
@@ -551,6 +716,63 @@ document.addEventListener('DOMContentLoaded', () => {
             chatMediaInput.accept = "application/pdf";
             chosenMediaType = "documents";
             chatMediaInput.click();
+        });
+    }
+
+    // Sidebar 3-Dots Options Dropdown & Select Chats Trigger
+    const sidebarOptionsBtn = document.getElementById('sidebar-options-btn');
+    const sidebarOptionsDropdown = document.getElementById('sidebar-options-dropdown');
+    const sidebarOptSelectChats = document.getElementById('sidebar-opt-select-chats');
+
+    if (sidebarOptionsBtn && sidebarOptionsDropdown) {
+        sidebarOptionsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sidebarOptionsDropdown.classList.toggle('hidden');
+        });
+    }
+
+    if (sidebarOptSelectChats) {
+        sidebarOptSelectChats.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (sidebarOptionsDropdown) sidebarOptionsDropdown.classList.add('hidden');
+            window.enterChatSelectMode();
+        });
+    }
+
+    const btnCancelChatSelect = document.getElementById('btn-cancel-chat-select');
+    if (btnCancelChatSelect) {
+        btnCancelChatSelect.addEventListener('click', window.exitChatSelectMode);
+    }
+    const btnDeleteSelectedChats = document.getElementById('btn-delete-selected-chats');
+    if (btnDeleteSelectedChats) {
+        btnDeleteSelectedChats.addEventListener('click', window.deleteSelectedChats);
+    }
+
+    // Message Multi-Select Controls
+    const btnSelectAllMsgs = document.getElementById('btn-select-all-msgs');
+    if (btnSelectAllMsgs) {
+        btnSelectAllMsgs.addEventListener('click', window.selectAllMessages);
+    }
+    const btnForwardSelectedMsgs = document.getElementById('btn-forward-selected-msgs');
+    if (btnForwardSelectedMsgs) {
+        btnForwardSelectedMsgs.addEventListener('click', window.openForwardModal);
+    }
+    const btnDeleteSelectedMsgs = document.getElementById('btn-delete-selected-msgs');
+    if (btnDeleteSelectedMsgs) {
+        btnDeleteSelectedMsgs.addEventListener('click', window.deleteSelectedMessages);
+    }
+    const btnCancelMsgSelect = document.getElementById('btn-cancel-msg-select');
+    if (btnCancelMsgSelect) {
+        btnCancelMsgSelect.addEventListener('click', window.exitMessageSelectMode);
+    }
+
+    // Forward Search Input Filter
+    const forwardSearchInput = document.getElementById('forward-search-input');
+    if (forwardSearchInput) {
+        forwardSearchInput.addEventListener('input', (e) => {
+            if (window.renderForwardDestinations) {
+                window.renderForwardDestinations(window.cachedForwardChats || [], window.cachedForwardRooms || [], e.target.value);
+            }
         });
     }
 
@@ -1210,6 +1432,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="text-content-wrapper" style="position: relative; display: flex; align-items: flex-start; gap: 8px; width: 100%;">
                     <span id="text-span-${messageId}" style="font-style: italic; color: var(--text-muted);">This message was deleted</span>
                 </div>`;
+        }
+    });
+
+    socket.on('multipleMessagesDeleted', ({ messageIds }) => {
+        if (Array.isArray(messageIds)) {
+            messageIds.forEach(messageId => {
+                const msg = messageStore.get(String(messageId));
+                if (msg) {
+                    msg.is_deleted = true;
+                    msg.text = "This message was deleted";
+                }
+                const textSpan = document.getElementById(`text-span-${messageId}`);
+                if (textSpan) {
+                    textSpan.innerText = "This message was deleted";
+                    textSpan.style.fontStyle = "italic";
+                    textSpan.style.color = "var(--text-muted)";
+                    const label = textSpan.querySelector('.translated-label');
+                    if (label) label.remove();
+                }
+                const threeDots = document.querySelector(`#msg-card-${messageId} .three-dots-icon`);
+                if (threeDots) threeDots.remove();
+                const dropdown = document.getElementById(`drop-${messageId}`);
+                if (dropdown) dropdown.remove();
+                
+                if (activeReplyMessageId === messageId) cancelReply();
+                if (activeEditMessageId === messageId) cancelEdit();
+
+                const bubble = document.getElementById(`bubble-${messageId}`);
+                if (bubble) {
+                    bubble.innerHTML = `
+                        <div class="text-content-wrapper" style="position: relative; display: flex; align-items: flex-start; gap: 8px; width: 100%;">
+                            <span id="text-span-${messageId}" style="font-style: italic; color: var(--text-muted);">This message was deleted</span>
+                        </div>`;
+                }
+            });
         }
     });
 

@@ -108,9 +108,34 @@
         
         <aside class="sidebar-panel" id="sidebar-panel">
             <header class="sidebar-header">
-                <h3 class="sidebar-panel-header-text">Conversations</h3>
-                <button id="close-sidebar-mobile" class="action-btn secondary mobile-only">&times;</button>
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                    <h3 class="sidebar-panel-header-text">Conversations</h3>
+                    <div style="display: flex; align-items: center; gap: 6px; position: relative;">
+                        <!-- 3-DOT CONVERSATION OPTIONS DROPDOWN -->
+                        <div class="sidebar-options-container" style="position: relative;">
+                            <button type="button" id="sidebar-options-btn" class="sidebar-three-dots-btn" title="Conversation Options">⋮</button>
+                            <div id="sidebar-options-dropdown" class="sidebar-options-dropdown hidden">
+                                <div id="sidebar-opt-select-chats" class="sidebar-menu-item">
+                                    <span class="sidebar-menu-icon">☑️</span>
+                                    <span>Select Chats</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="close-sidebar-mobile" class="action-btn secondary mobile-only">&times;</button>
+                    </div>
+                </div>
             </header>
+
+            <!-- SIDEBAR CHAT BATCH ACTIONS BAR -->
+            <div id="sidebar-select-bar" class="sidebar-select-bar hidden">
+                <div class="sidebar-select-info">
+                    <span id="sidebar-select-count">0 Selected</span>
+                </div>
+                <div class="sidebar-select-actions">
+                    <button type="button" id="btn-delete-selected-chats" class="sidebar-action-btn danger" title="Delete selected chats / leave communities">🗑️ Delete</button>
+                    <button type="button" id="btn-cancel-chat-select" class="sidebar-action-btn secondary" title="Cancel selection">✕</button>
+                </div>
+            </div>
 
             <div class="community-box-container">
                 <h3 class="sidebar-panel-header-text">Communities</h3>
@@ -291,6 +316,20 @@
                         </div>
                     </div>
                 </header>
+
+                <!-- FLOATING MESSAGE MULTI-SELECT ACTION BAR -->
+                <div id="msg-select-action-bar" class="msg-select-action-bar hidden">
+                    <div class="msg-select-meta">
+                        <span class="select-badge-icon">☑️</span>
+                        <span id="msg-select-count-text">0 Selected</span>
+                    </div>
+                    <div class="msg-select-actions">
+                        <button type="button" id="btn-select-all-msgs" class="msg-bar-btn secondary">Select All</button>
+                        <button type="button" id="btn-forward-selected-msgs" class="msg-bar-btn primary" disabled>↗️ Share (<span id="forward-count-tag">0</span>)</button>
+                        <button type="button" id="btn-delete-selected-msgs" class="msg-bar-btn danger" disabled>🗑️ Delete (<span id="delete-count-tag">0</span>)</button>
+                        <button type="button" id="btn-cancel-msg-select" class="msg-bar-btn close-btn" title="Exit select mode">✕</button>
+                    </div>
+                </div>
 
                 <div id="message-history" class="message-pane"></div>
 
@@ -571,6 +610,47 @@
                         <button type="submit" class="action-btn primary" style="background: var(--accent); border-color: var(--accent); color: white; padding: 0.5rem 1.2rem; font-size: 0.85rem; font-weight: 600;">Submit Report</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- FORWARD / SHARE MESSAGES MODAL -->
+    <div id="forward-messages-modal" class="modal-overlay hidden" style="z-index: 9999;">
+        <div class="modal-card" style="max-width: 480px; max-height: 85vh; display: flex; flex-direction: column;">
+            <header class="modal-header">
+                <h3 style="color: var(--accent); font-weight: bold; font-size: 1.15rem; display: flex; align-items: center; gap: 6px;">
+                    ↗️ Share / Forward Messages
+                </h3>
+                <button id="close-forward-modal-btn" class="close-modal-x" onclick="window.closeForwardModal()">&times;</button>
+            </header>
+            <div class="modal-body" style="padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; flex: 1; overflow: hidden;">
+                <!-- Message Summary Badge -->
+                <div id="forward-msg-preview-badge" style="background: var(--bg-primary); border: 1px solid var(--bg-tertiary); border-radius: 8px; padding: 0.6rem 0.8rem; font-size: 0.82rem; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between;">
+                    <span>Forwarding <strong id="forward-msg-count-label" style="color: var(--accent);">0 messages</strong></span>
+                    <span id="forward-preview-sample" style="font-style: italic; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
+                </div>
+                
+                <!-- Search Target Filter -->
+                <div style="position: relative;">
+                    <input type="text" id="forward-search-input" placeholder="Search contacts or communities..." style="width: 100%; box-sizing: border-box; background: var(--bg-primary); border: 1px solid var(--bg-tertiary); color: var(--text-main); padding: 0.55rem 0.8rem; border-radius: 8px; font-size: 0.88rem; outline: none;">
+                </div>
+
+                <!-- Destination Targets List -->
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 2px;">
+                    Select Destination(s)
+                </div>
+                <div id="forward-destinations-list" class="forward-destinations-list" style="flex: 1; overflow-y: auto; max-height: 270px; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;">
+                    <!-- Populated dynamically with users & joined rooms -->
+                </div>
+
+                <!-- Actions -->
+                <div style="display: flex; gap: 0.5rem; justify-content: space-between; align-items: center; border-top: 1px solid var(--bg-tertiary); padding-top: 0.85rem; margin-top: 0.25rem;">
+                    <span id="forward-selected-targets-count" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">0 selected</span>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" class="action-btn secondary" onclick="window.closeForwardModal()" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Cancel</button>
+                        <button type="button" id="btn-confirm-forward" class="action-btn primary" onclick="window.submitForwardMessages()" style="background: var(--accent); border-color: var(--accent); color: white; padding: 0.5rem 1.2rem; font-size: 0.85rem; font-weight: 600;" disabled>Send ↗️</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -643,45 +643,6 @@ function triggerPrivateReceiptsAudit(msgId) {
     });
 }
 
-window.toggleStarMessage = async function(messageId) {
-    document.querySelectorAll('.msg-dropdown').forEach(d => {
-        d.classList.add('hidden');
-        d.classList.remove('drop-up');
-    });
-    try {
-        const res = await fetch('/api/messages/star-toggle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messageId })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-            showToast(data.isStarred ? "Message starred! ⭐" : "Message unstarred.", "info");
-            
-            const msg = messageStore.get(String(messageId));
-            if (msg) msg.isStarred = data.isStarred;
-
-            const starBadge = document.getElementById(`star-badge-${messageId}`);
-            if (starBadge) {
-                starBadge.style.display = data.isStarred ? 'inline-block' : 'none';
-            }
-            const starOption = document.getElementById(`star-option-${messageId}`);
-            if (starOption) {
-                const labelSpan = starOption.querySelector('.star-label-text');
-                if (labelSpan) {
-                    labelSpan.innerText = data.isStarred ? "Unstar Message" : "Star Message";
-                } else {
-                    starOption.innerText = data.isStarred ? "⭐ Unstar Message" : "⭐ Star Message";
-                }
-            }
-        } else {
-            showToast(data.error || "Failed to update star.", "error");
-        }
-    } catch (err) {
-        console.error('Star toggle error:', err);
-    }
-};
-
 function toggleDropdown(e, dropdownId) {
     if (e) e.stopPropagation();
     const targetMenu = document.getElementById(dropdownId);
@@ -842,7 +803,6 @@ function wrapMediaWithMenu(msg, mediaHtml) {
             </div>`;
     }
 
-    const starLabel = msg.isStarred ? 'Unstar Message' : 'Star Message';
     const reportOptionHtml = !isOutgoing 
         ? `<div class="msg-menu-item report-item" onclick="triggerReportMessage('${msg._id}')">
                <span class="menu-item-icon">🚩</span>
@@ -866,10 +826,6 @@ function wrapMediaWithMenu(msg, mediaHtml) {
                 <div class="msg-menu-item" onclick="window.triggerSingleMessageForward('${msg._id}')">
                     <span class="menu-item-icon">↗️</span>
                     <span>Share / Forward</span>
-                </div>
-                <div id="star-option-${msg._id}" class="msg-menu-item star-item" onclick="toggleStarMessage('${msg._id}')">
-                    <span class="menu-item-icon">⭐</span>
-                    <span class="star-label-text">${starLabel}</span>
                 </div>
                 ${reportOptionHtml}
                 ${deleteOptionHtml}
@@ -916,7 +872,6 @@ function appendMessage(msg) {
     const dateString = msgDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
     const timeString = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const fullDateTimeString = `${dateString}, ${timeString}`;
-    const starDisplay = msg.isStarred ? 'inline-block' : 'none';
 
     let quoteHtml = '';
     if (msg.reply_to_message_id) {
@@ -957,7 +912,6 @@ function appendMessage(msg) {
             </div>`;
         inlineRenderBody = wrapMediaWithMenu(msg, pdfHtml);
     } else {
-        const starLabel = msg.isStarred ? 'Unstar Message' : 'Star Message';
         const pickerHtml = `
             <div class="reactions-picker">
                 <span onclick="triggerReaction('${msg._id}', '👍')" title="Thumbs Up">👍</span>
@@ -1011,10 +965,6 @@ function appendMessage(msg) {
                                 <span class="menu-item-icon">↗️</span>
                                 <span>Share / Forward</span>
                             </div>
-                            <div id="star-option-${msg._id}" class="msg-menu-item star-item" onclick="toggleStarMessage('${msg._id}')">
-                                <span class="menu-item-icon">⭐</span>
-                                <span class="star-label-text">${starLabel}</span>
-                            </div>
                             <div class="msg-menu-item translate-trigger-item" onclick="toggleTranslateSubmenu(event, '${msg._id}')">
                                 <span class="menu-item-icon">🌐</span>
                                 <span>Translate</span>
@@ -1049,7 +999,6 @@ function appendMessage(msg) {
                 <div class="message-bubble" id="bubble-${msg._id}">${quoteHtml}${inlineRenderBody}</div>
                 <div class="message-meta">
                     <span>${fullDateTimeString}</span>
-                    <span id="star-badge-${msg._id}" class="star-badge-indicator" style="display: ${starDisplay};" title="Starred Message">⭐</span>
                 </div>
             </div>
         `;
@@ -1081,7 +1030,6 @@ function appendMessage(msg) {
                 <div class="message-bubble" id="bubble-${msg._id}">${quoteHtml}${inlineRenderBody}</div>
                 <div class="message-meta">
                     <span>${fullDateTimeString}</span>
-                    <span id="star-badge-${msg._id}" class="star-badge-indicator" style="display: ${starDisplay};" title="Starred Message">⭐</span>
                     ${contextualTicks}
                 </div>
             </div>

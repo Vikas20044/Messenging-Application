@@ -41,10 +41,6 @@
                 <img id="sidebar-user-avatar" src="/uploads/default-avatar.png" alt="Avatar" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';">
                 <span id="user-display-tag">username</span>
             </div>
-            
-            <button id="open-starred-btn" class="nav-action-btn desktop-only" title="View Starred Messages" style="font-size: 0.9rem; padding: 0.45rem 0.7rem; display: flex; align-items: center; gap: 4px; color: #eab308; font-weight: bold;">
-                ⭐ Starred
-            </button>
 
             <button id="open-profile-btn" class="nav-action-btn desktop-only" title="Edit Profile & Settings">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon-svg">
@@ -73,10 +69,6 @@
                     <div class="mobile-nav-item" id="mobile-menu-profile-opt">
                         <span class="mobile-nav-item-icon">⚙️</span>
                         <span>Settings & Profile</span>
-                    </div>
-                    <div class="mobile-nav-item" id="mobile-menu-starred-opt">
-                        <span class="mobile-nav-item-icon">⭐</span>
-                        <span>Starred Messages</span>
                     </div>
                     <div class="mobile-menu-divider"></div>
                     <div class="mobile-nav-item" onclick="switchMainView('developer')">
@@ -461,17 +453,6 @@
         </div>
     </div>
 
-    <div id="starred-messages-modal" class="modal-overlay hidden">
-        <div class="modal-card" style="max-width: 520px;">
-            <header class="modal-header">
-                <h3 style="display: flex; align-items: center; gap: 6px; color: var(--text-main);">⭐ Starred Messages</h3>
-                <button id="close-starred-modal-btn" class="close-modal-x">&times;</button>
-            </header>
-            <div class="modal-body" id="starred-messages-list-target" style="display: flex; flex-direction: column; gap: 0.8rem; max-height: 420px; overflow-y: auto;">
-            </div>
-        </div>
-    </div>
-
     <div id="profile-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -511,20 +492,6 @@
                     </div>
                     <button type="submit" class="action-btn danger" style="width: 100%; padding: 0.7rem; margin-top: 0.3rem;">Update Credentials</button>
                 </form>
-                <hr style="border: 0; border-top: 1px solid var(--bg-tertiary); margin: 1.2rem 0;">
-                <div class="form-group">
-                    <label>Interface Theme</label>
-                    <div style="display: flex; gap: 0.75rem; margin-top: 0.35rem;">
-                        <button type="button" id="theme-btn-light" class="theme-choice-btn active" onclick="setAppTheme('light')">
-                            <span style="font-size: 1.25rem;">☀️</span>
-                            <span style="font-weight: 700; font-size: 0.9rem;">Light Theme</span>
-                        </button>
-                        <button type="button" id="theme-btn-dark" class="theme-choice-btn" onclick="setAppTheme('dark')">
-                            <span style="font-size: 1.25rem;">🌙</span>
-                            <span style="font-weight: 700; font-size: 0.9rem;">Dark Theme</span>
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -578,7 +545,7 @@
                 </div>
                 <form id="report-form" onsubmit="event.preventDefault(); window.submitReportMessage();">
                     <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Reason / Description of Report *</label>
-                    <textarea id="report-reason-input" rows="4" placeholder="Explain why you are reporting this message (e.g. harassment, spam, inappropriate media, hate speech)..." required style="width: 100%; box-sizing: border-box; background: var(--bg-primary); border: 1px solid var(--bg-tertiary); color: var(--text-main); padding: 0.6rem; border-radius: 8px; font-size: 0.88rem; outline: none; resize: vertical; margin-bottom: 1rem;"></textarea>
+                    <textarea id="report-reason-input" rows="4" placeholder="Explain why you are reporting this message ." required style="width: 100%; box-sizing: border-box; background: var(--bg-primary); border: 1px solid var(--bg-tertiary); color: var(--text-main); padding: 0.6rem; border-radius: 8px; font-size: 0.88rem; outline: none; resize: vertical; margin-bottom: 1rem;"></textarea>
                     <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
                         <button type="button" class="action-btn secondary" onclick="window.closeReportModal()" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Cancel</button>
                         <button type="submit" class="action-btn primary" style="background: var(--accent); border-color: var(--accent); color: white; padding: 0.5rem 1.2rem; font-size: 0.85rem; font-weight: 600;">Submit Report</button>

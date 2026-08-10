@@ -130,17 +130,6 @@ const initDB = async () => {
             );
         `);
 
-        // Starred Messages Table
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS starred_messages (
-                id SERIAL PRIMARY KEY,
-                user_id INT REFERENCES users(id) ON DELETE CASCADE,
-                message_id INT REFERENCES messages(id) ON DELETE CASCADE,
-                starred_at TIMESTAMPTZ DEFAULT NOW(),
-                UNIQUE(user_id, message_id)
-            );
-        `);
-
         // Message Reports Table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS message_reports (
@@ -160,7 +149,6 @@ const initDB = async () => {
             CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
             CREATE INDEX IF NOT EXISTS idx_room_members ON room_members(room_id, user_id);
             CREATE INDEX IF NOT EXISTS idx_group_reads ON group_message_reads(message_id, user_id);
-            CREATE INDEX IF NOT EXISTS idx_starred_messages ON starred_messages(user_id, message_id);
         `);
 
         console.log('Successfully connected to Cloud Database & Tables and Indexes Verified!');

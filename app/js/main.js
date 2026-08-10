@@ -455,7 +455,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const navbarMobileMenuDropdown = document.getElementById('navbar-mobile-menu-dropdown');
     const mobileMenuUserTrigger = document.getElementById('mobile-menu-user-trigger');
     const mobileMenuProfileOpt = document.getElementById('mobile-menu-profile-opt');
-    const mobileMenuStarredOpt = document.getElementById('mobile-menu-starred-opt');
 
     if (navbarMobileMenuTrigger && navbarMobileMenuDropdown) {
         navbarMobileMenuTrigger.addEventListener('click', (e) => {
@@ -481,16 +480,6 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             if (navbarMobileMenuDropdown) navbarMobileMenuDropdown.classList.add('hidden');
             openProfileModalHandler();
-        });
-    }
-
-    if (mobileMenuStarredOpt) {
-        mobileMenuStarredOpt.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (navbarMobileMenuDropdown) navbarMobileMenuDropdown.classList.add('hidden');
-            if (typeof window.loadStarredMessages === 'function') {
-                window.loadStarredMessages();
-            }
         });
     }
 
@@ -1249,17 +1238,6 @@ document.addEventListener('DOMContentLoaded', () => {
         closeReceiptsModal.addEventListener('click', () => receiptsAuditModal.classList.add('hidden'));
     }
 
-    const openStarredBtn = document.getElementById('open-starred-btn');
-    const closeStarredModalBtn = document.getElementById('close-starred-modal-btn');
-    const starredMessagesModal = document.getElementById('starred-messages-modal');
-
-    if (openStarredBtn) {
-        openStarredBtn.addEventListener('click', window.loadStarredMessages);
-    }
-    if (closeStarredModalBtn && starredMessagesModal) {
-        closeStarredModalBtn.addEventListener('click', () => starredMessagesModal.classList.add('hidden'));
-    }
-
     let touchStartX = 0;
     let touchEndX = 0;
 
@@ -1582,72 +1560,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initializeIdentity();
 });
-
-window.loadStarredMessages = async function() {
-    const target = document.getElementById('starred-messages-list-target');
-    const modal = document.getElementById('starred-messages-modal');
-    if (!target || !modal) return;
-
-    target.innerHTML = '<p class="empty-text">Loading starred messages...</p>';
-    modal.classList.remove('hidden');
-
-    try {
-        const res = await fetch('/api/messages/starred');
-        if (!res.ok) return;
-        const messages = await res.json();
-
-        target.innerHTML = '';
-        if (messages.length === 0) {
-            target.innerHTML = '<p class="empty-text">No starred messages yet. Use the message menu (⋮) to star messages.</p>';
-            return;
-        }
-
-        messages.forEach(msg => {
-            const card = document.createElement('div');
-            card.className = 'starred-msg-card';
-            card.style.cursor = 'pointer';
-            
-            const dateObj = new Date(msg.starred_at || msg.timestamp);
-            const dateStr = `${dateObj.toLocaleDateString()} at ${dateObj.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
-            const contextText = msg.room_name ? `in Group "${escapeHTML(msg.room_name)}"` : `from @${escapeHTML(msg.sender_username)}`;
-
-            let bodyContent = escapeHTML(msg.text || '');
-            if (msg.message_type === 'image') bodyContent = `📷 Image Attachment`;
-            else if (msg.message_type === 'audio') bodyContent = `🎵 Audio Recording`;
-            else if (msg.message_type === 'video') bodyContent = `🎥 Video Clip`;
-            else if (msg.message_type === 'pdf') bodyContent = `📄 PDF Document`;
-
-            card.innerHTML = `
-                <div class="starred-msg-header">
-                    <div class="starred-msg-user">
-                        <img src="${msg.sender_avatar}" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';" class="starred-msg-avatar">
-                        <span>${escapeHTML(msg.sender_username)}</span>
-                        <span style="font-size:0.72rem; color:var(--text-muted); font-weight:normal;">(${contextText})</span>
-                    </div>
-                    <span class="starred-msg-time">${dateStr}</span>
-                </div>
-                <div class="starred-msg-body">${bodyContent}</div>
-            `;
-            card.onclick = () => {
-                modal.classList.add('hidden');
-                if (msg.room_id) {
-                    const cachedRoom = joinedRoomsMap.get(msg.room_id) || {};
-                    selectActiveRoom(
-                        msg.room_id, 
-                        cachedRoom.room_name || msg.room_name || 'Group', 
-                        cachedRoom.room_code || msg.room_code || '', 
-                        cachedRoom.room_desc || msg.room_desc || '', 
-                        cachedRoom.room_icon || msg.room_icon || '/uploads/default-group.png'
-                    );
-                } else if (msg.target_user_id) {
-                    selectActiveTargetUser(msg.target_user_id, msg.target_username, msg.target_avatar);
-                }
-                setTimeout(() => scrollToMessage(msg.message_id), 400);
-            };
-            target.appendChild(card);
-        });
-    } catch (err) {
-        console.error('Error loading starred messages:', err);
-        target.innerHTML = '<p class="empty-text">Failed to load starred messages.</p>';
-    }
-};

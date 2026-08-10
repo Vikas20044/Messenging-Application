@@ -24,7 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'echochat_ultra_secure_key_2026',
+    secret: process.env.SESSION_SECRET || 'realtime_messaging_app_secure_key_2026',
     resave: false,
     saveUninitialized: false,
     cookie: { 

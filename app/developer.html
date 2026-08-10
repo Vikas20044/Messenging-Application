@@ -3,88 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meet the Developers</title>
+    <title>Meet the Developers - Real-Time Messaging App</title>
     <link rel="stylesheet" href="style.css">
     <style>
-       html, body {
+        html, body {
             overflow-y: auto !important;
             height: auto !important;
+            min-height: 100vh;
+            background-color: var(--bg-primary);
         }
         .about-container {
-            max-width: 900px;
-            margin: 4rem auto;
+            max-width: 960px;
+            margin: 3.5rem auto;
             padding: 0 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .about-header {
             text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .page-badge {
+            display: inline-block;
+            background: rgba(203, 110, 50, 0.1);
+            color: var(--accent);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            padding: 0.35rem 0.9rem;
+            border-radius: 999px;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(203, 110, 50, 0.2);
         }
         .about-header h1 {
             font-size: 2.4rem;
             color: var(--text-main);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.6rem;
             font-weight: 800;
             letter-spacing: -0.5px;
         }
         .about-header p {
             color: var(--text-muted);
             font-size: 1.05rem;
-            margin-bottom: 3rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
         }
         .dev-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 2rem;
-            margin-top: 1rem;
+            width: 100%;
+            margin-top: 0.5rem;
         }
         .dev-card {
             background: #ffffff;
             border: 1px solid var(--bg-tertiary);
-            border-radius: 16px;
-            padding: 2.5rem 1.5rem;
-            box-shadow: 0 4px 20px rgba(54, 42, 33, 0.02);
+            border-radius: 18px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 4px 20px rgba(54, 42, 33, 0.03);
             transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+        .dev-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), #e08e53);
+            opacity: 0.9;
         }
         .dev-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(203, 110, 50, 0.08);
+            box-shadow: 0 14px 32px rgba(203, 110, 50, 0.09);
             border-color: var(--accent);
         }
-        .dev-avatar {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--accent);
+        .dev-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 1.25rem;
-            background: var(--bg-secondary);
-            transition: transform 0.25s ease;
         }
-        .dev-card:hover .dev-avatar {
-            transform: scale(1.04);
+        .dev-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--accent);
+            background: var(--bg-secondary);
+            padding: 0.3rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--bg-tertiary);
         }
         .dev-card h2 {
-            font-size: 1.35rem;
+            font-size: 1.5rem;
             color: var(--text-main);
-            margin-bottom: 0.25rem;
-            font-weight: 700;
+            margin-bottom: 0.35rem;
+            font-weight: 750;
+            letter-spacing: -0.3px;
         }
         .dev-card .role {
-            font-size: 0.85rem;
-            text-transform: uppercase;
+            font-size: 0.9rem;
             color: var(--accent);
-            letter-spacing: 1px;
-            font-weight: 700;
-            margin-bottom: 1rem;
+            font-weight: 650;
+            margin-bottom: 1.25rem;
+        }
+        .dev-divider {
+            height: 1px;
+            background: var(--bg-tertiary);
+            width: 100%;
+            margin-bottom: 1.25rem;
         }
         .dev-card .bio {
             font-size: 0.92rem;
             color: var(--text-muted);
-            line-height: 1.55;
-            margin-bottom: 1.5rem;
-            min-height: 70px;
+            line-height: 1.65;
+            margin-bottom: 2rem;
+            flex-grow: 1;
         }
         .social-links {
             display: flex;
-            justify-content: center;
+            flex-wrap: wrap;
             gap: 0.75rem;
+            margin-top: auto;
+            padding-top: 0.5rem;
         }
         .social-btn {
             display: inline-flex;
@@ -92,7 +145,7 @@
             gap: 8px;
             background: var(--bg-secondary);
             border: 1px solid var(--bg-tertiary);
-            padding: 0.5rem 1rem;
+            padding: 0.55rem 1.1rem;
             border-radius: 8px;
             text-decoration: none;
             color: var(--text-main);
@@ -105,19 +158,29 @@
             color: #ffffff;
             border-color: var(--accent);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(203, 110, 50, 0.2);
         }
         .back-home-btn {
             margin-top: 3.5rem;
-            display: inline-block;
-            padding: 0.6rem 1.5rem;
-            font-size: 0.9rem;
-            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.7rem 1.75rem;
+            font-size: 0.92rem;
+            font-weight: 650;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .back-home-btn:hover {
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
     <div class="about-container">
         <header class="about-header">
+            <span class="page-badge">✨ Core Engineering Team</span>
             <h1>Meet the Architects</h1>
             <p>The engineering power behind the Real Time AI-Transliterating Messaging Ecosystem.</p>
         </header>
@@ -125,27 +188,31 @@
         <div class="dev-grid">
             <!-- Developer Card 1 (VIKAS KR) -->
             <div class="dev-card">
-                <!-- Hardcoded to look for dev1.png inside your uploads static folder -->
-                <img src="/uploads/dev1.png" class="dev-avatar" alt="VIKAS KR Pic" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';">
+                <div class="dev-card-top">
+                    <span class="dev-tag">⚙️ Systems & Backend</span>
+                </div>
                 <h2>VIKAS KR</h2>
                 <div class="role">Lead Backend & System Engineer</div>
-<p class="bio">Engineered the core server architecture using Node.js and Express, configured persistent real-time bidirectional communication via Socket.io, and optimized relational database queries within Neon PostgreSQL for secure session and message storag.</p>
+                <div class="dev-divider"></div>
+                <p class="bio">Engineered the core server architecture using Node.js and Express, configured persistent real-time bidirectional communication via Socket.io, and optimized relational database queries within Neon PostgreSQL for secure session and message storage.</p>
                 <div class="social-links">
                     <a href="https://github.com/Vikas20044" target="_blank" class="social-btn">💻 GitHub</a>
                     <a href="https://instagram.com/im_vikas_kr" target="_blank" class="social-btn">📸 Instagram</a>
                 </div>
             </div>
 
-            <!-- Developer Card 2 -->
+            <!-- Developer Card 2 (Vikas Poojary K) -->
             <div class="dev-card">
-                <!-- Hardcoded to look for dev2.png inside your uploads static folder -->
-                <img src="/uploads/dev2.png" class="dev-avatar" alt="Co-Developer Pic" onerror="this.onerror=null; this.src='/uploads/default-avatar.png';">
+                <div class="dev-card-top">
+                    <span class="dev-tag">🎨 UI/UX & Frontend</span>
+                </div>
                 <h2>Vikas Poojary K</h2>
                 <div class="role">UI/UX & Database Engineer</div>
+                <div class="dev-divider"></div>
                 <p class="bio">Crafted the highly responsive, warm-toned minimalist visual layout using CSS variables, built the single-page application (SPA) state views, and implemented the interactive user interfaces for the native emoji selector panel and AI translation menus.</p>
                 <div class="social-links">
                     <a href="https://github.com/1vikaa" target="_blank" class="social-btn">💻 GitHub</a>
-                    <a href="https://instagram.com/co-username" target="_blank" class="social-btn text-muted">📸 Instagram</a>
+                    <a href="https://instagram.com/co-username" target="_blank" class="social-btn">📸 Instagram</a>
                 </div>
             </div>
         </div>

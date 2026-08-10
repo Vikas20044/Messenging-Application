@@ -64,6 +64,10 @@ router.post('/login', async (req, res) => {
         }
 
         const user = result.rows[0];
+        if (user.is_deleted) {
+            return res.status(403).send('This account has been removed by system administrators.');
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).send('Incorrect password');

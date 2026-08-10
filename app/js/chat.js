@@ -50,6 +50,11 @@ window.triggerReportMessage = function(messageId) {
     const msg = messageStore.get(String(messageId));
     if (!msg) return;
 
+    if (currentUserId && Number(msg.sender_id) === Number(currentUserId)) {
+        showToast("Self-reporting is not allowed. You cannot report your own message.", "error");
+        return;
+    }
+
     activeReportMessageId = msg._id;
     const modal = document.getElementById('report-message-modal');
     const senderPreview = document.getElementById('report-sender-preview');
@@ -57,12 +62,12 @@ window.triggerReportMessage = function(messageId) {
     const reasonInput = document.getElementById('report-reason-input');
 
     let displaySnippet = msg.text || '';
-    if (msg.message_type === 'image') displaySnippet = '📷 Image Attachment';
-    else if (msg.message_type === 'audio') displaySnippet = '🎵 Audio Attachment';
-    else if (msg.message_type === 'video') displaySnippet = '🎥 Video Attachment';
-    else if (msg.message_type === 'pdf') displaySnippet = '📄 Document Attachment';
+    if (msg.message_type === 'image') displaySnippet = '📷 Image / Photo Attachment';
+    else if (msg.message_type === 'audio') displaySnippet = '🎵 Audio Voice Recording';
+    else if (msg.message_type === 'video') displaySnippet = '🎥 Video Clip Attachment';
+    else if (msg.message_type === 'pdf') displaySnippet = `📄 Document / PDF: ${msg.text || 'File'}`;
 
-    if (senderPreview) senderPreview.innerText = `From: @${msg.username || 'user'}`;
+    if (senderPreview) senderPreview.innerText = `From: @${msg.username || 'User #' + msg.sender_id}`;
     if (textPreview) textPreview.innerText = displaySnippet;
     if (reasonInput) reasonInput.value = '';
     if (modal) modal.classList.remove('hidden');
@@ -86,7 +91,7 @@ window.submitReportMessage = async function() {
     const reason = reasonInput ? reasonInput.value.trim() : '';
 
     if (!reason) {
-        showToast("Please provide a reason description for the report.", "error");
+        showToast("Please provide a reason / description for the report.", "error");
         return;
     }
 
@@ -477,7 +482,7 @@ window.selectTranslateLanguage = function(e, messageId, langCode, langName) {
 };
 
 function wrapMediaWithMenu(msg, mediaHtml) {
-    const isOutgoing = msg.sender_id === currentUserId;
+    const isOutgoing = currentUserId && Number(msg.sender_id) === Number(currentUserId);
     const pickerHtml = `
         <div class="reactions-picker">
             <span onclick="triggerReaction('${msg._id}', '👍')" title="Thumbs Up">👍</span>
@@ -501,7 +506,7 @@ function wrapMediaWithMenu(msg, mediaHtml) {
     const reportOptionHtml = !isOutgoing 
         ? `<div class="msg-menu-item report-item" onclick="triggerReportMessage('${msg._id}')">
                <span class="menu-item-icon">🚩</span>
-               <span>Report</span>
+               <span>Report Message</span>
            </div>` 
         : '';
 
@@ -535,11 +540,17 @@ function wrapMediaWithMenu(msg, mediaHtml) {
 
 function appendMessage(msg) {
     const messageHistory = document.getElementById('message-history');
-    if (!messageHistory) return;
+    if (!messageHistory || !msg || !msg._id) return;
+
+    // Prevent duplicate rendering of the same message card
+    if (document.getElementById(`msg-card-${msg._id}`)) {
+        messageStore.set(String(msg._id), msg);
+        return;
+    }
 
     messageStore.set(String(msg._id), msg);
 
-    const isOutgoing = msg.sender_id === currentUserId;
+    const isOutgoing = currentUserId && Number(msg.sender_id) === Number(currentUserId);
     const row = document.createElement('div');
     row.className = `message-row ${isOutgoing ? 'outgoing' : 'incoming'}`;
     row.id = `msg-card-${msg._id}`;
@@ -619,7 +630,7 @@ function appendMessage(msg) {
         const reportOptionHtml = !isOutgoing 
             ? `<div class="msg-menu-item report-item" onclick="triggerReportMessage('${msg._id}')">
                    <span class="menu-item-icon">🚩</span>
-                   <span>Report</span>
+                   <span>Report Message</span>
                </div>` 
             : '';
 
@@ -819,6 +830,8 @@ function selectActiveTargetUser(id, name, picUrl) {
     targetRoomId = null; 
     targetUserId = id;
 
+    const isUnavailable = name === 'Unavailable User';
+
     // Clear unread badge immediately from UI
     const targetItem = document.getElementById(`thread-user-${id}`);
     if (targetItem) {
@@ -831,6 +844,8 @@ function selectActiveTargetUser(id, name, picUrl) {
     const chatWindowTitle = document.getElementById('chat-window-title');
     const chatWindowSubtitle = document.getElementById('chat-window-subtitle');
     const chatWindowAvatar = document.getElementById('chat-window-avatar');
+    const msgInput = document.getElementById('msg-input');
+    const sendBtn = document.querySelector('#chat-form button[type="submit"]');
 
     if (checkRoomOnlineBtn) checkRoomOnlineBtn.classList.add('hidden');
 
@@ -840,8 +855,28 @@ function selectActiveTargetUser(id, name, picUrl) {
     if (clearBtn) clearBtn.click();
     cancelReply();
 
-    if (chatWindowTitle) chatWindowTitle.innerText = `${name}`;
-    if (chatWindowAvatar) chatWindowAvatar.src = picUrl || '/uploads/default-avatar.png';
+    if (isUnavailable) {
+        if (chatWindowTitle) chatWindowTitle.innerText = 'Unavailable User';
+        if (chatWindowSubtitle) chatWindowSubtitle.innerText = '⚪ Account unavailable or removed';
+        if (chatWindowAvatar) chatWindowAvatar.src = '/uploads/default-avatar.png';
+        if (msgInput) {
+            msgInput.disabled = true;
+            msgInput.placeholder = 'You cannot send messages to an unavailable user.';
+        }
+        if (sendBtn) sendBtn.disabled = true;
+    } else {
+        if (chatWindowTitle) chatWindowTitle.innerText = `${name}`;
+        if (chatWindowAvatar) chatWindowAvatar.src = picUrl || '/uploads/default-avatar.png';
+        if (msgInput) {
+            msgInput.disabled = false;
+            msgInput.placeholder = 'Type a message...';
+        }
+        if (sendBtn) sendBtn.disabled = false;
+
+        socket.emit('requestUserOnlineStatus', { targetUserId: id }, (reply) => {
+            if (chatWindowSubtitle) chatWindowSubtitle.innerText = reply && reply.status === 'online' ? '🟢 Online Now' : '⚪ Offline';
+        });
+    }
     
     const emptyNotice = document.getElementById('empty-view-notice');
     const chatSubsystem = document.getElementById('active-chat-subsystem');
@@ -855,10 +890,6 @@ function selectActiveTargetUser(id, name, picUrl) {
     closeMobileSidebar();
     const emojiPickerPanel = document.getElementById('emoji-picker-panel');
     if (emojiPickerPanel) emojiPickerPanel.classList.add('hidden');
-    
-    socket.emit('requestUserOnlineStatus', { targetUserId: id }, (reply) => {
-        if (chatWindowSubtitle) chatWindowSubtitle.innerText = reply && reply.status === 'online' ? '🟢 Online Now' : '⚪ Offline';
-    });
 
     setTimeout(scrollToBottom, 50);
     socket.emit('joinRoom', { currentUserId, targetUserId: id });

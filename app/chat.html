@@ -94,9 +94,11 @@
         });
 
         function appendMessage(msg) {
+            if (msg._id && document.getElementById(`msg-card-${msg._id}`)) return;
             const isOutgoing = msg.username === currentUsername;
             const row = document.createElement('div');
             row.className = `message-row ${isOutgoing ? 'outgoing' : 'incoming'}`;
+            if (msg._id) row.id = `msg-card-${msg._id}`;
             
             // Extracted date and time attributes safely to render descriptive chat lines
             const msgDate = new Date(msg.timestamp);

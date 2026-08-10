@@ -340,11 +340,18 @@ app.get('/api/profile/me', checkAuthSession, async (req, res) => {
 app.get('/api/profile/user/:id', checkAuthSession, async (req, res) => {
     try {
         const result = await pool.query(
-            "SELECT id, username, full_name, bio, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE id = $1", 
+            "SELECT id, username, full_name, bio, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url, COALESCE(is_deleted, FALSE) as is_deleted FROM users WHERE id = $1", 
             [req.params.id]
         );
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'User not found.' });
+        if (result.rows.length === 0 || result.rows[0].is_deleted) {
+            return res.json({
+                id: req.params.id,
+                username: 'Unavailable User',
+                full_name: 'Unavailable User',
+                bio: 'This account has been removed or is unavailable.',
+                profile_pic_url: '/uploads/default-avatar.png',
+                is_deleted: true
+            });
         }
         res.json(result.rows[0]);
     } catch (err) {
@@ -464,6 +471,10 @@ app.get('/developer', (req, res) => {
     res.sendFile(path.join(__dirname, 'app', 'developer.html'));
 });
 
+app.get('/about', (req, res) => {
+    res.sendFile(path.join(__dirname, 'app', 'developer.html'));
+});
+
 app.get('/faq', (req, res) => {
     res.sendFile(path.join(__dirname, 'app', 'faq.html'));
 });
@@ -485,17 +496,17 @@ app.get('/api/chats/active', checkAuthSession, async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT 
-                u.id, 
-                u.username, 
-                u.full_name,
+                lm.partner_id as id, 
+                COALESCE(u.username, 'Unavailable User') as username, 
+                COALESCE(u.full_name, 'Unavailable User') as full_name,
                 COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url,
+                COALESCE(u.is_deleted, FALSE) as is_deleted,
                 lm.text as last_message,
                 lm.message_type as last_message_type,
                 lm.sender_id as last_message_sender_id,
                 lm.timestamp as last_activity,
                 COALESCE(unread.unread_count, 0)::int as unread_count
-            FROM users u
-            JOIN (
+            FROM (
                 SELECT DISTINCT ON (partner_id) 
                     partner_id, id, text, message_type, sender_id, timestamp
                 FROM (
@@ -506,13 +517,14 @@ app.get('/api/chats/active', checkAuthSession, async (req, res) => {
                     WHERE room_id IS NULL AND (sender_id = $1 OR receiver_id = $1)
                 ) m_sub
                 ORDER BY partner_id, timestamp DESC
-            ) lm ON u.id = lm.partner_id
+            ) lm
+            LEFT JOIN users u ON lm.partner_id = u.id
             LEFT JOIN (
                 SELECT sender_id, COUNT(*)::int as unread_count
                 FROM messages
                 WHERE receiver_id = $1 AND room_id IS NULL AND isread = FALSE
                 GROUP BY sender_id
-            ) unread ON u.id = unread.sender_id
+            ) unread ON lm.partner_id = unread.sender_id
             ORDER BY lm.timestamp DESC
         `, [req.session.userId]);
         res.json(result.rows);
@@ -527,7 +539,7 @@ app.get('/api/users/search', checkAuthSession, async (req, res) => {
     if (!query) return res.json([]);
     try {
         const result = await pool.query(
-            "SELECT id, username, full_name, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE (username ILIKE $1 OR full_name ILIKE $1) AND id != $2 LIMIT 10",
+            "SELECT id, username, full_name, COALESCE(profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url FROM users WHERE (username ILIKE $1 OR full_name ILIKE $1) AND id != $2 AND COALESCE(is_deleted, FALSE) = FALSE LIMIT 10",
             [`%${query}%`, req.session.userId]
         );
         res.json(result.rows);
@@ -693,18 +705,18 @@ io.on('connection', (socket) => {
 
             if (updateRes.rows.length > 0) {
                 updateRes.rows.forEach(r => {
-                    io.to(roomName).emit('messageReadUpdate', r.id);
-                    io.to(`user_${tgtId}`).emit('messageReadUpdate', r.id);
+                    io.to(roomName).to(`user_${tgtId}`).emit('messageReadUpdate', r.id);
                 });
             }
 
             const result = await pool.query(`
                 SELECT m.id as _id, m.text, m.timestamp, m.isread as "isRead", 
-                       u.username as username, m.sender_id, m.message_type, m.file_url, m.is_deleted, m.is_edited,
+                       COALESCE(u.username, 'Unavailable User') as username, m.sender_id, m.message_type, m.file_url, m.is_deleted, m.is_edited,
                        COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url,
+                       COALESCE(u.is_deleted, FALSE) as is_user_deleted,
                        m.reply_to_message_id,
                        p.text as reply_to_text,
-                       pu.username as reply_to_username,
+                       COALESCE(pu.username, 'Unavailable User') as reply_to_username,
                        p.is_deleted as reply_to_is_deleted,
                        m.read_at,
                        ((SELECT COUNT(*) FROM starred_messages sm WHERE sm.message_id = m.id AND sm.user_id = $1) > 0) AS "isStarred",
@@ -719,7 +731,7 @@ io.on('connection', (socket) => {
                            ) eg
                        ) as reactions
                 FROM messages m
-                JOIN users u ON m.sender_id = u.id
+                LEFT JOIN users u ON m.sender_id = u.id
                 LEFT JOIN messages p ON m.reply_to_message_id = p.id
                 LEFT JOIN users pu ON p.sender_id = pu.id
                 WHERE ((m.sender_id = $1 AND m.receiver_id = $2) 
@@ -737,6 +749,13 @@ io.on('connection', (socket) => {
         const sender_id = socket.userId;
         const receiverIdParsed = parseInt(receiver_id, 10);
         if (!sender_id || !receiverIdParsed) return;
+
+        // Verify receiver is active and not deleted
+        const receiverCheck = await pool.query('SELECT id, is_deleted FROM users WHERE id = $1', [receiverIdParsed]);
+        if (receiverCheck.rows.length === 0 || receiverCheck.rows[0].is_deleted) {
+            socket.emit('chatError', { error: 'You cannot send messages to an unavailable user.' });
+            return;
+        }
 
         const roomName = `chat_${Math.min(sender_id, receiverIdParsed)}_${Math.max(sender_id, receiverIdParsed)}`;
         const type = message_type || 'text';
@@ -774,10 +793,8 @@ io.on('connection', (socket) => {
                 reactions: {}
             };
 
-            // Emit to direct chat room and both users' personal rooms for real-time inbox updates
-            io.to(roomName).emit('message', payload);
-            io.to(`user_${receiverIdParsed}`).emit('message', payload);
-            io.to(`user_${sender_id}`).emit('message', payload);
+            // Chaining .to() automatically deduplicates recipient sockets across rooms
+            io.to(roomName).to(`user_${receiverIdParsed}`).to(`user_${sender_id}`).emit('message', payload);
         } catch (err) {
             console.error('Failed to execute private message insert:', err);
         }
@@ -814,11 +831,12 @@ io.on('connection', (socket) => {
 
             const result = await pool.query(`
                 SELECT m.id as _id, m.text, m.timestamp, m.isread as "isRead", 
-                       u.username as username, m.sender_id, m.message_type, m.file_url, m.is_deleted, m.is_edited,
+                       COALESCE(u.username, 'Unavailable User') as username, m.sender_id, m.message_type, m.file_url, m.is_deleted, m.is_edited,
                        COALESCE(u.profile_pic_url, '/uploads/default-avatar.png') as profile_pic_url,
+                       COALESCE(u.is_deleted, FALSE) as is_user_deleted,
                        m.reply_to_message_id,
                        p.text as reply_to_text,
-                       pu.username as reply_to_username,
+                       COALESCE(pu.username, 'Unavailable User') as reply_to_username,
                        p.is_deleted as reply_to_is_deleted,
                        m.read_at,
                        (SELECT COUNT(*)::int FROM group_message_reads gmr WHERE gmr.message_id = m.id) AS "seen_count",
@@ -834,7 +852,7 @@ io.on('connection', (socket) => {
                            ) eg
                        ) as reactions
                 FROM messages m
-                JOIN users u ON m.sender_id = u.id
+                LEFT JOIN users u ON m.sender_id = u.id
                 LEFT JOIN messages p ON m.reply_to_message_id = p.id
                 LEFT JOIN users pu ON p.sender_id = pu.id
                 WHERE m.room_id = $1
@@ -1194,8 +1212,12 @@ app.post('/api/admin/users/:id/flag', checkAdminSession, async (req, res) => {
 app.delete('/api/admin/users/:id', checkAdminSession, async (req, res) => {
     const targetedUserId = req.params.id;
     try {
-        await pool.query('DELETE FROM users WHERE id = $1', [targetedUserId]);
-        io.emit('userModerated', { userId: targetedUserId, action: 'deleted' });
+        await pool.query(
+            "UPDATE users SET username = 'deleted_user_' || id, email = 'deleted_' || id || '@deleted.local', full_name = 'Unavailable User', bio = 'This account has been removed by system administrators.', profile_pic_url = '/uploads/default-avatar.png', is_deleted = TRUE WHERE id = $1", 
+            [targetedUserId]
+        );
+        io.emit('userModerated', { userId: parseInt(targetedUserId, 10), action: 'deleted' });
+        io.emit('profileUpdated', { userId: parseInt(targetedUserId, 10), username: 'Unavailable User', full_name: 'Unavailable User', bio: 'This account has been removed.', profile_pic_url: '/uploads/default-avatar.png' });
         res.sendStatus(200);
     } catch (err) {
         console.error('Error deleting user:', err);
@@ -1238,15 +1260,16 @@ app.get('/api/admin/reports', checkAdminSession, async (req, res) => {
                 mr.status,
                 mr.reported_at,
                 rep.id as reporter_id,
-                rep.username as reporter_username,
-                rep.email as reporter_email,
+                COALESCE(rep.username, 'Unknown Reporter') as reporter_username,
+                COALESCE(rep.email, '') as reporter_email,
                 snd.id as sender_id,
-                snd.username as sender_username,
-                snd.email as sender_email,
-                m.text as message_text,
-                m.message_type,
+                COALESCE(snd.username, 'Unavailable User') as sender_username,
+                COALESCE(snd.email, '') as sender_email,
+                COALESCE(snd.is_deleted, FALSE) as is_deleted_user,
+                COALESCE(m.text, '(Message Deleted or Unavailable)') as message_text,
+                COALESCE(m.message_type, 'text') as message_type,
                 m.file_url,
-                m.is_deleted,
+                COALESCE(m.is_deleted, (m.id IS NULL)) as is_deleted,
                 m.timestamp as message_timestamp,
                 m.room_id
             FROM message_reports mr
@@ -1272,7 +1295,17 @@ app.post('/api/admin/reports/:id/action', checkAdminSession, async (req, res) =>
         }
         const report = reportRes.rows[0];
 
-        if (action === 'delete_message' && report.message_id) {
+        if ((action === 'delete_sender' || action === 'delete_user' || action === 'remove_account') && report.sender_id) {
+            // Option 1: Remove/Delete Account permanently
+            await pool.query(
+                "UPDATE users SET username = 'deleted_user_' || id, email = 'deleted_' || id || '@deleted.local', full_name = 'Unavailable User', bio = 'This account has been removed by system administrators.', profile_pic_url = '/uploads/default-avatar.png', is_deleted = TRUE WHERE id = $1",
+                [report.sender_id]
+            );
+            await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
+            io.emit('userModerated', { userId: report.sender_id, action: 'deleted' });
+            io.emit('profileUpdated', { userId: report.sender_id, username: 'Unavailable User', full_name: 'Unavailable User', bio: 'This account has been removed.', profile_pic_url: '/uploads/default-avatar.png' });
+        } else if (action === 'delete_message' && report.message_id) {
+            // Option 2: Delete Message
             await pool.query(
                 "UPDATE messages SET is_deleted = TRUE, text = 'This message was deleted by system admin' WHERE id = $1",
                 [report.message_id]
@@ -1280,20 +1313,17 @@ app.post('/api/admin/reports/:id/action', checkAdminSession, async (req, res) =>
             await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
             io.emit('messageDeleted', { messageId: report.message_id });
         } else if (action === 'flag_sender' && report.sender_id) {
+            // Option 3: Flag Account
             await pool.query(
                 "UPDATE users SET bio = '⚠️ Profile content under review by system admin.' WHERE id = $1",
                 [report.sender_id]
             );
             await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
-            io.emit('profileUpdated', { userId: report.sender_id, bio: '⚠️ Undergoing review.' });
+            io.emit('profileUpdated', { userId: report.sender_id, bio: '⚠️ Profile content under review by system admin.' });
         } else if (action === 'reset_sender_pass' && report.sender_id) {
             const defaultHashedPassword = await bcrypt.hash('reset123', 10);
             await pool.query('UPDATE users SET password = $1 WHERE id = $2', [defaultHashedPassword, report.sender_id]);
             await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
-        } else if (action === 'delete_sender' && report.sender_id) {
-            await pool.query('DELETE FROM users WHERE id = $1', [report.sender_id]);
-            await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
-            io.emit('userModerated', { userId: report.sender_id, action: 'deleted' });
         } else if (action === 'dismiss_report') {
             await pool.query("UPDATE message_reports SET status = 'dismissed' WHERE id = $1", [reportId]);
         } else if (action === 'resolve_report') {

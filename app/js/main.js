@@ -722,52 +722,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Main Chat Form Submit
+    let isSendingMessage = false;
     if (chatForm && msgInput) {
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (isSendingMessage) return;
             if (emojiPickerPanel) emojiPickerPanel.classList.add('hidden');
             let text = msgInput.value.trim();
             if(text) {
-                if (selectedOutgoingLang !== 'auto' && /[a-zA-Z0-9]/.test(text)) {
-                    try {
-                        msgInput.disabled = true;
-                        const itcMap = { kn: 'kn-t-i0-und', ta: 'ta-t-i0-und', te: 'te-t-i0-und', ml: 'ml-t-i0-und', bn: 'bn-t-i0-und', hi: 'hi-t-i0-und' };
-                        const res = await fetch(`https://inputtools.google.com/request?text=${encodeURIComponent(text)}&itc=${itcMap[selectedOutgoingLang]}&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8&app=chat-transliterate`);
-                        if (res.ok) {
-                            const data = await res.json();
-                            if (data[0] === 'SUCCESS' && data[1] && data[1][0] && data[1][0][1] && data[1][0][1][0]) {
-                                text = data[1][0][1][0];
+                isSendingMessage = true;
+                msgInput.value = '';
+                try {
+                    if (selectedOutgoingLang !== 'auto' && /[a-zA-Z0-9]/.test(text)) {
+                        try {
+                            const itcMap = { kn: 'kn-t-i0-und', ta: 'ta-t-i0-und', te: 'te-t-i0-und', ml: 'ml-t-i0-und', bn: 'bn-t-i0-und', hi: 'hi-t-i0-und' };
+                            const res = await fetch(`https://inputtools.google.com/request?text=${encodeURIComponent(text)}&itc=${itcMap[selectedOutgoingLang]}&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8&app=chat-transliterate`);
+                            if (res.ok) {
+                                const data = await res.json();
+                                if (data[0] === 'SUCCESS' && data[1] && data[1][0] && data[1][0][1] && data[1][0][1][0]) {
+                                    text = data[1][0][1][0];
+                                }
                             }
+                        } catch(err) {
+                            console.error(err);
                         }
-                    } catch(err) {
-                        console.error(err);
-                    } finally {
-                        msgInput.disabled = false;
                     }
-                }
 
-                if (activeEditMessageId) {
-                    const payload = { messageId: activeEditMessageId, text };
-                    socket.emit('editMessage', payload);
-                    cancelEdit();
-                } else {
-                    const payload = {
-                        text,
-                        message_type: 'text',
-                        file_url: null,
-                        reply_to_message_id: activeReplyMessageId
-                    };
-                    if(targetUserId) {
-                        payload.receiver_id = targetUserId;
-                        socket.emit('privateMessage', payload);
-                    } else if(targetRoomId) {
-                        payload.room_id = targetRoomId;
-                        socket.emit('groupMessage', payload);
+                    if (activeEditMessageId) {
+                        const payload = { messageId: activeEditMessageId, text };
+                        socket.emit('editMessage', payload);
+                        cancelEdit();
+                    } else {
+                        const payload = {
+                            text,
+                            message_type: 'text',
+                            file_url: null,
+                            reply_to_message_id: activeReplyMessageId
+                        };
+                        if(targetUserId) {
+                            payload.receiver_id = targetUserId;
+                            socket.emit('privateMessage', payload);
+                        } else if(targetRoomId) {
+                            payload.room_id = targetRoomId;
+                            socket.emit('groupMessage', payload);
+                        }
+                        cancelReply();
                     }
-                    msgInput.value = '';
-                    cancelReply();
+                } finally {
+                    isSendingMessage = false;
+                    msgInput.focus();
                 }
-                msgInput.focus();
             }
         });
     }
@@ -1251,6 +1255,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const target = document.getElementById(`reactions-target-${messageId}`);
         if (target) target.innerHTML = renderReactions(messageId, reactions);
+    });
+
+    socket.on('userModerated', ({ userId, action }) => {
+        const parsedUserId = Number(userId);
+        if (currentUserId && parsedUserId === Number(currentUserId) && action === 'deleted') {
+            alert("Your account has been deleted by a system administrator.");
+            window.location.href = '/login';
+            return;
+        }
+
+        if (targetUserId && Number(targetUserId) === parsedUserId && action === 'deleted') {
+            const chatWindowTitle = document.getElementById('chat-window-title');
+            const chatWindowSubtitle = document.getElementById('chat-window-subtitle');
+            const chatWindowAvatar = document.getElementById('chat-window-avatar');
+            const msgInput = document.getElementById('msg-input');
+            const sendBtn = document.querySelector('#chat-form button[type="submit"]');
+
+            if (chatWindowTitle) chatWindowTitle.innerText = 'Unavailable User';
+            if (chatWindowSubtitle) chatWindowSubtitle.innerText = '⚪ Account unavailable or removed';
+            if (chatWindowAvatar) chatWindowAvatar.src = '/uploads/default-avatar.png';
+            if (msgInput) {
+                msgInput.disabled = true;
+                msgInput.placeholder = 'You cannot send messages to an unavailable user.';
+            }
+            if (sendBtn) sendBtn.disabled = true;
+        }
+
+        loadActiveThreads();
+    });
+
+    socket.on('chatError', ({ error }) => {
+        if (error) showToast(error, 'error');
     });
 
     // Run identity setup

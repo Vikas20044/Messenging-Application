@@ -34,6 +34,7 @@ const initDB = async () => {
             ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(100) DEFAULT '';
             ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT DEFAULT '';
             ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_pic_url TEXT DEFAULT '/uploads/default-avatar.png';
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
         `);
 
         // Rooms Table

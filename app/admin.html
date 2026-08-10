@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard Control Panel - Realtime Messaging Application</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Chart.js CDN Engine for Visual Analytics Graphs -->
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* --- ADMIN LIGHT & DARK PALETTES --- */
+        
         :root {
             --adm-bg-main: #f8fafc;
             --adm-bg-card: #ffffff;
@@ -37,7 +37,6 @@
             --adm-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
         }
 
-        /* --- GLOBAL RESET & LAYOUT --- */
         html, body {
             overflow: hidden !important;
             height: 100vh !important;
@@ -49,7 +48,6 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* --- AUTHENTICATION LOCK SCREEN --- */
         .auth-gate-wrapper {
             display: flex;
             justify-content: center;
@@ -113,14 +111,12 @@
             background-color: #1e293b;
         }
 
-        /* --- PORTAL CONSOLE WRAPPER --- */
         .portal-layout {
             display: flex;
             width: 100vw;
             height: 100vh;
         }
 
-        /* --- SIDEBAR NAVBAR --- */
         .adm-sidebar {
             width: 260px;
             background-color: var(--adm-sidebar-bg);
@@ -195,7 +191,6 @@
             gap: 0.5rem;
         }
 
-        /* --- MAIN CONTENT PANEL --- */
         .adm-main {
             flex: 1;
             display: flex;
@@ -232,7 +227,6 @@
             box-sizing: border-box;
         }
 
-        /* --- DASHBOARD ELEMENTS & CARDS --- */
         .adm-tab-section {
             display: none;
             animation: fadeInTab 0.3s ease;
@@ -293,7 +287,6 @@
         .bg-blue-light { background-color: rgba(59, 130, 246, 0.12); color: #3b82f6; }
         .bg-green-light { background-color: rgba(16, 185, 129, 0.12); color: var(--adm-success); }
 
-        /* --- VISUAL ANALYTICS --- */
         .adm-charts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
@@ -315,7 +308,6 @@
             margin: 0 0 1.25rem 0;
         }
 
-        /* --- DATA TABLES --- */
         .adm-table-card {
             background-color: var(--adm-bg-card);
             border: 1px solid var(--adm-border);
@@ -392,7 +384,6 @@
             background-color: rgba(255,255,255,0.01);
         }
 
-        /* --- CONTROL BUTTONS & BADGES --- */
         .adm-btn {
             padding: 0.4rem 0.75rem;
             border-radius: 6px;
@@ -452,7 +443,6 @@
             font-family: monospace;
         }
 
-        /* --- TOAST NOTIFICATIONS --- */
         .toast-container {
             position: fixed;
             bottom: 24px;
@@ -490,7 +480,6 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
-        /* --- MOBILE LAYOUT TOGGLES --- */
         .hamburger-btn {
             display: none;
             background: none;
@@ -524,7 +513,6 @@
 </head>
 <body>
 
-    <!-- PORTAL AUTHENTICATION LOCK SCREEN -->
     <div id="admin-auth-gate" class="auth-gate-wrapper">
         <div class="adm-auth-card">
             <h2>Admin Authorization</h2>
@@ -538,11 +526,9 @@
         </div>
     </div>
 
-    <!-- MAIN ADMINISTRATIVE WORKSPACE METRICS DASHBOARD -->
     <div id="admin-dashboard-view" class="portal-layout hidden">
         <div id="adm-sidebar-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:90; transition:opacity 0.25s; opacity:0;" onclick="closeMobileSidebar()"></div>
-        
-        <!-- SIDEBAR NAVIGATION -->
+
         <aside class="adm-sidebar" id="adm-sidebar">
             <div class="adm-sidebar-header">
                 <div class="adm-sidebar-brand">
@@ -576,10 +562,8 @@
             </div>
         </aside>
 
-        <!-- MAIN PANEL CONTENT -->
         <main class="adm-main">
-            
-            <!-- TOPBAR HEADER -->
+
             <header class="adm-topbar">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <button class="hamburger-btn" id="menu-toggle-btn">☰</button>
@@ -592,11 +576,9 @@
                     </div>
                 </div>
             </header>
-            
-            <!-- SCROLLABLE WORKSPACE VIEWS -->
+
             <div class="adm-content-scroll">
-                
-                <!-- TAB 1: OVERVIEW DASHBOARD -->
+
                 <section class="adm-tab-section active" id="tab-overview">
                     <div class="adm-stats-grid">
                         <div class="adm-stat-card">
@@ -644,8 +626,7 @@
                         </div>
                     </div>
                 </section>
-                
-                <!-- TAB 2: ACCOUNTS DIRECTORY -->
+
                 <section class="adm-tab-section" id="tab-users">
                     <div class="adm-table-card">
                         <div class="adm-table-header">
@@ -672,8 +653,7 @@
                         </div>
                     </div>
                 </section>
-                
-                <!-- TAB 3: COMMUNITIES HUB -->
+
                 <section class="adm-tab-section" id="tab-rooms">
                     <div class="adm-table-card">
                         <div class="adm-table-header">
@@ -701,8 +681,7 @@
                         </div>
                     </div>
                 </section>
-                
-                <!-- TAB 4: SYSTEM SETTINGS -->
+
                 <section class="adm-tab-section" id="tab-settings">
                     <div class="adm-table-card" style="max-width: 600px;">
                         <h2 style="margin-bottom:1.5rem; font-weight:700;">Global Regulations & Controls</h2>
@@ -732,8 +711,7 @@
                         </div>
                     </div>
                 </section>
-                
-                <!-- TAB 5: REPORTED MESSAGES CONSOLE -->
+
                 <section class="adm-tab-section" id="tab-reports">
                     <div class="adm-table-card">
                         <div class="adm-table-header">
@@ -775,7 +753,6 @@
         </main>
     </div>
 
-    <!-- TOAST CONTAINER FOR FLOATING NOTIFICATIONS -->
     <div id="toast-container" class="toast-container"></div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -794,7 +771,6 @@
         let activeUsersData = [];
         let activeRoomsData = [];
 
-        // Dynamic System Toast Notification Dispatcher
         function triggerToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -811,7 +787,6 @@
             }, 4000);
         }
 
-        // Check authentication state on page load
         async function checkAdminAuthentication() {
             try {
                 const res = await fetch('/api/admin/check-auth');
@@ -831,14 +806,12 @@
             dashboardView.classList.add('hidden');
         }
 
-        // Toggle Dark/Light Mode
         document.getElementById('theme-toggle-btn').addEventListener('click', () => {
             document.body.classList.toggle('dark-theme');
             triggerToast('Dashboard theme toggled.', 'success');
             loadDashboardMetrics();
         });
 
-        // Toggle Sidebar Navigation on Small Screens
         const overlay = document.getElementById('adm-sidebar-overlay');
         
         function openMobileSidebar() {
@@ -860,7 +833,6 @@
         document.getElementById('menu-toggle-btn').addEventListener('click', openMobileSidebar);
         document.getElementById('close-sidebar-btn').addEventListener('click', closeMobileSidebar);
 
-        // Switch Tabs Layout
         document.querySelectorAll('.adm-nav-item').forEach(item => {
             item.addEventListener('click', () => {
                 document.querySelectorAll('.adm-nav-item').forEach(i => i.classList.remove('active'));
@@ -886,7 +858,6 @@
             });
         });
 
-        // Authentication Submission Gateway
         document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('admin-user').value.trim();
@@ -912,7 +883,6 @@
             }
         });
 
-        // Logout
         document.getElementById('admin-logout-btn').addEventListener('click', async () => {
             await fetch('/api/admin/logout', { method: 'POST' });
             authGate.classList.remove('hidden');
@@ -920,13 +890,11 @@
             triggerToast('Logged out of admin panel.', 'success');
         });
 
-        // Manual Data Refresher Trigger
         document.getElementById('refresh-metrics-btn').addEventListener('click', () => {
             loadDashboardMetrics();
             triggerToast('Database metrics refreshed.', 'success');
         });
 
-        // Load & Cache metrics dynamically
         async function loadDashboardMetrics() {
             try {
                 const res = await fetch('/api/admin/metrics');
@@ -941,7 +909,6 @@
                 activeUsersData = data.users || [];
                 activeRoomsData = data.rooms || [];
 
-                // Inject Counter Cards Values
                 const totalUsers = parseInt(data.counters.userCount || 0);
                 const totalRooms = parseInt(data.counters.roomCount || 0);
                 const totalMessages = parseInt(data.counters.messageCount || 0);
@@ -964,10 +931,8 @@
                     }
                 }
 
-                // Render Canvas Elements
                 renderApplicationCharts(totalUsers, totalRooms, totalMessages);
 
-                // Populate Tables
                 renderUsersTable(activeUsersData);
                 renderRoomsTable(activeRoomsData);
                 loadAdminReports();
@@ -978,7 +943,6 @@
             }
         }
 
-        // Render Users Table
         function renderUsersTable(usersList) {
             const userTbody = document.getElementById('users-table-tbody');
             if (!userTbody) return;
@@ -1013,7 +977,6 @@
             });
         }
 
-        // Render Rooms Table
         function renderRoomsTable(roomsList) {
             const roomTbody = document.getElementById('rooms-table-tbody');
             if (!roomTbody) return;
@@ -1040,7 +1003,6 @@
             });
         }
 
-        // Client-side search filters
         document.getElementById('user-search-filter').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase().trim();
             const filtered = activeUsersData.filter(u => 
@@ -1059,7 +1021,6 @@
             renderRoomsTable(filtered);
         });
 
-        // 1. Moderate User Flag Action
         async function executeUserFlag(userId, username) {
             if(confirm(`Are you sure you want to flag the account description/bio for user "${username}" (#${userId})?`)) {
                 try {
@@ -1076,7 +1037,6 @@
             }
         }
 
-        // 2. Reset User Password Action
         async function resetUserPassword(userId, username) {
             if(confirm(`Are you sure you want to reset password credentials for user "${username}" to default "reset123"?`)) {
                 try {
@@ -1092,7 +1052,6 @@
             }
         }
 
-        // 3. Purge User Account Action
         async function deleteUserAccount(userId, username) {
             if(confirm(`🚨 WARNING: Deleting user "${username}" (#${userId}) will permanently purge their profile, memberships, and messages from the tables. Proceed?`)) {
                 try {
@@ -1109,7 +1068,6 @@
             }
         }
 
-        // 4. Delete Community Room Action
         async function deleteCommunityRoom(roomId, roomName) {
             if(confirm(`🚨 WARNING: Deleting community space "${roomName}" (#${roomId}) will permanently purge it and all chat messages inside it. Proceed?`)) {
                 try {
@@ -1126,7 +1084,6 @@
             }
         }
 
-        // --- MESSAGE REPORTS ADMINISTRATIVE ENGINE ---
         let activeReportsData = [];
         let currentReportStatusFilter = 'all';
 
@@ -1294,7 +1251,6 @@
             }
         };
 
-        // CHARTS LOGIC MODULE WITH EMBEDDED CONTEXT CONFIGURATIONS
         function renderApplicationCharts(users, rooms, messages) {
             const isDark = document.body.classList.contains('dark-theme');
             const fontColor = isDark ? '#9ca3af' : '#64748b';
@@ -1304,7 +1260,6 @@
             const accentPurple = '#8b5cf6';
             const accentBlue = '#3b82f6';
 
-            // 1. Ratio Doughnut Chart Setup
             const doughnutEl = document.getElementById('ratioDoughnutChart');
             if (doughnutEl) {
                 const ctxDoughnut = doughnutEl.getContext('2d');
@@ -1330,7 +1285,6 @@
                 });
             }
 
-            // 2. Growth/Volume Activity Bar Chart Setup
             const barEl = document.getElementById('growthBarChart');
             if (barEl) {
                 const ctxBar = barEl.getContext('2d');
@@ -1361,7 +1315,6 @@
             }
         }
 
-        // Initialize Real-time Socket Subscriptions for Administrator Alerts
         try {
             const adminSocket = io();
             adminSocket.on('newReportCreated', () => {
@@ -1377,7 +1330,6 @@
             console.error('Socket init error in admin:', e);
         }
 
-        // Initialize Authentication state on script load
         checkAdminAuthentication();
     </script>
 </body>

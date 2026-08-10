@@ -8,7 +8,6 @@ const fs = require('fs');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
 
-// Import modular database configurations and authentication routes
 const { pool, initDB } = require('./src/config/db');
 const authRoutes = require('./src/routes/auth');
 
@@ -34,7 +33,6 @@ app.use(session({
     }
 }));
 
-// Ensure local file storage paths exist for profile photos and chat media attachments
 const uploadDir = path.join(__dirname, 'app', 'uploads');
 const chatUploadDir = path.join(__dirname, 'app', 'uploads', 'chat');
 
@@ -45,7 +43,6 @@ if (!fs.existsSync(chatUploadDir)) {
     fs.mkdirSync(chatUploadDir, { recursive: true });
 }
 
-// --- AUTOMATIC WHATSAPP-STYLE PLACEHOLDER GENERATOR ---
 const defaultAvatarPath = path.join(uploadDir, 'default-avatar.png');
 const defaultGroupPath = path.join(uploadDir, 'default-group.png');
 
@@ -59,17 +56,13 @@ if (!fs.existsSync(defaultGroupPath)) {
     fs.writeFileSync(defaultGroupPath, Buffer.from(whatsappGroupBase64, 'base64'));
 }
 
-// Serve static assets out of the /app directory
 app.use(express.static(path.join(__dirname, 'app'), { index: false }));
 app.use('/uploads', express.static(path.join(__dirname, 'app', 'uploads')));
 
-// Initialize PostgreSQL Tables and Performance Indexes
 initDB();
 
-// Bind Modular Authentication Endpoints
 app.use('/api', authRoutes);
 
-// --- MULTER STORAGE CONFIGURATIONS ---
 const profileStorage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => {
@@ -80,7 +73,7 @@ const profileStorage = multer.diskStorage({
 
 const uploadProfile = multer({
     storage: profileStorage,
-    limits: { fileSize: 2 * 1024 * 1024 }, // Max 2MB
+    limits: { fileSize: 2 * 1024 * 1024 }, 
     fileFilter: (req, file, cb) => {
         const filetypes = /jpeg|jpg|png|webp/;
         const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -100,7 +93,7 @@ const chatMediaStorage = multer.diskStorage({
 
 const uploadChatMediaBulk = multer({
     storage: chatMediaStorage,
-    limits: { fileSize: 15 * 1024 * 1024 }, // Max 15MB
+    limits: { fileSize: 15 * 1024 * 1024 }, 
     fileFilter: (req, file, cb) => {
         const filetypes = /jpeg|jpg|png|webp|mp3|wav|ogg|mpeg|mp4|webm|pdf/;
         const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -110,7 +103,6 @@ const uploadChatMediaBulk = multer({
     }
 });
 
-// --- AUTHENTICATION MIDDLEWARES ---
 function checkAuthSession(req, res, next) {
     if (req.session && req.session.userId) {
         return next();
@@ -125,7 +117,6 @@ function checkAdminSession(req, res, next) {
     res.status(403).json({ error: 'Access Denied: Admin privileges required.' });
 }
 
-// --- SECURE MULTIMEDIA ATTACHMENTS UPLOAD ROUTE ---
 app.post('/api/chat/upload', checkAuthSession, (req, res, next) => {
     uploadChatMediaBulk.array('chatFiles', 10)(req, res, (err) => {
         if (err instanceof multer.MulterError) {
@@ -162,7 +153,6 @@ app.post('/api/chat/upload', checkAuthSession, (req, res, next) => {
     });
 });
 
-// --- COMMUNITY GROUP ROOM MANAGEMENT ENDPOINTS ---
 app.post('/api/rooms/create', checkAuthSession, async (req, res) => {
     const { room_name, room_desc } = req.body;
     if (!room_name || !room_name.trim()) {
@@ -323,7 +313,6 @@ app.post('/api/rooms/members/toggle-admin', checkAuthSession, async (req, res) =
     }
 });
 
-// --- PROFILE MANAGEMENT ENDPOINTS ---
 app.get('/api/profile/me', checkAuthSession, async (req, res) => {
     try {
         const result = await pool.query(
@@ -443,7 +432,6 @@ app.put('/api/profile/update-credentials', checkAuthSession, async (req, res) =>
     }
 });
 
-// --- STATIC PAGE ROUTING LAYER ---
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -491,7 +479,6 @@ app.get('/api/session-user', (req, res) => {
     }
 });
 
-// --- CHATS & MESSAGES API ---
 app.get('/api/chats/active', checkAuthSession, async (req, res) => {
     try {
         const result = await pool.query(`
@@ -619,7 +606,6 @@ app.post('/api/messages/report', checkAuthSession, async (req, res) => {
     }
 });
 
-// --- BATCH MESSAGE DELETION ENDPOINT ---
 app.post('/api/messages/batch-delete', checkAuthSession, async (req, res) => {
     const { messageIds } = req.body;
     if (!messageIds || !Array.isArray(messageIds) || messageIds.length === 0) {
@@ -658,7 +644,6 @@ app.post('/api/messages/batch-delete', checkAuthSession, async (req, res) => {
     }
 });
 
-// --- BATCH MESSAGE FORWARD ENDPOINT ---
 app.post('/api/messages/forward', checkAuthSession, async (req, res) => {
     const { messageIds, targets } = req.body;
     if (!messageIds || !Array.isArray(messageIds) || messageIds.length === 0) {
@@ -672,7 +657,6 @@ app.post('/api/messages/forward', checkAuthSession, async (req, res) => {
         const sender_id = req.session.userId;
         const validIds = messageIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
 
-        // Retrieve original messages in chronological order
         const msgQuery = await pool.query(
             'SELECT id, text, message_type, file_url, is_deleted FROM messages WHERE id = ANY($1::int[]) ORDER BY timestamp ASC',
             [validIds]
@@ -692,7 +676,7 @@ app.post('/api/messages/forward', checkAuthSession, async (req, res) => {
         let totalForwarded = 0;
 
         for (const target of targets) {
-            const targetType = target.type; // 'user' or 'room'
+            const targetType = target.type; 
             const targetId = parseInt(target.id, 10);
             if (isNaN(targetId)) continue;
 
@@ -790,7 +774,6 @@ app.post('/api/messages/forward', checkAuthSession, async (req, res) => {
     }
 });
 
-// --- BATCH CHATS DELETION ENDPOINT ---
 app.post('/api/chats/batch-delete', checkAuthSession, async (req, res) => {
     const { userIds } = req.body;
     if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
@@ -823,7 +806,6 @@ app.post('/api/chats/batch-delete', checkAuthSession, async (req, res) => {
     }
 });
 
-// --- BATCH ROOMS LEAVE/DELETE ENDPOINT ---
 app.post('/api/rooms/batch-leave', checkAuthSession, async (req, res) => {
     const { roomIds } = req.body;
     if (!roomIds || !Array.isArray(roomIds) || roomIds.length === 0) {
@@ -855,10 +837,8 @@ app.post('/api/rooms/batch-leave', checkAuthSession, async (req, res) => {
     }
 });
 
-// --- GLOBAL LIVE DICTIONARY TRACKING SYSTEM ---
-const connectedUsersMap = new Map(); // userId -> Set of socketIds
+const connectedUsersMap = new Map(); 
 
-// --- ADVANCED SECURE WEB_SOCKET LAYER ---
 io.on('connection', (socket) => {
 
     socket.on('declareIdentity', async ({ userId }) => {
@@ -871,7 +851,6 @@ io.on('connection', (socket) => {
         connectedUsersMap.get(socket.userId).add(socket.id);
         io.emit('networkIdentityStatusChange', { userId: socket.userId, status: 'online' });
 
-        // Auto-join all community group rooms for real-time delivery and live unread counts
         try {
             const groupRoomsRes = await pool.query('SELECT room_id FROM room_members WHERE user_id = $1', [socket.userId]);
             groupRoomsRes.rows.forEach(r => {
@@ -931,7 +910,7 @@ io.on('connection', (socket) => {
         socket.join(roomName);
 
         try {
-            // Batch update all unread messages from target partner to current user
+            
             const updateRes = await pool.query(`
                 UPDATE messages 
                 SET isread = TRUE, read_at = NOW() 
@@ -986,7 +965,6 @@ io.on('connection', (socket) => {
         const receiverIdParsed = parseInt(receiver_id, 10);
         if (!sender_id || !receiverIdParsed) return;
 
-        // Verify receiver is active and not deleted
         const receiverCheck = await pool.query('SELECT id, is_deleted FROM users WHERE id = $1', [receiverIdParsed]);
         if (receiverCheck.rows.length === 0 || receiverCheck.rows[0].is_deleted) {
             socket.emit('chatError', { error: 'You cannot send messages to an unavailable user.' });
@@ -1029,7 +1007,6 @@ io.on('connection', (socket) => {
                 reactions: {}
             };
 
-            // Chaining .to() automatically deduplicates recipient sockets across rooms
             io.to(roomName).to(`user_${receiverIdParsed}`).to(`user_${sender_id}`).emit('message', payload);
         } catch (err) {
             console.error('Failed to execute private message insert:', err);
@@ -1041,11 +1018,10 @@ io.on('connection', (socket) => {
         const roomIdParsed = parseInt(roomId, 10);
         if (!roomIdParsed) return;
 
-        // Verify membership in room_members table
         if (userId) {
             const memberCheck = await pool.query('SELECT 1 FROM room_members WHERE room_id = $1 AND user_id = $2', [roomIdParsed, userId]);
             if (memberCheck.rows.length === 0) {
-                // Auto-enroll if missing
+                
                 await pool.query('INSERT INTO room_members (room_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [roomIdParsed, userId]);
             }
         }
@@ -1054,7 +1030,7 @@ io.on('connection', (socket) => {
         socket.join(roomName);
 
         try {
-            // Track individual group message reads first so counts are accurate in history
+            
             if (userId) {
                 await pool.query(`
                     INSERT INTO group_message_reads (message_id, user_id)
@@ -1106,7 +1082,6 @@ io.on('connection', (socket) => {
         const roomIdParsed = parseInt(room_id, 10);
         if (!sender_id || !roomIdParsed) return;
 
-        // Verify membership
         const memberCheck = await pool.query('SELECT 1 FROM room_members WHERE room_id = $1 AND user_id = $2', [roomIdParsed, sender_id]);
         if (memberCheck.rows.length === 0) return;
 
@@ -1130,7 +1105,6 @@ io.on('connection', (socket) => {
                 if (rRes.rows.length > 0) room_name = rRes.rows[0].room_name;
             } catch (e) {}
 
-            // Auto log reads for other sockets currently in the room (excluding sender)
             const activeRoomSockets = io.sockets.adapter.rooms.get(roomName) || new Set();
             let initialSeenCount = 0;
             for (const sockId of activeRoomSockets) {
@@ -1204,7 +1178,6 @@ io.on('connection', (socket) => {
             const uId = userId || socket.userId;
             if (!uId || !messageId) return;
 
-            // Don't mark own message as read
             const msgCheck = await pool.query('SELECT sender_id FROM messages WHERE id = $1', [messageId]);
             if (msgCheck.rows.length > 0 && msgCheck.rows[0].sender_id === uId) return;
 
@@ -1334,7 +1307,6 @@ io.on('connection', (socket) => {
             if (messageRes.rows.length === 0) return;
             const message = messageRes.rows[0];
 
-            // Verify ownership
             if (parseInt(socket.userId, 10) !== message.sender_id) {
                 console.error(`Unauthorized delete attempt by user ${socket.userId} on message ${parsedMessageId}`);
                 return;
@@ -1396,9 +1368,6 @@ io.on('connection', (socket) => {
     });
 });
 
-// --- ADMINISTRATIVE SECURITY & CONTROL PIPELINE ---
-
-// Admin Session Verification
 app.post('/api/admin/verify', (req, res) => {
     const { username, password } = req.body;
     const expectedAdmin = process.env.ADMIN_USER || 'admin';
@@ -1427,7 +1396,6 @@ app.post('/api/admin/logout', (req, res) => {
     res.json({ success: true, message: 'Logged out of admin console.' });
 });
 
-// Dynamic Admin Metrics
 app.get('/api/admin/metrics', checkAdminSession, async (req, res) => {
     try {
         const userCountRes = await pool.query('SELECT COUNT(*) FROM users');
@@ -1559,7 +1527,7 @@ app.post('/api/admin/reports/:id/action', checkAdminSession, async (req, res) =>
         const report = reportRes.rows[0];
 
         if ((action === 'delete_sender' || action === 'delete_user' || action === 'remove_account') && report.sender_id) {
-            // Option 1: Remove/Delete Account permanently
+            
             await pool.query(
                 "UPDATE users SET username = 'deleted_user_' || id, email = 'deleted_' || id || '@deleted.local', full_name = 'Unavailable User', bio = 'This account has been removed by system administrators.', profile_pic_url = '/uploads/default-avatar.png', is_deleted = TRUE WHERE id = $1",
                 [report.sender_id]
@@ -1568,7 +1536,7 @@ app.post('/api/admin/reports/:id/action', checkAdminSession, async (req, res) =>
             io.emit('userModerated', { userId: report.sender_id, action: 'deleted' });
             io.emit('profileUpdated', { userId: report.sender_id, username: 'Unavailable User', full_name: 'Unavailable User', bio: 'This account has been removed.', profile_pic_url: '/uploads/default-avatar.png' });
         } else if (action === 'delete_message' && report.message_id) {
-            // Option 2: Delete Message
+            
             await pool.query(
                 "UPDATE messages SET is_deleted = TRUE, text = 'This message was deleted by system admin' WHERE id = $1",
                 [report.message_id]
@@ -1576,7 +1544,7 @@ app.post('/api/admin/reports/:id/action', checkAdminSession, async (req, res) =>
             await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
             io.emit('messageDeleted', { messageId: report.message_id });
         } else if (action === 'flag_sender' && report.sender_id) {
-            // Option 3: Flag Account
+            
             await pool.query(
                 "UPDATE users SET bio = '⚠️ Profile content under review by system admin.' WHERE id = $1",
                 [report.sender_id]

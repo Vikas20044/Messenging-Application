@@ -1,6 +1,5 @@
-// Main Application Initialization, Event Listeners & UI Controller
 
-// Categorized Extensive Native Emoji Storage Array
+
 const emojiDatabase = {
     smileys: [
         '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','☠️','👽','👾','🤖','🎃','😺','😸','😹','😻','😼','😽','🙀','😿','😾'
@@ -159,7 +158,6 @@ async function initializeIdentity() {
     }
 }
 
-// --- MULTI-CHAT / COMMUNITY SELECTION & DELETION ENGINE ---
 let isChatSelectMode = false;
 const selectedChatUserIds = new Set();
 const selectedChatRoomIds = new Set();
@@ -319,7 +317,6 @@ window.deleteSelectedChats = function() {
     });
 };
 
-// Bind DOM Event Listeners after document is ready
 document.addEventListener('DOMContentLoaded', () => {
     const msgInput = document.getElementById('msg-input');
     const chatForm = document.getElementById('chat-form');
@@ -375,7 +372,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const receiptsAuditModal = document.getElementById('receipts-audit-modal');
     const closeReceiptsModal = document.getElementById('close-receipts-modal');
 
-    // Lightbox & Preview cancel buttons
     const closeLightboxBtn = document.getElementById('close-lightbox-btn');
     if (closeLightboxBtn) {
         closeLightboxBtn.addEventListener('click', () => {
@@ -392,7 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelEditBtn = document.getElementById('cancel-edit-btn');
     if (cancelEditBtn) cancelEditBtn.addEventListener('click', cancelEdit);
 
-    // Emoji tabs
     if (emojiTabsRow) {
         emojiTabsRow.querySelectorAll('.emoji-tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -456,7 +451,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Mobile Navbar Quick Menu Handlers
     const navbarMobileMenuTrigger = document.getElementById('navbar-mobile-menu-trigger');
     const navbarMobileMenuDropdown = document.getElementById('navbar-mobile-menu-dropdown');
     const mobileMenuUserTrigger = document.getElementById('mobile-menu-user-trigger');
@@ -500,7 +494,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Sidebar Resize Handle
     let isResizing = false;
     if (resizeHandle && sidebarPanel) {
         resizeHandle.addEventListener('mousedown', () => {
@@ -549,7 +542,6 @@ document.addEventListener('DOMContentLoaded', () => {
         msgInput.addEventListener('focus', () => setTimeout(scrollToBottom, 150));
     }
 
-    // Search Users Input Listener
     if (userSearchInput && searchResultsDropdown) {
         userSearchInput.addEventListener('input', async (e) => {
             const query = e.target.value.trim();
@@ -606,7 +598,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Attachments & Language trigger dropdowns
     if (chatAttachTrigger && attachDropdownMenu) {
         chatAttachTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -638,7 +629,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Transliteration on keydown (space)
     if (msgInput) {
         msgInput.addEventListener('keydown', async (e) => {
             if (selectedOutgoingLang === 'auto') return;
@@ -682,7 +672,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Media attachment pickers
     const pickImagesBtn = document.getElementById('pick-images-btn');
     if (pickImagesBtn && chatMediaInput) {
         pickImagesBtn.addEventListener('click', () => {
@@ -719,7 +708,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Sidebar 3-Dots Options Dropdown & Select Chats Trigger
     const sidebarOptionsBtn = document.getElementById('sidebar-options-btn');
     const sidebarOptionsDropdown = document.getElementById('sidebar-options-dropdown');
     const sidebarOptSelectChats = document.getElementById('sidebar-opt-select-chats');
@@ -748,7 +736,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btnDeleteSelectedChats.addEventListener('click', window.deleteSelectedChats);
     }
 
-    // Message Multi-Select Controls
     const btnSelectAllMsgs = document.getElementById('btn-select-all-msgs');
     if (btnSelectAllMsgs) {
         btnSelectAllMsgs.addEventListener('click', window.selectAllMessages);
@@ -766,7 +753,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCancelMsgSelect.addEventListener('click', window.exitMessageSelectMode);
     }
 
-    // Forward Search Input Filter
     const forwardSearchInput = document.getElementById('forward-search-input');
     if (forwardSearchInput) {
         forwardSearchInput.addEventListener('input', (e) => {
@@ -776,7 +762,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Create Group modal triggers
     const btnCreateRoom = document.getElementById('btn-create-room');
     if (btnCreateRoom && createGroupModal) {
         btnCreateRoom.addEventListener('click', () => {
@@ -821,7 +806,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Join Group Room button
     const btnJoinRoom = document.getElementById('btn-join-room');
     if (btnJoinRoom) {
         btnJoinRoom.addEventListener('click', async () => {
@@ -843,7 +827,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Community Directory button & modal
     if (checkRoomOnlineBtn) {
         checkRoomOnlineBtn.addEventListener('click', () => {
             if (!targetRoomId) return;
@@ -906,7 +889,6 @@ document.addEventListener('DOMContentLoaded', () => {
         closeGroupOnlineModal.addEventListener('click', () => groupOnlineModal.classList.add('hidden'));
     }
 
-    // Typing indicator on message input
     let typingIndicatorTimer = null;
     let isCurrentlyTyping = false;
 
@@ -934,7 +916,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Advanced search panel controls
     const toggleSearchInputBtn = document.getElementById('toggle-search-input-btn');
     const chatMessageSearchInput = document.getElementById('chat-message-search-input');
     const advancedSearchPanel = document.getElementById('advanced-search-panel');
@@ -1002,7 +983,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Main Chat Form Submit
     let isSendingMessage = false;
     if (chatForm && msgInput) {
         chatForm.addEventListener('submit', async (e) => {
@@ -1057,7 +1037,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Media upload handler
     if (chatMediaInput) {
         chatMediaInput.addEventListener('change', async () => {
             const files = chatMediaInput.files;
@@ -1115,7 +1094,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Exit Chat button
     const exitChatBtn = document.getElementById('exit-chat-btn');
     if (exitChatBtn) {
         exitChatBtn.addEventListener('click', async () => {
@@ -1124,7 +1102,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Profile Settings triggers
     if (openProfileBtn) {
         openProfileBtn.addEventListener('click', openProfileModalHandler);
     }
@@ -1224,7 +1201,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Public detail card triggers
     if (chatHeaderUserTrigger && publicViewModal) {
         chatHeaderUserTrigger.addEventListener('click', async () => {
             const publicUsernameDisplay = document.getElementById('public-username-display');
@@ -1273,7 +1249,6 @@ document.addEventListener('DOMContentLoaded', () => {
         closeReceiptsModal.addEventListener('click', () => receiptsAuditModal.classList.add('hidden'));
     }
 
-    // Starred Messages Modal triggers
     const openStarredBtn = document.getElementById('open-starred-btn');
     const closeStarredModalBtn = document.getElementById('close-starred-modal-btn');
     const starredMessagesModal = document.getElementById('starred-messages-modal');
@@ -1285,7 +1260,6 @@ document.addEventListener('DOMContentLoaded', () => {
         closeStarredModalBtn.addEventListener('click', () => starredMessagesModal.classList.add('hidden'));
     }
 
-    // Touch swipe gesture handlers
     let touchStartX = 0;
     let touchEndX = 0;
 
@@ -1300,7 +1274,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (swipeDistance < -70 && sidebarPanel && sidebarPanel.classList.contains('open-mobile')) closeMobileSidebar();
     }, { passive: true });
 
-    // Web Audio API Synthesized WhatsApp-like Notification Chime
     function playNotificationSound() {
         try {
             const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -1313,12 +1286,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const gain = ctx.createGain();
 
             osc1.type = 'sine';
-            osc1.frequency.setValueAtTime(659.25, now); // E5
-            osc1.frequency.exponentialRampToValueAtTime(880, now + 0.1); // A5
+            osc1.frequency.setValueAtTime(659.25, now); 
+            osc1.frequency.exponentialRampToValueAtTime(880, now + 0.1); 
 
             osc2.type = 'sine';
             osc2.frequency.setValueAtTime(880, now + 0.1);
-            osc2.frequency.exponentialRampToValueAtTime(1318.51, now + 0.25); // E6
+            osc2.frequency.exponentialRampToValueAtTime(1318.51, now + 0.25); 
 
             gain.gain.setValueAtTime(0, now);
             gain.gain.linearRampToValueAtTime(0.18, now + 0.02);
@@ -1333,11 +1306,10 @@ document.addEventListener('DOMContentLoaded', () => {
             osc2.start(now + 0.1);
             osc2.stop(now + 0.35);
         } catch (e) {
-            // Handled silently if autoplay restricted
+            
         }
     }
 
-    // Socket Event Subscriptions
     socket.on('chatHistory', (history) => {
         const messageHistory = document.getElementById('message-history');
         if (messageHistory) {
@@ -1362,7 +1334,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             scrollToBottom();
         } else {
-            // Message arrived for another conversation
+            
             if (msg.sender_id !== currentUserId) {
                 playNotificationSound();
 
@@ -1378,7 +1350,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Live WhatsApp inbox refresh: updates unread badges, latest snippets, and moves contact to top
         loadActiveThreads();
         if (msg.room_id) {
             loadJoinedRooms();
@@ -1609,7 +1580,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (error) showToast(error, 'error');
     });
 
-    // Run identity setup
     initializeIdentity();
 });
 

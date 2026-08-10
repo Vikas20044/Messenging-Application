@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Realtime Messaging Application</title>
-    <!-- Modern Premium Typography -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* --- PREMIUM DESIGN SYSTEM & THEME TOKENS --- */
+        
         :root {
             --bg-color: #080b11;
             --accent: #cb6e32;
@@ -37,7 +37,6 @@
             line-height: 1.6;
         }
 
-        /* --- BACKGROUND DECORATIVE GLOWS --- */
         .ambient-glow-1 {
             position: absolute;
             top: -10%;
@@ -62,7 +61,6 @@
             z-index: 1;
         }
 
-        /* --- HEADER NAVIGATION --- */
         header.nav-header {
             position: fixed;
             top: 0;
@@ -136,7 +134,6 @@
             box-shadow: 0 6px 20px rgba(203, 110, 50, 0.35);
         }
 
-        /* --- HERO SECTOR --- */
         section.hero-section {
             padding: 10rem 5rem 6rem 5rem;
             max-width: 1300px;
@@ -206,7 +203,6 @@
             box-shadow: 0 12px 30px rgba(203, 110, 50, 0.4);
         }
 
-        /* --- INTERACTIVE SIMULATOR (PC STATIONS) --- */
         .hero-right {
             display: flex;
             justify-content: center;
@@ -310,7 +306,6 @@
             margin-top: 2px;
         }
 
-        /* Interactive Voice Note */
         .audio-sim-block {
             display: flex;
             align-items: center;
@@ -379,7 +374,6 @@
             display: none;
         }
 
-        /* Language chip switches */
         .sim-lang-chips {
             display: flex;
             gap: 4px;
@@ -408,7 +402,6 @@
             transition: opacity 0.2s;
         }
 
-        /* Reactions Widget */
         .sim-reactions {
             display: flex;
             gap: 6px;
@@ -430,7 +423,6 @@
             background: rgba(203, 110, 50, 0.08);
         }
 
-        /* --- BENTO GRID FEATURE SHOWCASE --- */
         section.features-section {
             padding: 5rem 5rem 9rem 5rem;
             max-width: 1300px;
@@ -549,7 +541,6 @@
             line-height: 1.6;
         }
 
-        /* --- FOOTER --- */
         footer.landing-footer {
             border-top: 1px solid var(--card-border);
             padding: 3rem 5rem;
@@ -564,7 +555,6 @@
             z-index: 10;
         }
 
-        /* --- RESPONSIVENESS OVERRIDES --- */
         @media (max-width: 992px) {
             header.nav-header {
                 padding: 0 2rem;
@@ -610,7 +600,6 @@
     <div class="ambient-glow-1"></div>
     <div class="ambient-glow-2"></div>
 
-    <!-- HEADER NAVIGATION -->
     <header class="nav-header">
         <a href="/" class="nav-logo">
             <span>⚡</span> Realtime Messaging Application
@@ -621,10 +610,8 @@
         </nav>
     </header>
 
-    <!-- HERO SECTION -->
     <section class="hero-section">
-        
-        <!-- Left Side Copy -->
+
         <div class="hero-left">
             <span class="hero-badge">✨ Connected & Secure</span>
             <h1>Real-Time Chat. Native AI Translation.</h1>
@@ -632,7 +619,6 @@
             <a href="/login" id="hero-cta-btn" class="hero-btn">Launch Realtime Messaging Application &rarr;</a>
         </div>
 
-        <!-- Right Side Interactive Simulator -->
         <div class="hero-right">
             <div class="chat-simulator-card">
                 
@@ -642,15 +628,13 @@
                 </header>
 
                 <div class="simulator-pane">
-                    
-                    <!-- Sim Msg 1: Text message -->
+
                     <div class="sim-msg incoming">
                         <div style="font-weight: 700; font-size: 0.75rem; color: var(--accent);">Vikas (Dev Team)</div>
                         <div class="sim-msg-text">Hey team, the cloud database tables are successfully initialized!</div>
                         <div class="sim-meta">3:14 PM</div>
                     </div>
 
-                    <!-- Sim Msg 2: Translating text -->
                     <div class="sim-msg outgoing" style="align-self: flex-end;">
                         <div style="font-weight: 700; font-size: 0.75rem; color: #ffffff; opacity:0.9;">You (Owner)</div>
                         <div class="sim-msg-text" id="sim-trans-target">
@@ -665,7 +649,6 @@
                         <div class="sim-meta" style="color: #ffffff; opacity: 0.7;">3:15 PM</div>
                     </div>
 
-                    <!-- Sim Msg Reactions -->
                     <div class="sim-reactions" style="align-self: flex-end; margin-top: -6px;">
                         <span class="sim-reaction-badge" onclick="reactSim(this)">👍 <span>2</span></span>
                         <span class="sim-reaction-badge" onclick="reactSim(this)">🔥 <span>4</span></span>
@@ -677,7 +660,6 @@
 
     </section>
 
-    <!-- BENTO FEATURE GRIDS -->
     <section class="features-section" id="features">
         <header class="section-header">
             <h2>Under the Hood Stack</h2>
@@ -685,8 +667,7 @@
         </header>
 
         <div class="features-bento-grid">
-            
-            <!-- Bento Card 1: Sockets -->
+
             <div class="bento-card">
                 <div class="bento-icon-box">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -697,7 +678,6 @@
                 </div>
             </div>
 
-            <!-- Bento Card 2: AI Translate -->
             <div class="bento-card">
                 <div class="bento-icon-box">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6M4 14l6-6M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>
@@ -708,7 +688,6 @@
                 </div>
             </div>
 
-            <!-- Bento Card 4: Neon Database -->
             <div class="bento-card">
                 <div class="bento-icon-box">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
@@ -722,14 +701,13 @@
         </div>
     </section>
 
-    <!-- FOOTER -->
     <footer class="landing-footer">
         <div>&copy; 2026 Realtime Messaging Application. All rights reserved.</div>
         <div style="font-weight:600; color:var(--text-main);">Built for Creative Real-Time Collaboration</div>
     </footer>
 
     <script>
-        // Check dynamic login session state
+        
         async function checkSession() {
             try {
                 const res = await fetch('/api/session-user');
@@ -752,10 +730,6 @@
         }
         window.addEventListener('DOMContentLoaded', checkSession);
 
-        // --- INTERACTIVE SIMULATOR SCRIPTS ---
-        
-
-        // 2. Translation Simulator
         function simulateTranslation(chip, lang, translatedText) {
             const chips = chip.parentElement.querySelectorAll('.sim-chip');
             chips.forEach(c => c.classList.remove('active'));
@@ -770,7 +744,6 @@
             }, 200);
         }
 
-        // 3. Reactions Simulator
         function reactSim(badge) {
             const span = badge.querySelector('span');
             let count = parseInt(span.innerText);

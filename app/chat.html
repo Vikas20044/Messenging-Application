@@ -99,8 +99,7 @@
             const row = document.createElement('div');
             row.className = `message-row ${isOutgoing ? 'outgoing' : 'incoming'}`;
             if (msg._id) row.id = `msg-card-${msg._id}`;
-            
-            // Extracted date and time attributes safely to render descriptive chat lines
+
             const msgDate = new Date(msg.timestamp);
             const dateString = msgDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
             const timeString = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

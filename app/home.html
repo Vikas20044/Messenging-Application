@@ -12,8 +12,7 @@
         <div class="navbar-left">
             <div class="navbar-brand" onclick="resetToDashboard()" style="cursor: pointer;" title="Return to Dashboard Welcome Screen">Realtime Messaging Application</div>
             <div class="navbar-status desktop-only" id="navbar-status-tag">Status: Connected</div>
-            
-            <!-- High UI/UX About Navigation Dropdown Menu -->
+
             <div class="navbar-item-container desktop-only">
                 <button type="button" id="navbar-about-trigger" class="nav-action-btn" title="Learn more about the application">
                     <span>About</span>
@@ -54,7 +53,6 @@
                 </svg>
             </button>
 
-            <!-- Responsive Mobile Quick Menu Dropdown Trigger Container -->
             <div class="navbar-item-container mobile-nav-menu-container">
                 <button type="button" id="navbar-mobile-menu-trigger" class="nav-action-btn" title="More Options">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon-svg">
@@ -111,7 +109,7 @@
                 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                     <h3 class="sidebar-panel-header-text">Conversations</h3>
                     <div style="display: flex; align-items: center; gap: 6px; position: relative;">
-                        <!-- 3-DOT CONVERSATION OPTIONS DROPDOWN -->
+                        
                         <div class="sidebar-options-container" style="position: relative;">
                             <button type="button" id="sidebar-options-btn" class="sidebar-three-dots-btn" title="Conversation Options">⋮</button>
                             <div id="sidebar-options-dropdown" class="sidebar-options-dropdown hidden">
@@ -126,7 +124,6 @@
                 </div>
             </header>
 
-            <!-- SIDEBAR CHAT BATCH ACTIONS BAR -->
             <div id="sidebar-select-bar" class="sidebar-select-bar hidden">
                 <div class="sidebar-select-info">
                     <span id="sidebar-select-count">0 Selected</span>
@@ -155,10 +152,9 @@
         <div class="resize-handle" id="resize-handle" title="Drag to resize, pull to left edge to close"></div>
 
         <main id="chat-viewport" class="chat-wrapper">
-            <!-- RECONSTRUCTED HIGH UI/UX DASHBOARD LANDING SCREEN CONTAINER -->
+            
 <div id="empty-view-notice" class="dashboard-landing-container">
-    
-    <!-- Refined Harmonious Hero Welcome Banner -->
+
     <header class="dashboard-hero">
         <div class="hero-content">
             <div class="hero-badge-row">
@@ -178,7 +174,6 @@
         </div>
     </header>
 
-    <!-- Quick System Analytics Row -->
     <div class="dashboard-stats-row">
         <div class="stat-glass-card">
             <div class="stat-icon-circle bento-orange-light">
@@ -209,10 +204,8 @@
         </div>
     </div>
 
-    <!-- Quick Action Launchpad Grid Layout -->
     <section class="dashboard-grid">
-        
-        <!-- Action Card 1: Explore Communities -->
+
         <div class="dashboard-card" onclick="document.getElementById('btn-join-room').click()">
             <div class="card-icon-wrapper bento-orange">
                 <svg class="bento-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -222,7 +215,6 @@
             <span class="card-action-link">Access Channel &rarr;</span>
         </div>
 
-        <!-- Action Card 2: AI Multi-Language Transliterator -->
         <div class="dashboard-card" onclick="document.getElementById('chat-lang-trigger').click()">
             <div class="card-icon-wrapper bento-blue">
                 <svg class="bento-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6M4 14l6-6M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>
@@ -232,7 +224,6 @@
             <span class="card-action-link">Learn More &rarr;</span>
         </div>
 
-        <!-- Action Card 3: Direct User Discovery -->
         <div class="dashboard-card" onclick="document.getElementById('user-search-input').focus()">
             <div class="card-icon-wrapper bento-green">
                 <svg class="bento-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><circle cx="11" cy="11" r="3"/></svg>
@@ -242,7 +233,6 @@
             <span class="card-action-link">Search Users &rarr;</span>
         </div>
 
-        <!-- Action Card 4: Edit System Credentials -->
         <div class="dashboard-card" onclick="document.getElementById('open-profile-btn').click()">
             <div class="card-icon-wrapper bento-purple">
                 <svg class="bento-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -254,7 +244,6 @@
 
     </section>
 
-    <!-- Interactive Navigation Banner For Small Screen Form Factors -->
     <div class="mobile-dashboard-footer mobile-only">
         <button id="open-menu-empty" class="action-btn primary" style="width: 100%; padding: 0.85rem;">
             📂 Open Conversations Drawer
@@ -278,21 +267,18 @@
                         <div id="search-bar-container" class="chat-search-bar-container">
                             <span style="cursor: pointer; font-size: 0.9rem; display: flex; align-items: center;" id="toggle-search-input-btn" title="Advanced Search Options">🔍</span>
                             <input id="chat-message-search-input" type="text" placeholder="Search..." class="chat-search-input">
-                            
-                            <!-- ADVANCED SEARCH PANEL DROPDOWN -->
+
                             <div id="advanced-search-panel" class="adv-search-panel hidden">
                                 <div class="adv-search-header">
                                     <span>🔍 Advanced Search Options</span>
                                     <span id="close-search-panel-x" class="adv-search-close">&times;</span>
                                 </div>
-                                
-                                <!-- Content Input -->
+
                                 <div class="adv-search-field-group">
                                     <label class="adv-search-label">Message Content</label>
                                     <input type="text" id="adv-search-text" placeholder="Search text..." class="adv-search-input">
                                 </div>
-                                
-                                <!-- Chips -->
+
                                 <div class="adv-search-field-group">
                                     <label class="adv-search-label">Message Format</label>
                                     <div id="adv-search-chips" class="search-chips-container">
@@ -305,7 +291,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Sender name -->
                                 <div id="adv-search-sender-container" class="adv-search-field-group">
                                     <label class="adv-search-label">Sent By Member</label>
                                     <input type="text" id="adv-search-sender" placeholder="Username..." class="adv-search-input">
@@ -317,7 +302,6 @@
                     </div>
                 </header>
 
-                <!-- FLOATING MESSAGE MULTI-SELECT ACTION BAR -->
                 <div id="msg-select-action-bar" class="msg-select-action-bar hidden">
                     <div class="msg-select-meta">
                         <span class="select-badge-icon">☑️</span>
@@ -336,7 +320,7 @@
                 <div class="input-bar">
                     <input type="text" name="username" style="display:none;" aria-hidden="true">
                     <input type="password" name="password" style="display:none;" aria-hidden="true">
-                    <!-- REPLY PREVIEW BAR -->
+                    
                     <div id="reply-preview-bar" class="hidden" style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border-left: 4px solid var(--accent); padding: 0.5rem 1rem; border-top-left-radius: 6px; border-top-right-radius: 6px; border-bottom: 1px solid var(--bg-tertiary); margin-bottom: 4px; text-align: left; width: 100%;">
                         <div style="flex: 1; min-width: 0; padding-right: 12px;">
                             <div style="font-size: 0.72rem; font-weight: 700; color: var(--accent); margin-bottom: 2px;">Replying to <span id="reply-preview-username" style="font-weight: 800;">username</span></div>
@@ -344,8 +328,7 @@
                         </div>
                         <span id="cancel-reply-btn" style="cursor: pointer; font-size: 1.1rem; font-weight: bold; color: var(--text-muted); line-height: 1;">&times;</span>
                     </div>
-                    
-                    <!-- EDIT PREVIEW BAR -->
+
                     <div id="edit-preview-bar" class="hidden" style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border-left: 4px solid var(--tick-read); padding: 0.5rem 1rem; border-top-left-radius: 6px; border-top-right-radius: 6px; border-bottom: 1px solid var(--bg-tertiary); margin-bottom: 4px; text-align: left; width: 100%;">
                         <div style="flex: 1; min-width: 0; padding-right: 12px;">
                             <div style="font-size: 0.72rem; font-weight: 700; color: var(--tick-read); margin-bottom: 2px;">Editing message</div>
@@ -401,7 +384,6 @@
                             </div>
                         </div>
 
-                        <!-- WhatsApp-Style Categorized Emoji Keyboard Trigger Dropdown Subsystem -->
                         <div style="position: relative; display: inline-block;">
                             <button type="button" id="chat-emoji-trigger" class="action-btn secondary" style="width: 36px; height: 36px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;" title="Insert Emoji">😀</button>
                             <div id="emoji-picker-panel" class="emoji-picker-panel hidden">
@@ -435,7 +417,6 @@
         </main>
     </div>
 
-    <!-- CREATE ROOM MODAL -->
     <div id="create-group-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -458,7 +439,6 @@
         </div>
     </div>
 
-    <!-- ROOM ONLINE ROSTER MODAL -->
     <div id="group-online-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -470,7 +450,6 @@
         </div>
     </div>
 
-    <!-- SEEN RECEIPTS AUDIT MODAL -->
     <div id="receipts-audit-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -482,7 +461,6 @@
         </div>
     </div>
 
-    <!-- STARRED MESSAGES MODAL -->
     <div id="starred-messages-modal" class="modal-overlay hidden">
         <div class="modal-card" style="max-width: 520px;">
             <header class="modal-header">
@@ -494,7 +472,6 @@
         </div>
     </div>
 
-    <!-- PROFILE MANAGEMENT MODAL -->
     <div id="profile-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -552,7 +529,6 @@
         </div>
     </div>
 
-    <!-- PUBLIC DETAILS INSPECTOR MODAL -->
     <div id="public-view-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <header class="modal-header">
@@ -573,7 +549,6 @@
         </div>
     </div>
 
-    <!-- CUSTOM CONFIRM MODAL -->
     <div id="custom-confirm-modal" class="modal-overlay hidden" style="z-index: 9999;">
         <div class="modal-card" style="max-width: 380px;">
             <header class="modal-header" style="border-bottom: none; padding-bottom: 0.5rem;">
@@ -589,7 +564,6 @@
         </div>
     </div>
 
-    <!-- REPORT MESSAGE MODAL -->
     <div id="report-message-modal" class="modal-overlay hidden" style="z-index: 9999;">
         <div class="modal-card" style="max-width: 440px;">
             <header class="modal-header">
@@ -614,7 +588,6 @@
         </div>
     </div>
 
-    <!-- FORWARD / SHARE MESSAGES MODAL -->
     <div id="forward-messages-modal" class="modal-overlay hidden" style="z-index: 9999;">
         <div class="modal-card" style="max-width: 480px; max-height: 85vh; display: flex; flex-direction: column;">
             <header class="modal-header">
@@ -624,26 +597,23 @@
                 <button id="close-forward-modal-btn" class="close-modal-x" onclick="window.closeForwardModal()">&times;</button>
             </header>
             <div class="modal-body" style="padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; flex: 1; overflow: hidden;">
-                <!-- Message Summary Badge -->
+                
                 <div id="forward-msg-preview-badge" style="background: var(--bg-primary); border: 1px solid var(--bg-tertiary); border-radius: 8px; padding: 0.6rem 0.8rem; font-size: 0.82rem; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between;">
                     <span>Forwarding <strong id="forward-msg-count-label" style="color: var(--accent);">0 messages</strong></span>
                     <span id="forward-preview-sample" style="font-style: italic; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
                 </div>
-                
-                <!-- Search Target Filter -->
+
                 <div style="position: relative;">
                     <input type="text" id="forward-search-input" placeholder="Search contacts or communities..." style="width: 100%; box-sizing: border-box; background: var(--bg-primary); border: 1px solid var(--bg-tertiary); color: var(--text-main); padding: 0.55rem 0.8rem; border-radius: 8px; font-size: 0.88rem; outline: none;">
                 </div>
 
-                <!-- Destination Targets List -->
                 <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 2px;">
                     Select Destination(s)
                 </div>
                 <div id="forward-destinations-list" class="forward-destinations-list" style="flex: 1; overflow-y: auto; max-height: 270px; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;">
-                    <!-- Populated dynamically with users & joined rooms -->
+                    
                 </div>
 
-                <!-- Actions -->
                 <div style="display: flex; gap: 0.5rem; justify-content: space-between; align-items: center; border-top: 1px solid var(--bg-tertiary); padding-top: 0.85rem; margin-top: 0.25rem;">
                     <span id="forward-selected-targets-count" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">0 selected</span>
                     <div style="display: flex; gap: 0.5rem;">
@@ -655,10 +625,8 @@
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION STACK -->
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
 
-    <!-- LIGHTBOX MEDIA PREVIEW MODAL -->
     <div id="lightbox-modal" class="modal-overlay hidden" style="z-index: 9998; background: rgba(15, 17, 26, 0.92); backdrop-filter: blur(8px);">
         <div style="position: absolute; top: 20px; right: 20px; z-index: 10001; display: flex; gap: 0.5rem;">
             <a id="lightbox-download-link" href="#" target="_blank" download class="action-btn primary" style="padding: 0.5rem 0.8rem; font-size: 0.85rem; text-decoration: none; display: flex; align-items: center; gap: 4px;">📥 Download</a>

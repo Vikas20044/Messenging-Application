@@ -1,8 +1,7 @@
-// Real-Time Chat Subsystem & Message Rendering Engine
+
 
 const messageStore = new Map();
 
-// --- MULTI-MESSAGE SELECTION & FORWARD/DELETE ENGINE ---
 let isMessageSelectMode = false;
 const selectedMessageIds = new Set();
 
@@ -136,7 +135,6 @@ window.deleteSelectedMessages = function() {
     });
 };
 
-// --- FORWARDING MODAL CONTROLLER ---
 const selectedForwardDestinations = new Set();
 
 window.triggerSingleMessageForward = function(messageId) {
@@ -229,7 +227,6 @@ window.renderForwardDestinations = function(chats, rooms, filterText) {
         return;
     }
 
-    // Render Communities section
     if (filteredRooms.length > 0) {
         const secTitle = document.createElement('div');
         secTitle.style.cssText = 'font-size:0.7rem; font-weight:800; color:var(--accent); text-transform:uppercase; margin-top:4px; padding:0 4px;';
@@ -257,7 +254,6 @@ window.renderForwardDestinations = function(chats, rooms, filterText) {
         });
     }
 
-    // Render Contacts section
     if (filteredChats.length > 0) {
         const secTitle = document.createElement('div');
         secTitle.style.cssText = 'font-size:0.7rem; font-weight:800; color:var(--accent); text-transform:uppercase; margin-top:8px; padding:0 4px;';
@@ -358,7 +354,6 @@ window.submitForwardMessages = async function() {
     }
 };
 
-// Quoting & Reply Helpers
 window.triggerReplyMessage = function(messageId) {
     document.querySelectorAll('.msg-dropdown').forEach(d => {
         d.classList.add('hidden');
@@ -399,7 +394,6 @@ window.cancelReply = function() {
     }
 };
 
-// Report Message Helpers
 let activeReportMessageId = null;
 
 window.triggerReportMessage = function(messageId) {
@@ -533,7 +527,6 @@ window.scrollToMessage = function(messageId) {
     }
 };
 
-// Emoji Message Reactions
 window.renderReactions = function(messageId, reactionsObj) {
     let html = '';
     const entries = Object.entries(reactionsObj || {});
@@ -697,7 +690,6 @@ function toggleDropdown(e, dropdownId) {
 
     const isCurrentlyHidden = targetMenu.classList.contains('hidden');
 
-    // Close all other open dropdowns and submenus
     document.querySelectorAll('.msg-dropdown').forEach(d => {
         if (d !== targetMenu) {
             d.classList.add('hidden');
@@ -707,7 +699,7 @@ function toggleDropdown(e, dropdownId) {
     document.querySelectorAll('.message-row').forEach(r => r.style.zIndex = '');
 
     if (isCurrentlyHidden) {
-        // Unhide to measure rendered dimensions
+        
         targetMenu.classList.remove('hidden');
         targetMenu.classList.remove('drop-up');
         targetMenu.style.top = '';
@@ -717,7 +709,6 @@ function toggleDropdown(e, dropdownId) {
         targetMenu.style.maxHeight = '';
         targetMenu.style.overflowY = '';
 
-        // Elevate parent row z-index so dropdown is always above other messages
         const parentRow = targetMenu.closest('.message-row');
         if (parentRow) parentRow.style.zIndex = '950';
 
@@ -732,16 +723,14 @@ function toggleDropdown(e, dropdownId) {
             const menuHeight = targetMenu.offsetHeight || 200;
             const menuWidth = targetMenu.offsetWidth || 175;
 
-            // Compute available vertical clearance
             const spaceBelowInPane = paneRect.bottom - triggerRect.bottom;
-            const spaceBelowInViewport = viewportHeight - triggerRect.bottom - 70; // Clearance for input bar
+            const spaceBelowInViewport = viewportHeight - triggerRect.bottom - 70; 
             const availableSpaceBelow = Math.min(spaceBelowInPane, spaceBelowInViewport);
 
             const spaceAboveInPane = triggerRect.top - paneRect.top;
-            const spaceAboveInViewport = triggerRect.top - 70; // Clearance for top header
+            const spaceAboveInViewport = triggerRect.top - 70; 
             const availableSpaceAbove = Math.min(spaceAboveInPane, spaceAboveInViewport);
 
-            // If not enough room below (menuHeight + 15px margin) and more room above, FLIP UPWARDS
             if (availableSpaceBelow < menuHeight + 15 && availableSpaceAbove > availableSpaceBelow) {
                 targetMenu.classList.add('drop-up');
                 targetMenu.style.bottom = '100%';
@@ -749,7 +738,6 @@ function toggleDropdown(e, dropdownId) {
                 targetMenu.style.marginBottom = '6px';
                 targetMenu.style.marginTop = '0';
 
-                // Scroll safety cap
                 if (menuHeight > availableSpaceAbove - 10) {
                     targetMenu.style.maxHeight = `${Math.max(160, availableSpaceAbove - 15)}px`;
                     targetMenu.style.overflowY = 'auto';
@@ -761,14 +749,12 @@ function toggleDropdown(e, dropdownId) {
                 targetMenu.style.marginTop = '6px';
                 targetMenu.style.marginBottom = '0';
 
-                // Scroll safety cap
                 if (menuHeight > availableSpaceBelow - 10) {
                     targetMenu.style.maxHeight = `${Math.max(160, availableSpaceBelow - 15)}px`;
                     targetMenu.style.overflowY = 'auto';
                 }
             }
 
-            // Horizontal alignment handling
             const isOutgoing = targetMenu.closest('.outgoing') !== null;
             if (isOutgoing) {
                 targetMenu.style.right = '0';
@@ -808,7 +794,6 @@ window.toggleTranslateSubmenu = function(e, messageId) {
         if (arrow) arrow.innerText = '›';
     }
 
-    // Recheck parent menu bounds if flipped upwards
     const parentDropdown = document.getElementById(`drop-${messageId}`);
     if (parentDropdown && parentDropdown.classList.contains('drop-up')) {
         const trigger = parentDropdown.parentElement.querySelector('.three-dots-icon');
@@ -906,7 +891,6 @@ function appendMessage(msg) {
     const messageHistory = document.getElementById('message-history');
     if (!messageHistory || !msg || !msg._id) return;
 
-    // Prevent duplicate rendering of the same message card
     if (document.getElementById(`msg-card-${msg._id}`)) {
         messageStore.set(String(msg._id), msg);
         return;
@@ -919,8 +903,7 @@ function appendMessage(msg) {
     const row = document.createElement('div');
     row.className = `message-row ${isOutgoing ? 'outgoing' : 'incoming'} ${isSelected ? 'selected' : ''}`;
     row.id = `msg-card-${msg._id}`;
-    
-    // Row click handler for message multi-selection mode
+
     row.addEventListener('click', (e) => {
         if (window.isMessageSelectionActive && window.isMessageSelectionActive()) {
             if (e.target.closest('.msg-menu-container') || e.target.closest('a') || e.target.closest('audio') || e.target.closest('video') || e.target.closest('.reactions-badge-row') || e.target.closest('.reactions-picker')) {
@@ -1082,8 +1065,7 @@ function appendMessage(msg) {
             } else {
                 contextualTicks = `<span class="group-ticks-tracker ticks" data-msg-id="${msg._id}" onclick="triggerReceiptsAudit(${msg._id})" style="cursor:pointer; font-size:0.75rem; font-weight:700;" title="Sent (Click for details)">&check; Sent</span>`;
             }
-            
-            // Background sync check
+
             socket.emit('fetchGroupMessageReadLedger', { messageId: msg._id }, (ledger) => {
                 const trackingToken = document.querySelector(`[data-msg-id="${msg._id}"]`);
                 if (trackingToken && ledger && ledger.length > 0) {
@@ -1229,7 +1211,6 @@ function selectActiveTargetUser(id, name, picUrl) {
 
     const isUnavailable = name === 'Unavailable User';
 
-    // Clear unread badge immediately from UI
     const targetItem = document.getElementById(`thread-user-${id}`);
     if (targetItem) {
         targetItem.classList.remove('has-unread');

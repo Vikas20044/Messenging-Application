@@ -1,4 +1,3 @@
-// Custom Notification Systems & UI Dialog Helpers
 
 window.showToast = function(message, type = 'info') {
     const container = document.getElementById('toast-container');
@@ -53,7 +52,7 @@ window.showToast = function(message, type = 'info') {
     }, 3500);
 };
 
-// Automatic redirect of legacy window.alert
+
 window.alert = function(message) {
     let type = 'info';
     const lower = message.toLowerCase();
@@ -94,7 +93,7 @@ window.showConfirm = function(title, message, onConfirm) {
     modal.classList.remove('hidden');
 };
 
-// Lightbox Zoom Preview Logic
+
 window.openLightbox = function(src, type) {
     const modal = document.getElementById('lightbox-modal');
     const target = document.getElementById('lightbox-content-target');

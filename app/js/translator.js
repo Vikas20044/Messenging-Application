@@ -1,4 +1,4 @@
-// AI Multi-Language Translation Engine Helper
+
 
 async function translateMessageText(messageId, arg2, arg3, arg4) {
     const displayTextBox = document.getElementById(`text-span-${messageId}`);
@@ -9,12 +9,12 @@ async function translateMessageText(messageId, arg2, arg3, arg4) {
     let langName = 'English';
 
     if (arg4 !== undefined) {
-        // Called with (messageId, rawText, langCode, langName)
+       
         rawText = arg2;
         langCode = arg3;
         langName = arg4;
     } else {
-        // Called with (messageId, langCode, langName)
+        
         langCode = arg2;
         langName = arg3;
         const msg = typeof messageStore !== 'undefined' ? messageStore.get(String(messageId)) : null;

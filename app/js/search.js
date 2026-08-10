@@ -1,4 +1,4 @@
-// User & Chat Message Search Engine Logic
+
 
 function applySearchFilters() {
     const chatMessageSearchInput = document.getElementById('chat-message-search-input');

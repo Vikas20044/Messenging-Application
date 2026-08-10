@@ -1,4 +1,4 @@
-// Account Profile & User Settings Interface Handlers
+
 
 function setAppTheme(theme) {
     if (theme === 'dark') {
@@ -27,7 +27,7 @@ function initAppTheme() {
     }
 }
 
-// Immediately initialize theme on load
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAppTheme);
 } else {

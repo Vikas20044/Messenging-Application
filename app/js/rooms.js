@@ -1,4 +1,4 @@
-// Community Group Rooms Management Engine
+
 
 async function loadJoinedRooms() {
     const communityThreadsTarget = document.getElementById('community-threads-target');

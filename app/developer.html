@@ -219,5 +219,11 @@
 
         <button type="button" class="action-btn secondary back-home-btn" onclick="window.location.href='/chat'">← Return to Workspace</button>
     </div>
+
+    <script>
+        if (localStorage.getItem('app_theme_preference') === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+    </script>
 </body>
 </html>

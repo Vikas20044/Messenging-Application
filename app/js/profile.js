@@ -1,5 +1,39 @@
 // Account Profile & User Settings Interface Handlers
 
+function setAppTheme(theme) {
+    if (theme === 'dark') {
+        document.body.classList.add('dark-theme');
+        localStorage.setItem('app_theme_preference', 'dark');
+        const btnLight = document.getElementById('theme-btn-light');
+        const btnDark = document.getElementById('theme-btn-dark');
+        if (btnLight) btnLight.classList.remove('active');
+        if (btnDark) btnDark.classList.add('active');
+    } else {
+        document.body.classList.remove('dark-theme');
+        localStorage.setItem('app_theme_preference', 'light');
+        const btnLight = document.getElementById('theme-btn-light');
+        const btnDark = document.getElementById('theme-btn-dark');
+        if (btnLight) btnLight.classList.add('active');
+        if (btnDark) btnDark.classList.remove('active');
+    }
+}
+
+function initAppTheme() {
+    const savedTheme = localStorage.getItem('app_theme_preference');
+    if (savedTheme === 'dark') {
+        setAppTheme('dark');
+    } else {
+        setAppTheme('light');
+    }
+}
+
+// Immediately initialize theme on load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAppTheme);
+} else {
+    initAppTheme();
+}
+
 async function loadProfileHeaderMetadata() {
     try {
         const res = await fetch('/api/profile/me');
@@ -24,6 +58,20 @@ function openProfileModalHandler() {
     const profilePasswordInput = document.getElementById('profile-password-input');
 
     if (!profileModal) return;
+
+    // Synchronize current theme button state
+    const currentTheme = localStorage.getItem('app_theme_preference') || 'light';
+    const btnLight = document.getElementById('theme-btn-light');
+    const btnDark = document.getElementById('theme-btn-dark');
+    if (btnLight && btnDark) {
+        if (currentTheme === 'dark') {
+            btnLight.classList.remove('active');
+            btnDark.classList.add('active');
+        } else {
+            btnLight.classList.add('active');
+            btnDark.classList.remove('active');
+        }
+    }
 
     fetch('/api/profile/me')
         .then(res => {

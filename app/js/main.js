@@ -380,6 +380,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Search error:', err);
             }
         });
+
+        userSearchInput.addEventListener('focus', () => {
+            if (userSearchInput.value.trim().length >= 1) {
+                searchResultsDropdown.classList.remove('hidden');
+            }
+        });
+
+        userSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                searchResultsDropdown.classList.add('hidden');
+                userSearchInput.blur();
+            }
+        });
     }
 
     // Attachments & Language trigger dropdowns

@@ -4,6 +4,23 @@ const { pool } = require('../config/db');
 
 const router = express.Router();
 
+// Helper to validate password complexity
+function validatePasswordStrength(password) {
+    if (!password || typeof password !== 'string') {
+        return 'Password is required.';
+    }
+    if (password.length < 6) {
+        return 'Password must be at least 6 characters long.';
+    }
+    if (!/[A-Z]/.test(password)) {
+        return 'Password must contain at least one uppercase letter (A-Z).';
+    }
+    if (!/[^A-Za-z0-9]/.test(password)) {
+        return 'Password must contain at least one special character (e.g. !@#$%^&*).';
+    }
+    return null;
+}
+
 // --- SIGNUP MODULE ---
 router.post('/signup', async (req, res) => {
     try {
@@ -18,8 +35,10 @@ router.post('/signup', async (req, res) => {
         if (normalizedUsername.length < 3 || normalizedUsername.length > 50) {
             return res.status(400).send('Username must be between 3 and 50 characters.');
         }
-        if (password.length < 6) {
-            return res.status(400).send('Password must be at least 6 characters long.');
+        
+        const passwordError = validatePasswordStrength(password);
+        if (passwordError) {
+            return res.status(400).send(passwordError);
         }
 
         const userCheck = await pool.query('SELECT id FROM users WHERE username = $1 OR email = $2', [normalizedUsername, normalizedEmail]);
@@ -89,8 +108,10 @@ router.post('/forgot-password', async (req, res) => {
         if (!username || !email || !newPassword) {
             return res.status(400).send('Username, email, and new password are required.');
         }
-        if (newPassword.length < 6) {
-            return res.status(400).send('New password must be at least 6 characters long.');
+        
+        const passwordError = validatePasswordStrength(newPassword);
+        if (passwordError) {
+            return res.status(400).send(passwordError);
         }
 
         const result = await pool.query('SELECT id FROM users WHERE username = $1 AND email = $2', [username.trim(), email.toLowerCase().trim()]);

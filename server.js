@@ -191,12 +191,16 @@ app.post('/api/rooms/create', checkAuthSession, async (req, res) => {
 
 app.get('/api/rooms/lookup/:code', checkAuthSession, async (req, res) => {
     try {
+        const rawCode = (req.params.code || '').toUpperCase().trim();
+        if (!rawCode) {
+            return res.status(400).json({ error: 'Room access passcode is required.' });
+        }
         const result = await pool.query(
-            'SELECT id, room_name, room_code, room_desc, room_icon FROM rooms WHERE room_code = $1', 
-            [req.params.code.toUpperCase().trim()]
+            'SELECT id, room_name, room_code, room_desc, room_icon FROM rooms WHERE UPPER(TRIM(room_code)) = $1', 
+            [rawCode]
         );
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Invalid room pass code.' });
+            return res.status(404).json({ error: `No community found with passcode "${rawCode}".` });
         }
         
         const TargetRoom = result.rows[0];
@@ -209,6 +213,33 @@ app.get('/api/rooms/lookup/:code', checkAuthSession, async (req, res) => {
     } catch (err) {
         console.error('Room lookup failure:', err);
         res.status(500).json({ error: 'Failed to query room registries.' });
+    }
+});
+
+app.post('/api/rooms/join', checkAuthSession, async (req, res) => {
+    try {
+        const rawCode = (req.body.code || req.body.room_code || '').toUpperCase().trim();
+        if (!rawCode) {
+            return res.status(400).json({ error: 'Please enter a valid room passcode.' });
+        }
+        const result = await pool.query(
+            'SELECT id, room_name, room_code, room_desc, room_icon FROM rooms WHERE UPPER(TRIM(room_code)) = $1', 
+            [rawCode]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: `Invalid passcode "${rawCode}". No community found.` });
+        }
+        
+        const TargetRoom = result.rows[0];
+        await pool.query(
+            'INSERT INTO room_members (room_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [TargetRoom.id, req.session.userId]
+        );
+
+        res.json(TargetRoom);
+    } catch (err) {
+        console.error('Room join error:', err);
+        res.status(500).json({ error: 'Failed to join room community.' });
     }
 });
 
@@ -414,6 +445,12 @@ app.put('/api/profile/update-credentials', checkAuthSession, async (req, res) =>
             if (password.length < 6) {
                 return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
             }
+            if (!/[A-Z]/.test(password)) {
+                return res.status(400).json({ error: 'Password must contain at least one uppercase letter (A-Z).' });
+            }
+            if (!/[^A-Za-z0-9]/.test(password)) {
+                return res.status(400).json({ error: 'Password must contain at least one special character (e.g. !@#$%^&*).' });
+            }
             const hashedPassword = await bcrypt.hash(password, 10);
             await pool.query(
                 'UPDATE users SET username = $1, password = $2 WHERE id = $3',
@@ -533,32 +570,6 @@ app.get('/api/users/search', checkAuthSession, async (req, res) => {
     } catch (err) {
         console.error('User search error:', err);
         res.status(500).json([]);
-    }
-});
-
-app.post('/api/messages/report', checkAuthSession, async (req, res) => {
-    const { messageId, reason } = req.body;
-    if (!messageId || !reason || !reason.trim()) {
-        return res.status(400).json({ error: 'Message ID and report reason description are required.' });
-    }
-    try {
-        const reporterId = req.session.userId;
-        const msgCheck = await pool.query('SELECT id, sender_id FROM messages WHERE id = $1', [messageId]);
-        if (msgCheck.rows.length === 0) {
-            return res.status(404).json({ error: 'Target message not found.' });
-        }
-        if (msgCheck.rows[0].sender_id === reporterId) {
-            return res.status(400).json({ error: 'Self-reporting is not allowed. You cannot report your own message.' });
-        }
-        await pool.query(
-            'INSERT INTO message_reports (message_id, reporter_id, reason) VALUES ($1, $2, $3)',
-            [messageId, reporterId, reason.trim()]
-        );
-        io.emit('newReportCreated', { messageId, reporterId });
-        res.json({ success: true, message: 'Message reported successfully to system administrators.' });
-    } catch (err) {
-        console.error('Error recording message report:', err);
-        res.status(500).json({ error: 'Failed to record message report.' });
     }
 });
 
@@ -1023,7 +1034,7 @@ io.on('connection', (socket) => {
                 LEFT JOIN users pu ON p.sender_id = pu.id
                 WHERE m.room_id = $1
                 ORDER BY m.timestamp ASC LIMIT 100
-            `, [roomIdParsed, userId || 0]);
+            `, [roomIdParsed]);
 
             socket.emit('chatHistory', result.rows);
         } catch (err) {
@@ -1355,8 +1366,6 @@ app.get('/api/admin/metrics', checkAdminSession, async (req, res) => {
         const userCountRes = await pool.query('SELECT COUNT(*) FROM users');
         const roomCountRes = await pool.query('SELECT COUNT(*) FROM rooms');
         const messageCountRes = await pool.query('SELECT COUNT(*) FROM messages');
-        const reportCountRes = await pool.query('SELECT COUNT(*) FROM message_reports');
-        const pendingReportCountRes = await pool.query("SELECT COUNT(*) FROM message_reports WHERE status = 'pending'");
         
         const usersListRes = await pool.query('SELECT id, username, full_name, bio FROM users ORDER BY id DESC LIMIT 50');
         const roomsListRes = await pool.query('SELECT id, room_name, room_code, room_desc, created_by FROM rooms ORDER BY id DESC LIMIT 50');
@@ -1365,9 +1374,7 @@ app.get('/api/admin/metrics', checkAdminSession, async (req, res) => {
             counters: {
                 userCount: userCountRes.rows[0].count,
                 roomCount: roomCountRes.rows[0].count,
-                messageCount: messageCountRes.rows[0].count,
-                reportCount: reportCountRes.rows[0].count,
-                pendingReportCount: pendingReportCountRes.rows[0].count
+                messageCount: messageCountRes.rows[0].count
             },
             users: usersListRes.rows,
             rooms: roomsListRes.rows
@@ -1426,104 +1433,15 @@ app.delete('/api/admin/rooms/:id', checkAdminSession, async (req, res) => {
 app.post('/api/admin/users/:id/reset-password', checkAdminSession, async (req, res) => {
     const targetedUserId = req.params.id;
     try {
-        const defaultHashedPassword = await bcrypt.hash('reset123', 10);
+        const defaultHashedPassword = await bcrypt.hash('Reset@123', 10);
         await pool.query('UPDATE users SET password = $1 WHERE id = $2', [defaultHashedPassword, targetedUserId]);
-        res.status(200).send('Password reset to default "reset123" successfully.');
+        res.status(200).send('Password reset to default "Reset@123" successfully.');
     } catch (err) {
         console.error('Error resetting password:', err);
         res.status(500).send('Password reset failed.');
     }
 });
 
-app.get('/api/admin/reports', checkAdminSession, async (req, res) => {
-    try {
-        const result = await pool.query(`
-            SELECT 
-                mr.id as report_id,
-                mr.message_id,
-                mr.reason,
-                mr.status,
-                mr.reported_at,
-                rep.id as reporter_id,
-                COALESCE(rep.username, 'Unknown Reporter') as reporter_username,
-                COALESCE(rep.email, '') as reporter_email,
-                snd.id as sender_id,
-                COALESCE(snd.username, 'Unavailable User') as sender_username,
-                COALESCE(snd.email, '') as sender_email,
-                COALESCE(snd.is_deleted, FALSE) as is_deleted_user,
-                COALESCE(m.text, '(Message Deleted or Unavailable)') as message_text,
-                COALESCE(m.message_type, 'text') as message_type,
-                m.file_url,
-                COALESCE(m.is_deleted, (m.id IS NULL)) as is_deleted,
-                m.timestamp as message_timestamp,
-                m.room_id
-            FROM message_reports mr
-            LEFT JOIN users rep ON mr.reporter_id = rep.id
-            LEFT JOIN messages m ON mr.message_id = m.id
-            LEFT JOIN users snd ON m.sender_id = snd.id
-            ORDER BY mr.reported_at DESC
-        `);
-        res.json(result.rows);
-    } catch (err) {
-        console.error('Error fetching admin reports:', err);
-        res.status(500).json({ error: 'Failed to fetch message reports.' });
-    }
-});
-
-app.post('/api/admin/reports/:id/action', checkAdminSession, async (req, res) => {
-    const reportId = req.params.id;
-    const { action } = req.body;
-    try {
-        const reportRes = await pool.query('SELECT mr.*, m.sender_id FROM message_reports mr LEFT JOIN messages m ON mr.message_id = m.id WHERE mr.id = $1', [reportId]);
-        if (reportRes.rows.length === 0) {
-            return res.status(404).json({ error: 'Report record not found.' });
-        }
-        const report = reportRes.rows[0];
-
-        if ((action === 'delete_sender' || action === 'delete_user' || action === 'remove_account') && report.sender_id) {
-            
-            await pool.query(
-                "UPDATE users SET username = 'deleted_user_' || id, email = 'deleted_' || id || '@deleted.local', full_name = 'Unavailable User', bio = 'This account has been removed by system administrators.', profile_pic_url = '/uploads/default-avatar.png', is_deleted = TRUE WHERE id = $1",
-                [report.sender_id]
-            );
-            await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
-            io.emit('userModerated', { userId: report.sender_id, action: 'deleted' });
-            io.emit('profileUpdated', { userId: report.sender_id, username: 'Unavailable User', full_name: 'Unavailable User', bio: 'This account has been removed.', profile_pic_url: '/uploads/default-avatar.png' });
-        } else if (action === 'delete_message' && report.message_id) {
-            
-            await pool.query(
-                "UPDATE messages SET is_deleted = TRUE, text = 'This message was deleted by system admin' WHERE id = $1",
-                [report.message_id]
-            );
-            await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
-            io.emit('messageDeleted', { messageId: report.message_id });
-        } else if (action === 'flag_sender' && report.sender_id) {
-            
-            await pool.query(
-                "UPDATE users SET bio = '⚠️ Profile content under review by system admin.' WHERE id = $1",
-                [report.sender_id]
-            );
-            await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
-            io.emit('profileUpdated', { userId: report.sender_id, bio: '⚠️ Profile content under review by system admin.' });
-        } else if (action === 'reset_sender_pass' && report.sender_id) {
-            const defaultHashedPassword = await bcrypt.hash('reset123', 10);
-            await pool.query('UPDATE users SET password = $1 WHERE id = $2', [defaultHashedPassword, report.sender_id]);
-            await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
-        } else if (action === 'dismiss_report') {
-            await pool.query("UPDATE message_reports SET status = 'dismissed' WHERE id = $1", [reportId]);
-        } else if (action === 'resolve_report') {
-            await pool.query("UPDATE message_reports SET status = 'resolved' WHERE id = $1", [reportId]);
-        } else {
-            return res.status(400).json({ error: 'Invalid moderation action parameter.' });
-        }
-
-        io.emit('reportStatusUpdated', { reportId });
-        res.json({ success: true, message: 'Report action executed successfully.' });
-    } catch (err) {
-        console.error('Failed to execute report action:', err);
-        res.status(500).json({ error: 'Database conflict executing report action.' });
-    }
-});
 
 server.listen(PORT, () => {
     console.log(`Application running dynamically at http://localhost:${PORT}`);

@@ -130,18 +130,6 @@ const initDB = async () => {
             );
         `);
 
-        // Message Reports Table
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS message_reports (
-                id SERIAL PRIMARY KEY,
-                message_id INT REFERENCES messages(id) ON DELETE CASCADE,
-                reporter_id INT REFERENCES users(id) ON DELETE CASCADE,
-                reason TEXT NOT NULL,
-                status VARCHAR(50) DEFAULT 'pending',
-                reported_at TIMESTAMPTZ DEFAULT NOW()
-            );
-        `);
-
         // Create Performance Indexes
         await pool.query(`
             CREATE INDEX IF NOT EXISTS idx_messages_private ON messages(sender_id, receiver_id) WHERE room_id IS NULL;

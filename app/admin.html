@@ -526,10 +526,6 @@
                 <div class="adm-nav-item active" data-tab="tab-overview">
                     📊 Overview Dashboard
                 </div>
-                <div class="adm-nav-item" data-tab="tab-reports" style="display:flex; justify-space-between; align-items:center;">
-                    <span>🚩 Reported Messages</span>
-                    <span id="nav-pending-reports-badge" class="adm-badge" style="background-color:#ef4444; color:white; padding:2px 6px; font-size:0.7rem; border-radius:10px; display:none;">0</span>
-                </div>
                 <div class="adm-nav-item" data-tab="tab-users">
                     👥 Accounts Directory
                 </div>
@@ -585,13 +581,6 @@
                                 <p class="adm-stat-val" id="dashboard-total-messages">--</p>
                             </div>
                             <div class="adm-stat-icon-wrapper bg-green-light">💬</div>
-                        </div>
-                        <div class="adm-stat-card">
-                            <div class="adm-stat-info">
-                                <h3>Pending Reports</h3>
-                                <p class="adm-stat-val" id="dashboard-pending-reports" style="color: #ef4444;">--</p>
-                            </div>
-                            <div class="adm-stat-icon-wrapper" style="background-color: rgba(239, 68, 68, 0.12); color: #ef4444;">🚩</div>
                         </div>
                     </div>
                     
@@ -696,42 +685,6 @@
                     </div>
                 </section>
 
-                <section class="adm-tab-section" id="tab-reports">
-                    <div class="adm-table-card">
-                        <div class="adm-table-header">
-                            <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-                                <h2>Reported Messages Console</h2>
-                                <div style="display:flex; gap:0.4rem;" id="report-status-filter-group">
-                                    <button class="adm-btn active-status-btn" data-status="all" onclick="filterReportsStatus('all')">All</button>
-                                    <button class="adm-btn danger" data-status="pending" onclick="filterReportsStatus('pending')">Pending</button>
-                                    <button class="adm-btn" data-status="resolved" onclick="filterReportsStatus('resolved')">Resolved</button>
-                                    <button class="adm-btn" data-status="dismissed" onclick="filterReportsStatus('dismissed')">Dismissed</button>
-                                </div>
-                            </div>
-                            <input type="text" id="report-search-filter" class="adm-search-input" placeholder="Search reporter, sender, or reason...">
-                        </div>
-                        <div class="table-responsive">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Report ID & Time</th>
-                                        <th>Reporter</th>
-                                        <th>Accused Sender</th>
-                                        <th>Reported Content</th>
-                                        <th>Reporter Description / Reason</th>
-                                        <th>Status</th>
-                                        <th>Administrative Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="reports-table-tbody">
-                                    <tr>
-                                        <td colspan="7" style="text-align:center; color: var(--adm-text-muted);">Querying message reports table...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
                 
             </div>
         </main>
@@ -822,16 +775,12 @@
                 
                 const titleMap = {
                     'tab-overview': 'System Overview',
-                    'tab-reports': 'Reported Messages Console',
                     'tab-users': 'Database Accounts Directory',
                     'tab-rooms': 'Active Messaging Communities',
                     'tab-settings': 'System Settings'
                 };
                 document.getElementById('adm-active-title').innerText = titleMap[targetTab] || 'Admin Dashboard';
                 
-                if (targetTab === 'tab-reports') {
-                    loadAdminReports();
-                }
                 closeMobileSidebar();
             });
         });
@@ -890,30 +839,15 @@
                 const totalUsers = parseInt(data.counters.userCount || 0);
                 const totalRooms = parseInt(data.counters.roomCount || 0);
                 const totalMessages = parseInt(data.counters.messageCount || 0);
-                const pendingReports = parseInt(data.counters.pendingReportCount || 0);
 
                 document.getElementById('dashboard-total-users').innerText = totalUsers;
                 document.getElementById('dashboard-total-rooms').innerText = totalRooms;
                 document.getElementById('dashboard-total-messages').innerText = totalMessages;
-                
-                const pendingReportsEl = document.getElementById('dashboard-pending-reports');
-                if (pendingReportsEl) pendingReportsEl.innerText = pendingReports;
-
-                const navBadge = document.getElementById('nav-pending-reports-badge');
-                if (navBadge) {
-                    if (pendingReports > 0) {
-                        navBadge.innerText = pendingReports;
-                        navBadge.style.display = 'inline-block';
-                    } else {
-                        navBadge.style.display = 'none';
-                    }
-                }
 
                 renderApplicationCharts(totalUsers, totalRooms, totalMessages);
 
                 renderUsersTable(activeUsersData);
                 renderRoomsTable(activeRoomsData);
-                loadAdminReports();
 
             } catch (err) {
                 console.error("Failed to load dashboard metrics:", err);
@@ -1016,7 +950,7 @@
         }
 
         async function resetUserPassword(userId, username) {
-            if(confirm(`Are you sure you want to reset password credentials for user "${username}" to default "reset123"?`)) {
+            if(confirm(`Are you sure you want to reset password credentials for user "${username}" to default "Reset@123"?`)) {
                 try {
                     const res = await fetch(`/api/admin/users/${userId}/reset-password`, { method: 'POST' });
                     if(res.ok) {
@@ -1062,172 +996,6 @@
             }
         }
 
-        let activeReportsData = [];
-        let currentReportStatusFilter = 'all';
-
-        async function loadAdminReports() {
-            try {
-                const res = await fetch('/api/admin/reports');
-                if (!res.ok) return;
-                const data = await res.json();
-                activeReportsData = Array.isArray(data) ? data : [];
-                renderReportsTable();
-            } catch (err) {
-                console.error('Failed to load admin reports:', err);
-            }
-        }
-
-        window.filterReportsStatus = function(status) {
-            currentReportStatusFilter = status;
-            document.querySelectorAll('#report-status-filter-group .adm-btn').forEach(btn => {
-                const btnStatus = btn.getAttribute('data-status');
-                if (btnStatus === status) {
-                    btn.style.opacity = '1';
-                    btn.style.fontWeight = '800';
-                } else {
-                    btn.style.opacity = '0.6';
-                    btn.style.fontWeight = '500';
-                }
-            });
-            renderReportsTable();
-        };
-
-        document.getElementById('report-search-filter').addEventListener('input', () => {
-            renderReportsTable();
-        });
-
-        function renderReportsTable() {
-            const tbody = document.getElementById('reports-table-tbody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            const searchInput = document.getElementById('report-search-filter');
-            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
-            
-            let filtered = Array.isArray(activeReportsData) ? activeReportsData : [];
-            if (currentReportStatusFilter !== 'all') {
-                filtered = filtered.filter(r => r.status === currentReportStatusFilter);
-            }
-
-            if (searchTerm) {
-                filtered = filtered.filter(r => 
-                    (r.reporter_username && String(r.reporter_username).toLowerCase().includes(searchTerm)) ||
-                    (r.sender_username && String(r.sender_username).toLowerCase().includes(searchTerm)) ||
-                    (r.reason && String(r.reason).toLowerCase().includes(searchTerm)) ||
-                    (r.message_text && String(r.message_text).toLowerCase().includes(searchTerm))
-                );
-            }
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color:var(--adm-text-muted);">No reported messages found matching criteria.</td></tr>`;
-                return;
-            }
-
-            filtered.forEach(rep => {
-                const tr = document.createElement('tr');
-                const dateObj = new Date(rep.reported_at);
-                const dateStr = isNaN(dateObj.getTime()) 
-                    ? 'Recent' 
-                    : `${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
-
-                let statusBadgeHtml = '<span class="adm-badge" style="background:rgba(239,68,68,0.15); color:#ef4444;">PENDING</span>';
-                if (rep.status === 'resolved') {
-                    statusBadgeHtml = '<span class="adm-badge bg-success-light">RESOLVED</span>';
-                } else if (rep.status === 'dismissed') {
-                    statusBadgeHtml = '<span class="adm-badge" style="background:rgba(100,116,139,0.15); color:#64748b;">DISMISSED</span>';
-                }
-
-                let contentPreviewHtml = '';
-                if (rep.is_deleted) {
-                    contentPreviewHtml = `<em style="color:var(--adm-text-muted);">(Message Deleted)</em>`;
-                } else if (rep.message_type === 'image' && rep.file_url) {
-                    contentPreviewHtml = `
-                        <div style="display:flex; align-items:center; gap:6px;">
-                            <img src="${encodeURI(rep.file_url)}" style="width:48px; height:48px; object-fit:cover; border-radius:6px; cursor:pointer; border:1px solid var(--adm-border);" onclick="window.open('${encodeURI(rep.file_url)}', '_blank')" title="Click to view full image">
-                            <span style="font-size:0.75rem; color:var(--adm-text-muted);">Image File</span>
-                        </div>`;
-                } else if (rep.message_type === 'video' && rep.file_url) {
-                    contentPreviewHtml = `
-                        <video src="${encodeURI(rep.file_url)}" style="width:70px; height:45px; border-radius:6px; object-fit:cover;" controls></video>`;
-                } else if (rep.message_type === 'audio' && rep.file_url) {
-                    contentPreviewHtml = `
-                        <audio src="${encodeURI(rep.file_url)}" controls style="width:140px; height:32px;"></audio>`;
-                } else if (rep.message_type === 'pdf' && rep.file_url) {
-                    contentPreviewHtml = `
-                        <a href="${encodeURI(rep.file_url)}" target="_blank" style="color:var(--adm-accent); text-decoration:none; font-weight:600; font-size:0.8rem;">📄 View PDF Document</a>`;
-                } else {
-                    contentPreviewHtml = `<span style="word-break:break-word;">${escapeHTML(rep.message_text || '(No text)')}</span>`;
-                }
-
-                const senderDisplay = rep.sender_username 
-                    ? `<strong>@${escapeHTML(rep.sender_username)}</strong> <span style="font-size:0.75rem; color:var(--adm-text-muted);">(ID #${rep.sender_id})</span>`
-                    : `<em style="color:var(--adm-text-muted)">Unknown Sender (ID #${rep.sender_id || 'N/A'})</em>`;
-
-                const reporterDisplay = rep.reporter_username
-                    ? `<strong style="color:var(--adm-accent);">@${escapeHTML(rep.reporter_username)}</strong><div style="font-size:0.72rem; color:var(--adm-text-muted);">${escapeHTML(rep.reporter_email || '')}</div>`
-                    : `<em style="color:var(--adm-text-muted)">Reporter #${rep.reporter_id}</em>`;
-
-                tr.innerHTML = `
-                    <td>
-                        <strong>Report #${rep.report_id}</strong>
-                        <div style="font-size:0.72rem; color:var(--adm-text-muted); margin-top:2px;">${dateStr}</div>
-                    </td>
-                    <td>
-                        ${reporterDisplay}
-                    </td>
-                    <td>
-                        ${senderDisplay}
-                        <div style="font-size:0.72rem; color:var(--adm-text-muted);">${escapeHTML(rep.sender_email || '')}</div>
-                    </td>
-                    <td style="max-width:220px;">${contentPreviewHtml}</td>
-                    <td style="max-width:240px; word-break:break-word; color:var(--adm-text-main); font-weight:500; background:rgba(203,110,50,0.05); padding:8px; border-radius:6px;">
-                        "${escapeHTML(rep.reason || '')}"
-                    </td>
-                    <td>${statusBadgeHtml}</td>
-                    <td>
-                        <div style="display:flex; flex-direction:column; gap:5px; min-width:170px;">
-                            ${rep.sender_id && !rep.is_deleted_user ? `<button class="adm-btn danger" style="padding:4px 8px; font-size:0.75rem; font-weight:700; background:#ef4444; color:white;" data-id="${rep.report_id}" data-user="${escapeHTML(rep.sender_username || '')}" onclick="executeReportAction(${rep.report_id}, 'delete_sender', this.getAttribute('data-user'))">❌ Remove / Delete Account</button>` : ''}
-                            ${!rep.is_deleted && rep.message_id ? `<button class="adm-btn warning" style="padding:4px 8px; font-size:0.75rem; font-weight:700; background:#f59e0b; color:white;" data-id="${rep.report_id}" data-user="${escapeHTML(rep.sender_username || '')}" onclick="executeReportAction(${rep.report_id}, 'delete_message', this.getAttribute('data-user'))">🗑️ Delete Message</button>` : ''}
-                            ${rep.sender_id && !rep.is_deleted_user ? `<button class="adm-btn" style="padding:4px 8px; font-size:0.75rem; font-weight:600;" data-id="${rep.report_id}" data-user="${escapeHTML(rep.sender_username || '')}" onclick="executeReportAction(${rep.report_id}, 'flag_sender', this.getAttribute('data-user'))">⚠️ Flag Sender Profile</button>` : ''}
-                            ${rep.sender_id && !rep.is_deleted_user ? `<button class="adm-btn" style="padding:4px 8px; font-size:0.75rem; font-weight:600;" data-id="${rep.report_id}" data-user="${escapeHTML(rep.sender_username || '')}" onclick="executeReportAction(${rep.report_id}, 'reset_sender_pass', this.getAttribute('data-user'))">🔑 Reset Password</button>` : ''}
-                            ${rep.status === 'pending' ? `<button class="adm-btn" style="padding:4px 8px; font-size:0.75rem; color:var(--adm-success); border-color:rgba(16,185,129,0.3); font-weight:600;" onclick="executeReportAction(${rep.report_id}, 'resolve_report')">✅ Mark Resolved</button>` : ''}
-                            ${rep.status === 'pending' ? `<button class="adm-btn" style="padding:4px 8px; font-size:0.75rem; color:var(--adm-text-muted); font-weight:600;" onclick="executeReportAction(${rep.report_id}, 'dismiss_report')">🚫 Dismiss Report</button>` : ''}
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        window.executeReportAction = async function(reportId, action, targetUsername) {
-            let confirmMsg = 'Are you sure you want to execute this moderation action on the report?';
-            if (action === 'delete_sender') confirmMsg = `WARNING: Are you sure you want to permanently REMOVE and DELETE the account of @${targetUsername}? All active sessions will be terminated and their account will appear as 'Unavailable User'.`;
-            else if (action === 'delete_message') confirmMsg = `Are you sure you want to delete this reported message for everyone?`;
-            else if (action === 'flag_sender') confirmMsg = `Are you sure you want to flag user @${targetUsername}'s profile bio?`;
-            else if (action === 'reset_sender_pass') confirmMsg = `Are you sure you want to reset password for user @${targetUsername} to default "reset123"?`;
-            else if (action === 'dismiss_report') confirmMsg = `Dismiss report #${reportId}?`;
-            else if (action === 'resolve_report') confirmMsg = `Mark report #${reportId} as resolved?`;
-
-            if (!confirm(confirmMsg)) return;
-
-            try {
-                const res = await fetch(`/api/admin/reports/${reportId}/action`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action })
-                });
-                const data = await res.json();
-                if (res.ok && data.success) {
-                    triggerToast("Report action executed successfully.", "success");
-                    loadDashboardMetrics();
-                } else {
-                    triggerToast(data.error || "Failed to execute report action.", "error");
-                }
-            } catch (err) {
-                console.error(err);
-                triggerToast("Server error executing report action.", "error");
-            }
-        };
 
         function renderApplicationCharts(users, rooms, messages) {
             const fontColor = '#64748b';
@@ -1294,15 +1062,6 @@
 
         try {
             const adminSocket = io();
-            adminSocket.on('newReportCreated', () => {
-                triggerToast('⚠️ New message report submitted by a user!', 'info');
-                loadDashboardMetrics();
-                loadAdminReports();
-            });
-            adminSocket.on('reportStatusUpdated', () => {
-                loadDashboardMetrics();
-                loadAdminReports();
-            });
         } catch (e) {
             console.error('Socket init error in admin:', e);
         }

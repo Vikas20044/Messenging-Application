@@ -124,10 +124,24 @@ function selectActiveRoom(id, name, code, desc, icon) {
     if (chatWindowSubtitle) chatWindowSubtitle.innerText = `Access Pass: ${code} • ${activeRoomDesc}`;
     if (chatWindowAvatar) chatWindowAvatar.src = activeRoomIcon;
     
+    const msgInput = document.getElementById('msg-input');
+    const sendBtn = document.querySelector('#chat-form button[type="submit"]');
+    if (msgInput) {
+        msgInput.disabled = false;
+        msgInput.placeholder = 'Type a message...';
+    }
+    if (sendBtn) sendBtn.disabled = false;
+
     const emptyNotice = document.getElementById('empty-view-notice');
     const chatSubsystem = document.getElementById('active-chat-subsystem');
-    if (emptyNotice) emptyNotice.classList.add('hidden');
-    if (chatSubsystem) chatSubsystem.classList.remove('hidden');
+    if (emptyNotice) {
+        emptyNotice.classList.add('hidden');
+        emptyNotice.classList.add('hidden-layout');
+    }
+    if (chatSubsystem) {
+        chatSubsystem.classList.remove('hidden');
+        chatSubsystem.classList.remove('hidden-layout');
+    }
     
     document.querySelectorAll('.thread-item').forEach(el => el.classList.remove('active-selected'));
     const activeEl = document.getElementById(`thread-room-${id}`);

@@ -347,6 +347,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const groupNameInput = document.getElementById('group-name-input');
     const groupDescInput = document.getElementById('group-desc-input');
 
+    const joinGroupModal = document.getElementById('join-group-modal');
+    const closeJoinModalBtn = document.getElementById('close-join-modal-btn');
+    const groupJoinForm = document.getElementById('group-join-form');
+    const joinRoomCodeInput = document.getElementById('join-room-code-input');
+
     const profileModal = document.getElementById('profile-modal');
     const openProfileBtn = document.getElementById('open-profile-btn');
     const closeProfileBtn = document.getElementById('close-profile-btn');
@@ -796,22 +801,62 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const btnJoinRoom = document.getElementById('btn-join-room');
-    if (btnJoinRoom) {
-        btnJoinRoom.addEventListener('click', async () => {
-            const code = prompt("Enter the 5-character group room access code:");
-            if(!code || code.trim() === "") return;
-            
+    if (btnJoinRoom && joinGroupModal) {
+        btnJoinRoom.addEventListener('click', () => {
+            if (joinRoomCodeInput) {
+                joinRoomCodeInput.value = '';
+            }
+            joinGroupModal.classList.remove('hidden');
+            if (joinRoomCodeInput) {
+                setTimeout(() => joinRoomCodeInput.focus(), 100);
+            }
+        });
+    }
+
+    if (closeJoinModalBtn && joinGroupModal) {
+        closeJoinModalBtn.addEventListener('click', () => joinGroupModal.classList.add('hidden'));
+    }
+
+    if (groupJoinForm) {
+        groupJoinForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const code = joinRoomCodeInput ? joinRoomCodeInput.value.trim().toUpperCase() : '';
+            if (!code) {
+                showToast("Please enter a valid room passcode.", "error");
+                return;
+            }
+
+            const submitBtn = document.getElementById('btn-submit-join-room');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Joining...";
+            }
+
             try {
-                const res = await fetch(`/api/rooms/lookup/${code.trim()}`);
+                const res = await fetch('/api/rooms/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+
+                const data = await res.json();
                 if (res.ok) {
-                    const room = await res.json();
+                    const room = data.room || data;
+                    if (joinGroupModal) joinGroupModal.classList.add('hidden');
+                    showToast(`Successfully joined "${room.room_name}"! 🎉`, "success");
                     await loadJoinedRooms();
                     selectActiveRoom(room.id, room.room_name, room.room_code, room.room_desc, room.room_icon);
                 } else {
-                    showToast("Invalid group room access code.", "error");
+                    showToast(data.error || "Invalid group room access code.", "error");
                 }
             } catch (err) {
-                showToast("Error joining room.", "error");
+                console.error("Room join error:", err);
+                showToast("Error connecting to server to join room.", "error");
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Join Community Space";
+                }
             }
         });
     }
@@ -1161,9 +1206,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (profileSecurityForm && profileUsernameInput && profilePasswordInput) {
         profileSecurityForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const newPass = profilePasswordInput.value;
+            if (newPass && newPass.trim() !== '') {
+                if (newPass.length < 6) {
+                    showToast('Password must be at least 6 characters long.', 'error');
+                    return;
+                }
+                if (!/[A-Z]/.test(newPass)) {
+                    showToast('Password must contain at least one uppercase letter (A-Z).', 'error');
+                    return;
+                }
+                if (!/[^A-Za-z0-9]/.test(newPass)) {
+                    showToast('Password must contain at least one special character (e.g. !@#$%^&*).', 'error');
+                    return;
+                }
+            }
+
             const payload = {
                 username: profileUsernameInput.value.trim(),
-                password: profilePasswordInput.value
+                password: newPass
             };
 
             try {
@@ -1299,21 +1360,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('message', (msg) => {
         const isCurrentPrivate = targetUserId && msg.sender_id && !msg.room_id && 
-                                 (msg.sender_id == targetUserId || msg.receiver_id == targetUserId);
-        const isCurrentGroup = targetRoomId && msg.room_id && msg.room_id == targetRoomId;
+                                 (Number(msg.sender_id) === Number(targetUserId) || Number(msg.receiver_id) === Number(targetUserId));
+        const isCurrentGroup = targetRoomId && msg.room_id && Number(msg.room_id) === Number(targetRoomId);
 
         if (isCurrentPrivate || isCurrentGroup) {
             appendMessage(msg);
             
-            if (isCurrentGroup && msg.sender_id !== currentUserId) {
+            if (isCurrentGroup && currentUserId && Number(msg.sender_id) !== Number(currentUserId)) {
                 socket.emit('explicitMarkGroupMessageAsRead', { messageId: msg._id, userId: currentUserId, roomId: targetRoomId });
-            } else if (isCurrentPrivate && msg.sender_id !== currentUserId) {
+            } else if (isCurrentPrivate && currentUserId && Number(msg.sender_id) !== Number(currentUserId)) {
                 socket.emit('markAsRead', msg._id);
             }
             scrollToBottom();
         } else {
             
-            if (msg.sender_id !== currentUserId) {
+            if (currentUserId && Number(msg.sender_id) !== Number(currentUserId)) {
                 playNotificationSound();
 
                 const senderName = msg.username || 'Someone';
@@ -1445,7 +1506,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('broadcastGroupReadsSynchronized', ({ roomId }) => {
-        if (targetRoomId === roomId) {
+        if (targetRoomId && Number(targetRoomId) === Number(roomId)) {
             document.querySelectorAll('.group-ticks-tracker').forEach((el) => {
                 const msgId = el.getAttribute('data-msg-id');
                 if (!msgId) return;
@@ -1501,13 +1562,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const chatWindowSubtitle = document.getElementById('chat-window-subtitle');
         if (!chatWindowSubtitle) return;
 
-        if (roomId && targetRoomId === roomId) {
+        if (roomId && targetRoomId && Number(targetRoomId) === Number(roomId)) {
             if (isTyping) {
                 chatWindowSubtitle.innerText = `✍️ ${escapeHTML(username || 'Someone')} is typing...`;
             } else {
                 chatWindowSubtitle.innerText = `Access Pass: ${activeRoomCode} • ${activeRoomDesc}`;
             }
-        } else if (!roomId && targetUserId === userId) {
+        } else if (!roomId && targetUserId && Number(targetUserId) === Number(userId)) {
             if (isTyping) {
                 chatWindowSubtitle.innerText = '✍️ typing...';
             } else {

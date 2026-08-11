@@ -393,75 +393,7 @@ window.cancelReply = function() {
     }
 };
 
-let activeReportMessageId = null;
 
-window.triggerReportMessage = function(messageId) {
-    const msg = messageStore.get(String(messageId));
-    if (!msg) return;
-
-    if (currentUserId && Number(msg.sender_id) === Number(currentUserId)) {
-        showToast("Self-reporting is not allowed. You cannot report your own message.", "error");
-        return;
-    }
-
-    activeReportMessageId = msg._id;
-    const modal = document.getElementById('report-message-modal');
-    const senderPreview = document.getElementById('report-sender-preview');
-    const textPreview = document.getElementById('report-text-preview');
-    const reasonInput = document.getElementById('report-reason-input');
-
-    let displaySnippet = msg.text || '';
-    if (msg.message_type === 'image') displaySnippet = '📷 Image / Photo Attachment';
-    else if (msg.message_type === 'audio') displaySnippet = '🎵 Audio Voice Recording';
-    else if (msg.message_type === 'video') displaySnippet = '🎥 Video Clip Attachment';
-    else if (msg.message_type === 'pdf') displaySnippet = `📄 Document / PDF: ${msg.text || 'File'}`;
-
-    if (senderPreview) senderPreview.innerText = `From: @${msg.username || 'User #' + msg.sender_id}`;
-    if (textPreview) textPreview.innerText = displaySnippet;
-    if (reasonInput) reasonInput.value = '';
-    if (modal) modal.classList.remove('hidden');
-
-    document.querySelectorAll('.msg-dropdown').forEach(d => {
-        d.classList.add('hidden');
-        d.classList.remove('drop-up');
-    });
-    document.querySelectorAll('.message-row').forEach(r => r.style.zIndex = '');
-};
-
-window.closeReportModal = function() {
-    activeReportMessageId = null;
-    const modal = document.getElementById('report-message-modal');
-    if (modal) modal.classList.add('hidden');
-};
-
-window.submitReportMessage = async function() {
-    if (!activeReportMessageId) return;
-    const reasonInput = document.getElementById('report-reason-input');
-    const reason = reasonInput ? reasonInput.value.trim() : '';
-
-    if (!reason) {
-        showToast("Please provide a reason / description for the report.", "error");
-        return;
-    }
-
-    try {
-        const res = await fetch('/api/messages/report', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messageId: activeReportMessageId, reason })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-            showToast("Message reported successfully to system administrators! 🚩", "success");
-            window.closeReportModal();
-        } else {
-            showToast(data.error || "Failed to submit report.", "error");
-        }
-    } catch (err) {
-        console.error('Report submit error:', err);
-        showToast("Server communication failure reporting message.", "error");
-    }
-};
 
 window.triggerEditMessage = function(messageId) {
     document.querySelectorAll('.msg-dropdown').forEach(d => {
@@ -558,8 +490,8 @@ window.triggerReaction = function(messageId, emoji) {
     document.querySelectorAll('.msg-dropdown').forEach(d => d.classList.add('hidden'));
 };
 
-function toggleDropdown(e, dropdownId) {
-    e.stopPropagation();
+window.toggleDropdown = function(e, dropdownId) {
+    if (e && e.stopPropagation) e.stopPropagation();
     const targetMenu = document.getElementById(dropdownId);
     if (!targetMenu) return;
     const isHidden = targetMenu.classList.contains('hidden');
@@ -569,9 +501,9 @@ function toggleDropdown(e, dropdownId) {
     if (isHidden) {
         targetMenu.classList.remove('hidden');
     }
-}
+};
 
-function triggerReceiptsAudit(msgId) {
+window.triggerReceiptsAudit = function(msgId) {
     const receiptsListTarget = document.getElementById('receipts-list-target');
     const receiptsAuditModal = document.getElementById('receipts-audit-modal');
     const modalHeader = receiptsAuditModal ? receiptsAuditModal.querySelector('h3') : null;
@@ -607,9 +539,9 @@ function triggerReceiptsAudit(msgId) {
         }
         receiptsAuditModal.classList.remove('hidden');
     });
-}
+};
 
-function triggerPrivateReceiptsAudit(msgId) {
+window.triggerPrivateReceiptsAudit = function(msgId) {
     const receiptsListTarget = document.getElementById('receipts-list-target');
     const receiptsAuditModal = document.getElementById('receipts-audit-modal');
 
@@ -803,13 +735,6 @@ function wrapMediaWithMenu(msg, mediaHtml) {
             </div>`;
     }
 
-    const reportOptionHtml = !isOutgoing 
-        ? `<div class="msg-menu-item report-item" onclick="triggerReportMessage('${msg._id}')">
-               <span class="menu-item-icon">🚩</span>
-               <span>Report Message</span>
-           </div>` 
-        : '';
-
     const menuHtml = `
         <div class="msg-menu-container">
             <span class="three-dots-icon" onclick="toggleDropdown(event, 'drop-${msg._id}')" title="Message Options">⋮</span>
@@ -827,7 +752,6 @@ function wrapMediaWithMenu(msg, mediaHtml) {
                     <span class="menu-item-icon">↗️</span>
                     <span>Share / Forward</span>
                 </div>
-                ${reportOptionHtml}
                 ${deleteOptionHtml}
             </div>
         </div>`;
@@ -938,13 +862,6 @@ function appendMessage(msg) {
             `;
         }
 
-        const reportOptionHtml = !isOutgoing 
-            ? `<div class="msg-menu-item report-item" onclick="triggerReportMessage('${msg._id}')">
-                   <span class="menu-item-icon">🚩</span>
-                   <span>Report Message</span>
-               </div>` 
-            : '';
-
         inlineRenderBody = `
             <div class="text-content-wrapper" style="position: relative; display: flex; flex-direction: column; width: 100%;">
                 <div style="display: flex; align-items: flex-start; gap: 8px; width: 100%;">
@@ -980,7 +897,6 @@ function appendMessage(msg) {
                                 <div class="translate-sub-item restore-item" onclick="selectTranslateLanguage(event, '${msg._id}', 'en', 'English')">↩️ Original English</div>
                             </div>
                             ${extraOptionsHtml}
-                            ${reportOptionHtml}
                         </div>
                     </div>
                 </div>
